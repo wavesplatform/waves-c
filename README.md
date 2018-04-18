@@ -12,7 +12,7 @@ cmake .
 make
 ```
 
-On Mac OS X you should (install openssl using brew)[http://brewformulas.org/Openssl] and then pass the openssl path as cmake parameter:
+On Mac OS X you should [install openssl using brew](http://brewformulas.org/Openssl) and then pass the openssl path as cmake parameter:
 
 ```
 brew install openssl
@@ -20,4 +20,4 @@ cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl .
 make
 ```
 
-For a quick start, we took the (bcdev's waves_vanity source code)[https://github.com/bcdev-/waves_vanity] source code as a basis, thank bcdev for that!
+For a quick start, we took the [bcdev's waves_vanity source code](https://github.com/bcdev-/waves_vanity) source code as a basis, thank bcdev for that!
