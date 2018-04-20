@@ -14,12 +14,17 @@ matrix:
             - clang-3.6
       env:
         - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+      cache:
+        apt: true
       script: cmake . && make
 
     - os: osx
       osx_image: xcode8
       env:
-        - MATRIX_EVAL="brew install openssl"
+        - MATRIX_EVAL="brew update && brew install openssl"
+      cache:
+        directories:
+          - $HOME/Library/Caches/Homebrew
       script: cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl . && make
 
 
