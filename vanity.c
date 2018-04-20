@@ -52,31 +52,6 @@ typedef struct {
     char case_mask[36];
 } vanity_settings;
 
-void seed_to_address(char *key, bool testnet, char *output) {
-    char realkey[1024] = {0, 0, 0, 0};
-    memcpy(&realkey[4], key, strlen(key));
-    uint8_t privkey[32];
-
-    SHA256_CTX ctx;
-
-    waves_secure_hash((uint8_t*)realkey, strlen(key) + 4, privkey);
-
-    sha256_init(&ctx);
-    sha256_update(&ctx, privkey, 32);
-    sha256_final(&ctx, privkey);
-
-    privkey[0] &= 248;
-    privkey[31] &= 127;
-    privkey[31] |= 64;
-
-    uint8_t pubkey[32];
-
-    curve25519_donna_basepoint(pubkey, privkey);
-
-    char network_char = testnet ? 'T' : 'W';
-    waves_public_key_to_address(pubkey, network_char, output);
-}
-
 void unit_test_1() {
 #ifndef SKIP_UNIT_TEST
     uint8_t input[] = "A nice, long test to make the day great! :-)";
@@ -141,7 +116,7 @@ void unit_test_5() {
     char test[] = "industry detail rifle scan weird join crawl connect demand top club hello entry second cargo";
     char output[512];
     char expected[] = "3NCyi16BFfFvYhCeg1pKrMKMLDXwazkPuhP";
-    seed_to_address(test, true, output);
+    waves_seed_to_address(test, 'T', output);
     if(strcmp(output, expected) != 0) {
         printf("Unit test 5 failed\n");
         exit(-1);
@@ -154,7 +129,7 @@ void unit_test_6() {
     char test[] = "try south announce math salute shoe blast finish state battle nest tube enjoy yellow layer";
     char output[512];
     char expected[] = "3PJXLWbp5ft3LCeesqgJyTpGQRgU9nTY3PA";
-    seed_to_address(test, false, output);
+    waves_seed_to_address(test, 'W', output);
     if(strcmp(output, expected) != 0) {
         printf("Unit test 6 failed\n");
         exit(-1);
@@ -310,7 +285,7 @@ int generate_addresses(bool testnet, int iterations, vanity_settings *settings, 
 
         fakebase58(seed, entropy);
 
-        seed_to_address(seed, testnet, address);
+        waves_seed_to_address(seed, testnet, address);
 
 //        for(int u = 0 ; u < strlen(address) ; u++)
 //           heat_map[u][base58char_to_i(address[u])]++;
