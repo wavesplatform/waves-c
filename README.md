@@ -4,7 +4,7 @@ C library for working with Waves
 
 # Build
 
-This package uses `cmake` 3.1+ for building and it depends on `openssl` dev package.
+This package uses `cmake` 2.8+ for building and it depends on `openssl` dev package.
 
 To build it on linux should install `openssl-dev` and just call cmake and make
 
