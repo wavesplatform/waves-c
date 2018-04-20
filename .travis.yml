@@ -4,17 +4,17 @@ compiler: clang
 matrix:
   include:
     # works on Precise and Trusty
-      - os: linux
-        addons:
-          apt:
-            sources:
-              - ubuntu-toolchain-r-test
-              - llvm-toolchain-precise-3.6
-            packages:
-              - clang-3.6
-        env:
-          - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
-        script: cmake . && make
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+      env:
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+      script: cmake . && make
 
     - os: osx
       osx_image: xcode8
