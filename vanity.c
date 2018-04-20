@@ -52,26 +52,6 @@ typedef struct {
     char case_mask[36];
 } vanity_settings;
 
-void waves_public_key_to_account(uint8_t public_key[32], bool testnet, char *output) {
-    char testnet_char = testnet ? 'T' : 'W';
-    size_t length = 512;
-    uint8_t public_key_hash[32];
-    uint8_t without_checksum[512];
-    uint8_t checksum[32];
-    waves_secure_hash(public_key, 32, (uint8_t*)public_key_hash);
-
-    without_checksum[0] = 0x01;
-    without_checksum[1] = testnet_char;
-    memcpy(&without_checksum[2], public_key_hash, 20);
-
-    waves_secure_hash(without_checksum, 22, (uint8_t*)checksum);
-
-    memcpy(&without_checksum[22], checksum, 4);
-
-    b58enc(output, &length, without_checksum, 22 + 4);
-    output[length] = 0;
-}
-
 void seed_to_address(char *key, bool testnet, char *output) {
     char realkey[1024] = {0, 0, 0, 0};
     memcpy(&realkey[4], key, strlen(key));
@@ -93,7 +73,8 @@ void seed_to_address(char *key, bool testnet, char *output) {
 
     curve25519_donna_basepoint(pubkey, privkey);
 
-    waves_public_key_to_account(pubkey, testnet, output);
+    char network_char = testnet ? 'T' : 'W';
+    waves_public_key_to_address(pubkey, network_char, output);
 }
 
 void unit_test_1() {
@@ -114,7 +95,7 @@ void unit_test_2() {
     uint8_t input[] = {0xd8, 0x5b, 0x2f, 0x9e, 0x00, 0xde, 0xa8, 0x88, 0x65, 0x55, 0x3b, 0x6f, 0x69, 0xda, 0x53, 0x18, 0xbe, 0x64, 0x4f, 0x4d, 0x39, 0xa9, 0xc4, 0x8e, 0xba, 0xed, 0x71, 0x46, 0xcb, 0x7a, 0xfb, 0x73};
     char output[512];
     char expected[] = "3PAtGGSLnHJ3wuK8jWPvAA487pKamvQHyQw";
-    waves_public_key_to_account(input, false, output);
+    waves_public_key_to_address(input, 'W', output);
     if(strcmp(output, expected) != 0) {
         printf("Unit test 2 failed\n");
         exit(-1);
@@ -127,7 +108,7 @@ void unit_test_3() {
     uint8_t input[] = {0xdb, 0x3b, 0xe4, 0xbb, 0x58, 0x3e, 0x58, 0xe5, 0x7b, 0xae, 0xb2, 0xa7, 0xad, 0x40, 0x8f, 0x73, 0xb2, 0x04, 0xab, 0x26, 0xd6, 0x4c, 0x73, 0x0e, 0xbb, 0xe1, 0x4d, 0xd0, 0xaf, 0x33, 0xe8, 0x23};
     char output[512];
     char expected[] = "3Mv61qe6egMSjRDZiiuvJDnf3Q1qW9tTZDB";
-    waves_public_key_to_account(input, true, output);
+    waves_public_key_to_address(input, 'T', output);
     if(strcmp(output, expected) != 0) {
         printf("Unit test 3 failed\n");
         exit(-1);
