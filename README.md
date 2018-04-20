@@ -1,4 +1,5 @@
-# waves-c
+# waves-c [![Build Status](https://travis-ci.org/wavesplatform/waves-c.svg?branch=master)](https://travis-ci.org/wavesplatform/waves-c)
+
 C library for working with Waves
 
 # Build
