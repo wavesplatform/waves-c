@@ -1,6 +1,6 @@
 #include "tests.h"
-#include "../crypto/waves_crypto.h"
-#include "../crypto/curve25519-donna/curve25519.h"
+#include <waves_crypto.h>
+#include <curve25519.h>
 
 void unit_test_1() {
     uint8_t input[] = "A nice, long test to make the day great! :-)";

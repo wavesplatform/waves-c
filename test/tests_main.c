@@ -1,4 +1,4 @@
-#include "tests/tests.h"
+#include "tests.h"
 
 void unit_test() {
     unit_test_1();

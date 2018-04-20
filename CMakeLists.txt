@@ -1,5 +1,5 @@
-project( waves-c )
-cmake_minimum_required( VERSION 3.1 )
+project( waves-c-project )
+cmake_minimum_required( VERSION 2.8 )
 
 MACRO(HEADER_DIRECTORIES return_list)
     FILE(GLOB_RECURSE new_list *.h)
@@ -11,6 +11,28 @@ MACRO(HEADER_DIRECTORIES return_list)
     LIST(REMOVE_DUPLICATES dir_list)
     SET(${return_list} ${dir_list})
 ENDMACRO()
+
+HEADER_DIRECTORIES(HDIRS)
+include_directories(${HDIRS})
+
+# put all builded stuff to bin
+SET (CMAKE_LIBRARY_OUTPUT_DIRECTORY
+        ${PROJECT_BINARY_DIR}/bin
+        CACHE PATH
+        "Single Directory for all"
+    )
+
+SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY
+        ${PROJECT_BINARY_DIR}/bin
+        CACHE PATH
+        "Single Directory for all"
+    )
+
+SET (CMAKE_ARCHIVE_OUTPUT_DIRECTORY
+        ${PROJECT_BINARY_DIR}/lib
+        CACHE PATH
+        "Single Directory for all"
+    )
 
 SET(CMAKE_FIND_LIBRARY_PREFIXES "lib")
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
@@ -25,15 +47,9 @@ else()
     return()
 endif()
 
-file( GLOB CS "crypto/*.c" "crypto/curve25519-donna/*.c" "crypto/base58/*.c" "crypto/blake2b/sse/*.c" "tests/*.c" ) #"crypto/ed25519-donna/*.c"
+include_directories(${OPENSSL_INCLUDE_DIR})
 
-HEADER_DIRECTORIES(HDIRS)
-include_directories(${HDIRS} ${OPENSSL_INCLUDE_DIR})
-set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-msse2 -m64")
-add_executable( waves_vanity ${CS} vanity.c )
-target_link_libraries(waves_vanity pthread )
-add_definitions(-Wall -O3)
-install(TARGETS waves_vanity DESTINATION bin)
+enable_testing()
 
-set(UNIT_TEST waves_tests)
-add_executable( ${UNIT_TEST} ${CS} tests_main.c )
+add_subdirectory( src build/src )
+add_subdirectory( test build/test )

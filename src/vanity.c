@@ -40,7 +40,6 @@
 #include"crypto/sha256.h"
 #include"crypto/curve25519-donna/curve25519.h"
 #include"crypto/waves_crypto.h"
-#include"tests/tests.h"
 //#include"crypto/ed25519-donna/ed25519.h"
 
 
@@ -71,26 +70,7 @@ void get_entropy(uint8_t entropy[64]) {
     blake2b_init(S, 64);
     blake2b_update(S, entropy_seed, 256);
 
-    for(int i = 0 ; i < 1000 ; i++) {
-        // using unit tests times for entropy
-        gettimeofday(&tval, NULL);
-        blake2b_update(S, (char*)&tval, sizeof(struct timeval));
-        unit_test_1();
-        gettimeofday(&tval, NULL);
-        blake2b_update(S, (char*)&tval, sizeof(struct timeval));
-        unit_test_2();
-        gettimeofday(&tval, NULL);
-        blake2b_update(S, (char*)&tval, sizeof(struct timeval));
-        unit_test_3();
-        gettimeofday(&tval, NULL);
-        blake2b_update(S, (char*)&tval, sizeof(struct timeval));
-        unit_test_4();
-        gettimeofday(&tval, NULL);
-        blake2b_update(S, (char*)&tval, sizeof(struct timeval));
-        unit_test_5();
-        gettimeofday(&tval, NULL);
-        blake2b_update(S, (char*)&tval, sizeof(struct timeval));
-        unit_test_6();
+    for(int i = 0 ; i < rand() % 10000; i++) {
         gettimeofday(&tval, NULL);
         blake2b_update(S, (char*)&tval, sizeof(struct timeval));
     }
