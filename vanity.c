@@ -39,6 +39,7 @@
 #include"crypto/sha3.h"
 #include"crypto/sha256.h"
 #include"crypto/curve25519-donna/curve25519.h"
+#include"crypto/waves_crypto.h"
 //#include"crypto/ed25519-donna/ed25519.h"
 
 
@@ -51,34 +52,19 @@ typedef struct {
     char case_mask[36];
 } vanity_settings;
 
-void waves_sha3_blake2b_composite(uint8_t *public_key, int data_length, uint8_t *result) {
-    blake2b_state S[1];
-    sha3_context c;
-
-    blake2b_init(S, 32);
-    blake2b_update(S, public_key, data_length);
-    blake2b_final(S, result, 32);
-
-    sha3_Init256(&c);
-    sha3_Update(&c, result, 32);
-    sha3_Finalize(&c);
-
-    memcpy(result, c.sb, 32);
-}
-
 void waves_public_key_to_account(uint8_t public_key[32], bool testnet, char *output) {
     char testnet_char = testnet ? 'T' : 'W';
     size_t length = 512;
     uint8_t public_key_hash[32];
     uint8_t without_checksum[512];
     uint8_t checksum[32];
-    waves_sha3_blake2b_composite(public_key, 32, (uint8_t*)public_key_hash);
+    waves_secure_hash(public_key, 32, (uint8_t*)public_key_hash);
 
     without_checksum[0] = 0x01;
     without_checksum[1] = testnet_char;
     memcpy(&without_checksum[2], public_key_hash, 20);
 
-    waves_sha3_blake2b_composite(without_checksum, 22, (uint8_t*)checksum);
+    waves_secure_hash(without_checksum, 22, (uint8_t*)checksum);
 
     memcpy(&without_checksum[22], checksum, 4);
 
@@ -93,7 +79,7 @@ void seed_to_address(char *key, bool testnet, char *output) {
 
     SHA256_CTX ctx;
 
-    waves_sha3_blake2b_composite((uint8_t*)realkey, strlen(key) + 4, privkey);
+    waves_secure_hash((uint8_t*)realkey, strlen(key) + 4, privkey);
 
     sha256_init(&ctx);
     sha256_update(&ctx, privkey, 32);
@@ -115,7 +101,7 @@ void unit_test_1() {
     uint8_t input[] = "A nice, long test to make the day great! :-)";
     uint8_t output[32];
     uint8_t expected[] = {0x5d, 0xf3, 0xcf, 0x20, 0x20, 0x5d, 0x75, 0xe0, 0x9a, 0xe4, 0x6d, 0x13, 0xa8, 0xd9, 0x9a, 0x16, 0x17, 0x4d, 0x71, 0xc8, 0x4f, 0xfc, 0xc0, 0x03, 0x87, 0xfe, 0xc3, 0xd8, 0x1e, 0x39, 0xdc, 0xbe};
-    waves_sha3_blake2b_composite(input, strlen((char*)input), (uint8_t*)output);
+    waves_secure_hash(input, strlen((char*)input), (uint8_t*)output);
     if(memcmp(output, expected, 32) != 0) {
         printf("Unit test 1 failed\n");
         exit(-1);

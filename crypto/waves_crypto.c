@@ -1,7 +1,7 @@
-#include "waves.h"
-#include "crypto/base58/libbase58.h"
-#include "crypto/blake2b/sse/blake2.h"
-#include "crypto/sha3.h"
+#include "waves_crypto.h"
+#include "base58/libbase58.h"
+#include "blake2b/sse/blake2.h"
+#include "sha3.h"
 
 
 void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[32])
