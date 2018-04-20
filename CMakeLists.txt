@@ -25,13 +25,15 @@ else()
     return()
 endif()
 
-file( GLOB CS "crypto/*.c" "crypto/curve25519-donna/*.c" "crypto/base58/*.c" "crypto/blake2b/sse/*.c" ) #"crypto/ed25519-donna/*.c"
+file( GLOB CS "crypto/*.c" "crypto/curve25519-donna/*.c" "crypto/base58/*.c" "crypto/blake2b/sse/*.c" "tests/*.c" ) #"crypto/ed25519-donna/*.c"
 
 HEADER_DIRECTORIES(HDIRS)
 include_directories(${HDIRS} ${OPENSSL_INCLUDE_DIR})
 set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-msse2 -m64")
 add_executable( waves_vanity ${CS} vanity.c )
 target_link_libraries(waves_vanity pthread )
-add_executable( waves_tests ${CS} tests.c )
 add_definitions(-Wall -O3)
 install(TARGETS waves_vanity DESTINATION bin)
+
+set(UNIT_TEST waves_tests)
+add_executable( ${UNIT_TEST} ${CS} tests_main.c )

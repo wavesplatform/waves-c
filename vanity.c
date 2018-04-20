@@ -40,6 +40,7 @@
 #include"crypto/sha256.h"
 #include"crypto/curve25519-donna/curve25519.h"
 #include"crypto/waves_crypto.h"
+#include"tests/tests.h"
 //#include"crypto/ed25519-donna/ed25519.h"
 
 
@@ -51,100 +52,6 @@ typedef struct {
     char mask[36];
     char case_mask[36];
 } vanity_settings;
-
-void unit_test_1() {
-#ifndef SKIP_UNIT_TEST
-    uint8_t input[] = "A nice, long test to make the day great! :-)";
-    uint8_t output[32];
-    uint8_t expected[] = {0x5d, 0xf3, 0xcf, 0x20, 0x20, 0x5d, 0x75, 0xe0, 0x9a, 0xe4, 0x6d, 0x13, 0xa8, 0xd9, 0x9a, 0x16, 0x17, 0x4d, 0x71, 0xc8, 0x4f, 0xfc, 0xc0, 0x03, 0x87, 0xfe, 0xc3, 0xd8, 0x1e, 0x39, 0xdc, 0xbe};
-    waves_secure_hash(input, strlen((char*)input), (uint8_t*)output);
-    if(memcmp(output, expected, 32) != 0) {
-        printf("Unit test 1 failed\n");
-        exit(-1);
-    }
-#endif
-}
-
-void unit_test_2() {
-#ifndef SKIP_UNIT_TEST
-    uint8_t input[] = {0xd8, 0x5b, 0x2f, 0x9e, 0x00, 0xde, 0xa8, 0x88, 0x65, 0x55, 0x3b, 0x6f, 0x69, 0xda, 0x53, 0x18, 0xbe, 0x64, 0x4f, 0x4d, 0x39, 0xa9, 0xc4, 0x8e, 0xba, 0xed, 0x71, 0x46, 0xcb, 0x7a, 0xfb, 0x73};
-    char output[512];
-    char expected[] = "3PAtGGSLnHJ3wuK8jWPvAA487pKamvQHyQw";
-    waves_public_key_to_address(input, 'W', output);
-    if(strcmp(output, expected) != 0) {
-        printf("Unit test 2 failed\n");
-        exit(-1);
-    }
-#endif
-}
-
-void unit_test_3() {
-#ifndef SKIP_UNIT_TEST
-    uint8_t input[] = {0xdb, 0x3b, 0xe4, 0xbb, 0x58, 0x3e, 0x58, 0xe5, 0x7b, 0xae, 0xb2, 0xa7, 0xad, 0x40, 0x8f, 0x73, 0xb2, 0x04, 0xab, 0x26, 0xd6, 0x4c, 0x73, 0x0e, 0xbb, 0xe1, 0x4d, 0xd0, 0xaf, 0x33, 0xe8, 0x23};
-    char output[512];
-    char expected[] = "3Mv61qe6egMSjRDZiiuvJDnf3Q1qW9tTZDB";
-    waves_public_key_to_address(input, 'T', output);
-    if(strcmp(output, expected) != 0) {
-        printf("Unit test 3 failed\n");
-        exit(-1);
-    }
-#endif
-}
-
-void unit_test_4() {
-#ifndef SKIP_UNIT_TEST
-    uint8_t privkey[] = {0x88, 0x72, 0x7a, 0x03, 0x37, 0x7b, 0xfb, 0xa1, 0xb3, 0x65, 0x5c, 0x5e, 0xcb, 0x97, 0x8d, 0xa1, 0x71, 0xe0, 0x24, 0xaa, 0xd7, 0x22, 0xee, 0x49, 0xff, 0xf9, 0x21, 0x4a, 0x74, 0x7e, 0x70, 0x61};
-    uint8_t expected[] = {0x92, 0xf2, 0xc1, 0x71, 0xcb, 0x60, 0x78, 0xe6, 0x05, 0x50, 0xcb, 0x99, 0x53, 0xfc, 0x3f, 0x11, 0x80, 0x31, 0xd6, 0x31, 0x4c, 0xb6, 0x40, 0x0d, 0xfd, 0x72, 0x11, 0xf6, 0x01, 0x8d, 0x1d, 0x2b};
-    privkey[0] &= 248;
-    privkey[31] &= 127;
-    privkey[31] |= 64;
-
-    uint8_t output[32];
-
-    static const uint8_t basepoint[32] = {9};
-    curve25519_donna(output, privkey, basepoint);
-
-    if(memcmp(output, expected, 32) != 0) {
-        printf("Unit test 4 failed\n");
-        exit(-1);
-    }
-#endif
-}
-
-void unit_test_5() {
-#ifndef SKIP_UNIT_TEST
-    char test[] = "industry detail rifle scan weird join crawl connect demand top club hello entry second cargo";
-    char output[512];
-    char expected[] = "3NCyi16BFfFvYhCeg1pKrMKMLDXwazkPuhP";
-    waves_seed_to_address(test, 'T', output);
-    if(strcmp(output, expected) != 0) {
-        printf("Unit test 5 failed\n");
-        exit(-1);
-    }
-#endif
-}
-
-void unit_test_6() {
-#ifndef SKIP_UNIT_TEST
-    char test[] = "try south announce math salute shoe blast finish state battle nest tube enjoy yellow layer";
-    char output[512];
-    char expected[] = "3PJXLWbp5ft3LCeesqgJyTpGQRgU9nTY3PA";
-    waves_seed_to_address(test, 'W', output);
-    if(strcmp(output, expected) != 0) {
-        printf("Unit test 6 failed\n");
-        exit(-1);
-    }
-#endif
-}
-
-void unit_test() {
-    unit_test_1();
-    unit_test_2();
-    unit_test_3();
-    unit_test_4();
-    unit_test_5();
-    unit_test_6();
-}
 
 void get_entropy(uint8_t entropy[64]) {
     uint8_t entropy_seed[32];
@@ -164,19 +71,27 @@ void get_entropy(uint8_t entropy[64]) {
     blake2b_init(S, 64);
     blake2b_update(S, entropy_seed, 256);
 
-    for(int i = 0 ; i < 10 ; i++) {
+    for(int i = 0 ; i < 1000 ; i++) {
+        // using unit tests times for entropy
+        gettimeofday(&tval, NULL);
         blake2b_update(S, (char*)&tval, sizeof(struct timeval));
         unit_test_1();
+        gettimeofday(&tval, NULL);
         blake2b_update(S, (char*)&tval, sizeof(struct timeval));
         unit_test_2();
+        gettimeofday(&tval, NULL);
         blake2b_update(S, (char*)&tval, sizeof(struct timeval));
         unit_test_3();
+        gettimeofday(&tval, NULL);
         blake2b_update(S, (char*)&tval, sizeof(struct timeval));
         unit_test_4();
+        gettimeofday(&tval, NULL);
         blake2b_update(S, (char*)&tval, sizeof(struct timeval));
         unit_test_5();
+        gettimeofday(&tval, NULL);
         blake2b_update(S, (char*)&tval, sizeof(struct timeval));
         unit_test_6();
+        gettimeofday(&tval, NULL);
         blake2b_update(S, (char*)&tval, sizeof(struct timeval));
     }
     blake2b_final(S, entropy, 64);
@@ -564,8 +479,6 @@ vanity_settings parse_settings(int argc, char **argv) {
 }
 
 int main(int argc, char **argv) {
-    unit_test();
-
     vanity_settings settings = parse_settings(argc, argv);
 
     display_settings(settings);
