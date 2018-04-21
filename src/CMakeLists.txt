@@ -1,6 +1,6 @@
 project( waves-c )
 
-file( GLOB CS "crypto/*.c" "crypto/curve25519-donna/*.c" "crypto/base58/*.c" "crypto/blake2b/sse/*.c" ) #"crypto/ed25519-donna/*.c"
+file( GLOB CS "crypto/*.c" "crypto/curve25519-donna/*.c" "crypto/ed25519-donna/*.c" "crypto/base58/*.c" "crypto/blake2b/sse/*.c" )
 
 set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-msse2 -m64")
 add_library( waves_c STATIC ${CS} )

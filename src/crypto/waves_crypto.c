@@ -3,6 +3,7 @@
 #include "blake2b/sse/blake2.h"
 #include "sha256.h"
 #include "sha3.h"
+#include "ed25519-donna/ed25519.h"
 
 void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[32])
 {
@@ -20,12 +21,13 @@ void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[
     memcpy(hash, c.sb, 32);
 }
 
-void waves_message_sign(const ed25519_private_key *private_key, const ed25519_public_key public_key, const unsigned char *message, ed25519_signature signature) {
+void waves_message_sign(const ed25519_private_key *private_key, const ed25519_public_key *public_key, const unsigned char *message, ed25519_signature signature) {
 #ifndef USE_ED_25519
     // ed25519 signature with the sha512 hashing
 //    cx_eddsa_sign(private_key, CX_LAST, CX_SHA512, message, sizeof(message), NULL, 0, signature, 64, NULL);
+    ed25519_sign(message, sizeof(message), private_key, public_key, signature);
     // set the sign bit from ed25519 public key (using 31 byte) for curve25519 validation used in waves (this makes the ed25519 signature invalid)
-    unsigned char sign_bit = public_key[32] & 0x80;
+    unsigned char sign_bit = *public_key[32] & 0x80;
     signature[63] |= sign_bit;
 #else
 

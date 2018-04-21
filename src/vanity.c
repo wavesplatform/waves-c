@@ -40,7 +40,6 @@
 #include"crypto/sha256.h"
 #include"crypto/curve25519-donna/curve25519.h"
 #include"crypto/waves_crypto.h"
-//#include"crypto/ed25519-donna/ed25519.h"
 
 
 const int ITERATIONS_PER_LOOP = 513;
