@@ -1,4 +1,4 @@
-#include "tests.h"
+#include "crypto_tests.h"
 #include <waves_crypto.h>
 #include <curve25519.h>
 

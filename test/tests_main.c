@@ -1,6 +1,6 @@
-#include "tests.h"
+#include "crypto_tests.h"
 
-void unit_test() {
+void crypto_tests() {
     waves_secure_hash_test();
     waves_public_key_to_address_mainnet_test();
     waves_public_key_to_address_testnet_test();
@@ -10,5 +10,5 @@ void unit_test() {
 }
 
 int main(int argc, char **argv) {
-    unit_test();
+    crypto_tests();
 }

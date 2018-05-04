@@ -1,5 +1,5 @@
-#ifndef WAVES_TESTS_H
-#define WAVES_TESTS_H
+#ifndef WAVES_CRYPTO_TESTS_H
+#define WAVES_CRYPTO_TESTS_H
 
 void waves_secure_hash_test();
 void waves_public_key_to_address_mainnet_test();
