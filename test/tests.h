@@ -1,11 +1,11 @@
 #ifndef WAVES_TESTS_H
 #define WAVES_TESTS_H
 
-void unit_test_1();
-void unit_test_2();
-void unit_test_3();
-void unit_test_4();
-void unit_test_5();
-void unit_test_6();
+void waves_secure_hash_test();
+void waves_public_key_to_address_mainnet_test();
+void waves_public_key_to_address_testnet_test();
+void curve25519_donna_test();
+void waves_seed_to_address_testnet_test();
+void waves_seed_to_address_mainnet_test();
 
 #endif

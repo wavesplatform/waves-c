@@ -1,12 +1,12 @@
 #include "tests.h"
 
 void unit_test() {
-    unit_test_1();
-    unit_test_2();
-    unit_test_3();
-    unit_test_4();
-    unit_test_5();
-    unit_test_6();
+    waves_secure_hash_test();
+    waves_public_key_to_address_mainnet_test();
+    waves_public_key_to_address_testnet_test();
+    curve25519_donna_test();
+    waves_seed_to_address_testnet_test();
+    waves_seed_to_address_mainnet_test();
 }
 
 int main(int argc, char **argv) {
