@@ -4,6 +4,7 @@ file( GLOB CS "crypto/*.c" "crypto/curve25519-donna/*.c" "crypto/ed25519-donna/*
 
 set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-msse2 -m64")
 add_library( waves_c STATIC ${CS} )
+target_link_libraries(waves_c ${OPENSSL_LIBRARIES})
 add_definitions(-Wall -O3)
 
 add_executable( waves_vanity vanity.c )

@@ -41,13 +41,12 @@ SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 find_package(OpenSSL REQUIRED)
 if( OpenSSL_FOUND )
     list(APPEND LIB_LIST ${OPENSSL_LIBRARIES})
+    include_directories(${OPENSSL_INCLUDE_DIR})
     message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
 else()
     message(SEND_ERROR "Failed to find OpenSSL")
     return()
 endif()
-
-include_directories(${OPENSSL_INCLUDE_DIR})
 
 enable_testing()
 
