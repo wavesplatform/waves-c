@@ -65,10 +65,8 @@ void waves_parse_transfer_transaction_test() {
     b58enc(buf, &buf_used, &transferTransactionsBytes.recipient_address_or_alias, strlen(transferTransactionsBytes.recipient_address_or_alias));
     result &= memcmp(buf, expected_recipient_address_base58, strlen(expected_recipient_address_base58)) == 0;
 
-    result &= transferTransactionsBytes.attachment_length == expected_attachment_length;
-
     buf_used = sizeof(buf);
-    b58enc(buf, &buf_used, &transferTransactionsBytes.attachment, transferTransactionsBytes.attachment_length);
+    b58enc(buf, &buf_used, &transferTransactionsBytes.attachment, strlen(transferTransactionsBytes.attachment));
     result &= memcmp(buf, expected_attachment_base58, strlen(expected_attachment_base58)) == 0;
 
     if (!result) {

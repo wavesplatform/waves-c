@@ -64,15 +64,16 @@ bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int o
         processed += 4 + alias_size;
     }
 
-    copy_in_reverse_order(&bytes[processed], (unsigned char *) &transaction_bytes->attachment_length, 2);
+    uint16_t attachment_length = 0;
+    copy_in_reverse_order(&bytes[processed], &attachment_length, 2);
     processed += 2;
 
-    if (transaction_bytes->attachment_length > 140) {
+    if (attachment_length > 140) {
         memset(transaction_bytes, 0, sizeof(TransferTransactionsBytes));
         return false;
     }
 
-    memcpy(&transaction_bytes->attachment, &bytes[processed], transaction_bytes->attachment_length);
+    memcpy(&transaction_bytes->attachment, &bytes[processed], attachment_length);
 //    processed += transaction_bytes->attachment_length;
 
     return true;

@@ -18,7 +18,6 @@ struct TransferTransactionsBytes {
    // 28 for address, 8 - 34 for alias
    char  recipient_address_or_alias[34];
    // 140 bytes max
-   uint16_t   attachment_length;
    char   attachment[140];
 };
 typedef struct TransferTransactionsBytes TransferTransactionsBytes;
