@@ -1,7 +1,7 @@
 set(UNIT_TEST waves_tests)
 project(${UNIT_TEST})
 
-file( GLOB CS "*.c" )
+file( GLOB CS "*.c" "transactions/*.c" )
 
 add_executable( ${UNIT_TEST} ${CS} tests_main.c )
 target_link_libraries(${UNIT_TEST} waves_c)

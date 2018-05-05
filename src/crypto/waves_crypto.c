@@ -1,3 +1,4 @@
+#include <curve25519.h>
 #include "waves_crypto.h"
 #include "base58/libbase58.h"
 #include "blake2b/sse/blake2.h"

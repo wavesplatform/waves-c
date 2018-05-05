@@ -1,4 +1,5 @@
 #include "crypto_tests.h"
+#include "transactions/transfer_transaction_tests.h"
 
 void crypto_tests() {
     waves_secure_hash_test();
@@ -9,6 +10,11 @@ void crypto_tests() {
     waves_seed_to_address_mainnet_test();
 }
 
+void transactions_tests() {
+    waves_parse_transfer_transaction_test();
+}
+
 int main(int argc, char **argv) {
     crypto_tests();
+    transactions_tests();
 }

@@ -2,6 +2,8 @@
 #define __WAVES_TRANSFER_TRANSACTION_H__
 
 #include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
 
 struct TransferTransactionsBytes {
    char  type;
@@ -19,6 +21,7 @@ struct TransferTransactionsBytes {
    uint16_t   attachment_length;
    char   attachment[140];
 };
+typedef struct TransferTransactionsBytes TransferTransactionsBytes;
 
 // +1 byte for string end symbol '\0'
 struct TransferTransactionsData {
@@ -33,8 +36,10 @@ struct TransferTransactionsData {
    // 140 bytes max
    char   attachment[141];
 };
+typedef struct TransferTransactionsData TransferTransactionsData;
 
-void waves_parse_transfer_transaction(const unsigned char *bytes, TransferTransactionsBytes *transaction);
+bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int offset,
+                                      TransferTransactionsBytes *transaction);
 //todo
 //void waves_read_transfer_transaction(const TransferTransactionsBytes *transaction, TransferTransactionsData *transaction_data);
 // max size 364 bytes

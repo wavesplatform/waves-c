@@ -49,6 +49,10 @@ else()
 endif()
 
 enable_testing()
+if( NOT CMAKE_BUILD_TYPE )
+    set( CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE )
+endif()
+message("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 
 add_subdirectory( src build/src )
 add_subdirectory( test build/test )

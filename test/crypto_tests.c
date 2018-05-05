@@ -1,6 +1,8 @@
 #include "crypto_tests.h"
 #include <waves_crypto.h>
 #include <curve25519.h>
+#include <printf.h>
+#include <stdlib.h>
 
 void waves_secure_hash_test() {
     uint8_t input[] = "A nice, long test to make the day great! :-)";
