@@ -4,7 +4,7 @@
 void waves_secure_hash_test();
 void waves_public_key_to_address_mainnet_test();
 void waves_public_key_to_address_testnet_test();
-void curve25519_donna_test();
+void curve25519_keygen_test();
 void waves_seed_to_address_testnet_test();
 void waves_seed_to_address_mainnet_test();
 void waves_message_sign_test();

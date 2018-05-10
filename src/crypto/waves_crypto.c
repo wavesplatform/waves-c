@@ -1,4 +1,3 @@
-#include <curve25519.h>
 #include "waves_crypto.h"
 #include "base58/libbase58.h"
 #include "blake2b/sse/blake2.h"
@@ -6,6 +5,7 @@
 #include "sha3.h"
 #include "libcurve25519-donna/additions/curve_sigs.h"
 #include <openssl/rand.h>
+#include <keygen.h>
 
 void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[32])
 {
@@ -78,7 +78,7 @@ void waves_seed_to_address(const char *key, const char network_byte, char *outpu
 
     uint8_t pubkey[32];
 
-    curve25519_donna_basepoint(pubkey, privkey);
+    curve25519_keygen(pubkey, privkey);
 
     waves_public_key_to_address(pubkey, network_byte, output);
 }

@@ -1,6 +1,6 @@
 project( waves-c )
 
-file(GLOB CS "crypto/*.c" "crypto/curve25519-donna/*.c" "crypto/base58/*.c"
+file(GLOB CS "crypto/*.c" "crypto/base58/*.c"
         "crypto/blake2b/sse/*.c" "crypto/transactions/*.c" "crypto/libcurve25519-donna/*.c" "crypto/libcurve25519-donna/additions/*.c"
         "crypto/libcurve25519-donna/nacl_includes/*.c"  "crypto/libcurve25519-donna/nacl_sha512/*.c")
 

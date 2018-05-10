@@ -38,7 +38,6 @@
 #include"crypto/base58/libbase58.h"
 #include"crypto/sha3.h"
 #include"crypto/sha256.h"
-#include"crypto/curve25519-donna/curve25519.h"
 #include"crypto/waves_crypto.h"
 
 

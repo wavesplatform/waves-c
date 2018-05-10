@@ -5,7 +5,7 @@ void crypto_tests() {
     waves_secure_hash_test();
     waves_public_key_to_address_mainnet_test();
     waves_public_key_to_address_testnet_test();
-    curve25519_donna_test();
+    curve25519_keygen_test();
     waves_seed_to_address_testnet_test();
     waves_seed_to_address_mainnet_test();
     waves_message_sign_test();
