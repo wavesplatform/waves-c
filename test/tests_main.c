@@ -8,6 +8,9 @@ void crypto_tests() {
     curve25519_donna_test();
     waves_seed_to_address_testnet_test();
     waves_seed_to_address_mainnet_test();
+    waves_message_sign_test();
+    waves_message_verify_test();
+    waves_message_verify_negative_test();
 }
 
 void transactions_tests() {

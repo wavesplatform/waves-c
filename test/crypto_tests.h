@@ -7,5 +7,8 @@ void waves_public_key_to_address_testnet_test();
 void curve25519_donna_test();
 void waves_seed_to_address_testnet_test();
 void waves_seed_to_address_mainnet_test();
+void waves_message_sign_test();
+void waves_message_verify_test();
+void waves_message_verify_negative_test();
 
 #endif
