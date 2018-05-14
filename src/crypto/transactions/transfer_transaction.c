@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <utils.h>
+#include <printf.h>
 
 bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int offset,
                                       TransferTransactionsBytes *transaction_bytes) {
@@ -64,17 +65,72 @@ bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int o
         processed += 4 + alias_size;
     }
 
-    uint16_t attachment_length = 0;
-    copy_in_reverse_order(&bytes[processed], &attachment_length, 2);
+    copy_in_reverse_order(&bytes[processed], (unsigned char *) &transaction_bytes->attachment_length, 2);
     processed += 2;
 
-    if (attachment_length > 140) {
+    if (transaction_bytes->attachment_length > 140) {
         memset(transaction_bytes, 0, sizeof(TransferTransactionsBytes));
         return false;
     }
 
-    memcpy(&transaction_bytes->attachment, &bytes[processed], attachment_length);
-//    processed += transaction_bytes->attachment_length;
+    memcpy(&transaction_bytes->attachment, &bytes[processed], transaction_bytes->attachment_length);
+
+    return true;
+}
+
+// todo some validations?
+bool waves_transfer_transaction_to_bytes(const TransferTransactionsBytes *transaction, unsigned char *bytes, size_t *bytes_size, unsigned int offset) {
+    unsigned int writed = offset;
+    memcpy(&bytes[writed], &transaction->type, 1);
+    writed += 1;
+    memcpy(&bytes[writed], &transaction->sender_public_key, 32);
+    writed += 32;
+    if (transaction->amount_asset_id[0] == '\0') {
+        bytes[writed] = 0;
+        writed += 1;
+    } else  {
+        bytes[writed] = 1;
+        writed += 1;
+        memcpy(&bytes[writed], &transaction->amount_asset_id, 32);
+        writed += 32;
+    }
+    if (transaction->fee_asset_id[0] == '\0') {
+        bytes[writed] = 0;
+        writed += 1;
+    } else  {
+        bytes[writed] = 1;
+        writed += 1;
+        memcpy(&bytes[writed], &transaction->fee_asset_id, 32);
+        writed += 32;
+    }
+    // copy big endian to little endian bytes
+    copy_in_reverse_order((unsigned char *) &transaction->timestamp, &bytes[writed], 8);
+    writed += 8;
+
+    copy_in_reverse_order((unsigned char *) &transaction->amount, &bytes[writed], 8);
+    writed += 8;
+
+    copy_in_reverse_order((unsigned char *) &transaction->fee, &bytes[writed], 8);
+    writed += 8;
+
+    if (transaction->recipient_address_or_alias[0] == 1) {
+        memcpy(&bytes[writed], &transaction->recipient_address_or_alias, 26);
+        writed += 26;
+    } else {
+        uint16_t alias_size = 0;
+        copy_in_reverse_order((const unsigned char *) &transaction->recipient_address_or_alias[2], (unsigned char *) &alias_size, 2);
+
+        memcpy(&bytes[writed], &transaction->recipient_address_or_alias, alias_size + 2);
+        writed += alias_size + 2;
+    }
+
+    copy_in_reverse_order((unsigned char *) &transaction->attachment_length, &bytes[writed], 2);
+
+    writed += 2;
+    memcpy(&bytes[writed], &transaction->attachment, transaction->attachment_length);
+    writed += transaction->attachment_length;
+
+    *bytes_size = writed;
 
     return true;
 }

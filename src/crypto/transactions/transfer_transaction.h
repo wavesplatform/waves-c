@@ -17,6 +17,7 @@ struct TransferTransactionsBytes {
    uint64_t  fee;
    // 28 for address, 8 - 34 for alias
    char  recipient_address_or_alias[34];
+   uint16_t  attachment_length;
    // 140 bytes max
    char   attachment[140];
 };
@@ -39,6 +40,7 @@ typedef struct TransferTransactionsData TransferTransactionsData;
 
 bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int offset,
                                       TransferTransactionsBytes *transaction);
+bool waves_transfer_transaction_to_bytes(const TransferTransactionsBytes *transaction, unsigned char *bytes, size_t *bytes_size, unsigned int offset);
 //todo
 //void waves_read_transfer_transaction(const TransferTransactionsBytes *transaction, TransferTransactionsData *transaction_data);
 // max size 364 bytes

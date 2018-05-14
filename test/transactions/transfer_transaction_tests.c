@@ -6,7 +6,6 @@
 #include "base58/libbase58.h"
 
 void waves_parse_transfer_transaction_test() {
-//
     // tx from https://docs.wavesplatform.com/technical-details/cryptographic-practical-details.html
     const char transfer_base58[] = "Ht7FtLJBrnukwWtywum4o1PbQSNyDWMgb4nXR5ZkV78krj9qVt17jz74XYSrKSTQe6wXuPdt3aCvmnF5hfjhnd1gyij36hN1zSDaiDg3TFi7c7RbXTHDDUbRgGajXci8PJB3iJM1tZvh8AL5wD4o4DCo1VJoKk2PUWX3cUydB7brxWGUxC6mPxKMdXefXwHeB4khwugbvcsPgk8F6YB";
 
@@ -25,9 +24,9 @@ void waves_parse_transfer_transaction_test() {
 
     char transfer_bytes[512];
     size_t transfer_bytes_size = sizeof(transfer_bytes);
-    b58tobin(transfer_bytes, &transfer_bytes_size, transfer_base58, NULL);
+    b58tobin(transfer_bytes, &transfer_bytes_size, transfer_base58, 0);
     TransferTransactionsBytes transferTransactionsBytes;
-    bool result = waves_parse_transfer_transaction(transfer_bytes, sizeof(transfer_bytes) - transfer_bytes_size,
+    bool result = waves_parse_transfer_transaction((const unsigned char *) transfer_bytes, sizeof(transfer_bytes) - transfer_bytes_size,
                                                    &transferTransactionsBytes);
 
     char buf[512];
@@ -65,12 +64,43 @@ void waves_parse_transfer_transaction_test() {
     b58enc(buf, &buf_used, &transferTransactionsBytes.recipient_address_or_alias, strlen(transferTransactionsBytes.recipient_address_or_alias));
     result &= memcmp(buf, expected_recipient_address_base58, strlen(expected_recipient_address_base58)) == 0;
 
+    result &= transferTransactionsBytes.attachment_length == expected_attachment_length;
+
     buf_used = sizeof(buf);
-    b58enc(buf, &buf_used, &transferTransactionsBytes.attachment, strlen(transferTransactionsBytes.attachment));
+    b58enc(buf, &buf_used, &transferTransactionsBytes.attachment, transferTransactionsBytes.attachment_length);
     result &= memcmp(buf, expected_attachment_base58, strlen(expected_attachment_base58)) == 0;
 
     if (!result) {
         printf("waves_parse_transfer_transaction test failed\n");
+        exit(-1);
+    }
+}
+
+void waves_transfer_transaction_to_bytes_test() {
+    const char expected_transfer_base58[] = "Ht7FtLJBrnukwWtywum4o1PbQSNyDWMgb4nXR5ZkV78krj9qVt17jz74XYSrKSTQe6wXuPdt3aCvmnF5hfjhnd1gyij36hN1zSDaiDg3TFi7c7RbXTHDDUbRgGajXci8PJB3iJM1tZvh8AL5wD4o4DCo1VJoKk2PUWX3cUydB7brxWGUxC6mPxKMdXefXwHeB4khwugbvcsPgk8F6YB";
+
+    char expected_transfer_bytes[512];
+    size_t expected_transfer_bytes_size = sizeof(expected_transfer_bytes);
+    b58tobin(expected_transfer_bytes, &expected_transfer_bytes_size, expected_transfer_base58, 0);
+
+    TransferTransactionsBytes transferTransactionsBytes;
+    waves_parse_transfer_transaction((const unsigned char *) expected_transfer_bytes, sizeof(expected_transfer_bytes) - expected_transfer_bytes_size,
+                                     &transferTransactionsBytes);
+
+    unsigned char transfer_bytes[512];
+    size_t transfer_bytes_size = 0;
+
+    bool result = waves_transfer_transaction_to_bytes(&transferTransactionsBytes, transfer_bytes, &transfer_bytes_size, 0);
+
+    char transfer_base58[512];
+    memset(transfer_base58, 0, sizeof(transfer_base58));
+    size_t transfer_base58_used = sizeof(transfer_base58);
+
+    b58enc(transfer_base58, &transfer_base58_used, &transfer_bytes, transfer_bytes_size);
+    result &= memcmp(transfer_base58, expected_transfer_base58, strlen(expected_transfer_base58)) == 0;
+
+    if (!result || strcmp(expected_transfer_base58, transfer_base58) != 0) {
+        printf("waves_transfer_transaction_to_bytes test failed\n");
         exit(-1);
     }
 }
