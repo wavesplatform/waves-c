@@ -77,7 +77,7 @@ void waves_seed_to_address_mainnet_test() {
     }
 }
 
-void waves_message_sign_test() {
+void waves_message_sign_without_random_test() {
     char expected[] = "5HRwSL8XGhSEbtLuBfZT1AkfKaybYA67aKTUpg3v47aTZfCLiBMDLj1P9PmoirWcNCVFCoja4gmv5nkjDnYAULus";
 
     uint8_t privkey[] = {0x88, 0x72, 0x7a, 0x03, 0x37, 0x7b, 0xfb, 0xa1, 0xb3, 0x65, 0x5c, 0x5e, 0xcb, 0x97, 0x8d, 0xa1, 0x71, 0xe0, 0x24, 0xaa, 0xd7, 0x22, 0xee, 0x49, 0xff, 0xf9, 0x21, 0x4a, 0x74, 0x7e, 0x70, 0x61};
@@ -113,13 +113,41 @@ void waves_message_sign_test() {
 #endif
 
     if(!waves_message_sign_custom_random((curve25519_secret_key const *) privkey, message, sizeof(message), signature, zero_random64)) {
-        printf("waves_message_sign mainnet test failed\n");
+        printf("waves_message_sign_without_random test failed\n");
         exit(-1);
     }
 
     b58enc(signature_base58, &signature_base58_size, signature, 64);
 
     if(strcmp(signature_base58, expected) != 0) {
+        printf("waves_message_sign test failed 1\n");
+        exit(-1);
+    }
+}
+
+void waves_message_sign_test() {
+    uint8_t privkey[] = {0x88, 0x72, 0x7a, 0x03, 0x37, 0x7b, 0xfb, 0xa1, 0xb3, 0x65, 0x5c, 0x5e, 0xcb, 0x97, 0x8d, 0xa1, 0x71, 0xe0, 0x24, 0xaa, 0xd7, 0x22, 0xee, 0x49, 0xff, 0xf9, 0x21, 0x4a, 0x74, 0x7e, 0x70, 0x61};
+    sc_clamp(privkey);
+
+    uint8_t pubkey[32];
+
+    curve25519_keygen(pubkey, privkey);
+
+    uint8_t signature[64];
+
+    char signature_base58[89];
+    size_t signature_base58_size = sizeof(signature_base58);
+
+    uint8_t message[] = {0x01, 0x02, 0x03, 0x04, 0x05};
+
+    if(!waves_message_sign((curve25519_secret_key const *) privkey, message, sizeof(message), signature)) {
+        printf("waves_message_sign test failed\n");
+        exit(-1);
+    }
+
+    b58enc(signature_base58, &signature_base58_size, signature, 64);
+
+    if(!waves_message_verify((curve25519_public_key const *) pubkey, message, sizeof(message), signature)) {
         printf("waves_message_sign test failed 1\n");
         exit(-1);
     }

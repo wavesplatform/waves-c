@@ -8,6 +8,7 @@ void crypto_tests() {
     curve25519_keygen_test();
     waves_seed_to_address_testnet_test();
     waves_seed_to_address_mainnet_test();
+    waves_message_sign_without_random_test();
     waves_message_sign_test();
     waves_message_verify_test();
     waves_message_verify_negative_test();
@@ -15,6 +16,7 @@ void crypto_tests() {
 
 void transactions_tests() {
     waves_parse_transfer_transaction_test();
+    waves_transfer_transaction_to_bytes_test();
 }
 
 int main(int argc, char **argv) {
