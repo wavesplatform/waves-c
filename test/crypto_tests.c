@@ -2,6 +2,7 @@
 #include <waves_crypto.h>
 #include <printf.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <libbase58.h>
 #include <libcurve25519-donna/additions/keygen.h>
 
