@@ -1,10 +1,12 @@
 #include "transfer_transaction.h"
 #include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <utils.h>
 #include <printf.h>
 #include <libbase58.h>
 #include <waves_crypto.h>
+
 
 bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int offset,
                                       TransferTransactionsBytes *transaction_bytes) {
