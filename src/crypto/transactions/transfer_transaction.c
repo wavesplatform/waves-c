@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <utils.h>
 #include <printf.h>
+#include <libbase58.h>
+#include <waves_crypto.h>
 
 bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int offset,
                                       TransferTransactionsBytes *transaction_bytes) {
@@ -131,6 +133,68 @@ bool waves_transfer_transaction_to_bytes(const TransferTransactionsBytes *transa
     writed += transaction->attachment_length;
 
     *bytes_size = writed;
+
+    return true;
+}
+
+bool waves_read_transfer_transaction_data(const TransferTransactionsBytes *transaction, const unsigned char network_id, TransferTransactionsData *transaction_data) {
+    memset(transaction_data, 0, sizeof(TransferTransactionsData));
+
+    char buf[512];
+
+    size_t buf_used = sizeof(buf);
+    b58enc(buf, &buf_used, transaction->sender_public_key, 32);
+    memcpy(transaction_data->sender_public_key, buf, buf_used);
+
+    unsigned char address_bytes[36];
+    waves_public_key_to_address(transaction->sender_public_key, network_id, address_bytes);
+    memcpy(transaction_data->sender_address, address_bytes, 36);
+
+    buf_used = sizeof(buf);
+    if (transaction->amount_asset_flag == 1) {
+        b58enc(buf, &buf_used, transaction->amount_asset_id, 32);
+        memcpy(transaction_data->amount_asset_id, buf, buf_used);
+    } else {
+        sprintf((char *) transaction_data->amount_asset_id, "WAVES");
+    }
+
+    buf_used = sizeof(buf);
+    if (transaction->fee_asset_flag == 1) {
+        b58enc(buf, &buf_used, transaction->fee_asset_id, 32);
+        memcpy(transaction_data->fee_asset_id, buf, buf_used);
+    } else {
+        sprintf((char *) transaction_data->fee_asset_id, "WAVES");
+    }
+
+    memcpy(&transaction_data->timestamp, &transaction->timestamp, 8);
+    memcpy(&transaction_data->amount, &transaction->amount, 8);
+    memcpy(&transaction_data->fee, &transaction->fee, 8);
+
+    buf_used = sizeof(buf);
+    if (transaction->recipient_address_or_alias[0] == 1) {
+        if (network_id != transaction->recipient_address_or_alias[1]) {
+            return false;
+        }
+        b58enc(buf, &buf_used, transaction->recipient_address_or_alias, 26);
+        memcpy(transaction_data->recipient_address_or_alias, buf, buf_used);
+    } else {
+        if (network_id != transaction->recipient_address_or_alias[1]) {
+            return false;
+        }
+        // chain id
+        transaction_data->recipient_address_or_alias[0] = transaction->recipient_address_or_alias[1];
+        transaction_data->recipient_address_or_alias[1] = ':';
+
+        uint16_t alias_size = 0;
+        copy_in_reverse_order((const unsigned char *) &transaction->recipient_address_or_alias[2], (unsigned char *) &alias_size, 2);
+
+        // as utf-8 string
+        memcpy(&transaction_data->recipient_address_or_alias[2], &transaction->recipient_address_or_alias[4], alias_size);
+    }
+
+    buf_used = sizeof(buf);
+    // as utf-8 string
+    memcpy(transaction_data->attachment, transaction->attachment, transaction->attachment_length);
 
     return true;
 }

@@ -41,7 +41,7 @@ bool waves_message_verify(const curve25519_public_key *public_key, const unsigne
 
 // todo move all that stuff to crypto module
 // Build waves address from the curve25519 public key, check https://github.com/wavesplatform/Waves/wiki/Data-Structures#address
-void waves_public_key_to_address(const curve25519_public_key public_key, const char network_byte, char *output) {
+void waves_public_key_to_address(const curve25519_public_key public_key, const unsigned char network_byte, unsigned char *output) {
     uint8_t public_key_hash[32];
     uint8_t address[26];
     uint8_t checksum[32];
@@ -56,17 +56,17 @@ void waves_public_key_to_address(const curve25519_public_key public_key, const c
     memmove(&address[22], checksum, 4);
 
     size_t length = 36;
-    b58enc(output, &length, address, 26);
+    b58enc((char *) output, &length, address, 26);
 }
 
-void waves_seed_to_address(const char *key, const char network_byte, char *output) {
+void waves_seed_to_address(const unsigned char *key, const unsigned char network_byte, unsigned char *output) {
     char realkey[1024] = {0, 0, 0, 0};
-    memcpy(&realkey[4], key, strlen(key));
+    memcpy(&realkey[4], key, strlen((const char *) key));
     uint8_t privkey[32];
 
     SHA256_CTX ctx;
 
-    waves_secure_hash((uint8_t*)realkey, strlen(key) + 4, privkey);
+    waves_secure_hash((uint8_t*)realkey, strlen((const char *) key) + 4, privkey);
 
     sha256_init(&ctx);
     sha256_update(&ctx, privkey, 32);

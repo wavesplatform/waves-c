@@ -36,7 +36,6 @@
 
 #include"crypto/blake2b/sse/blake2.h"
 #include"crypto/base58/libbase58.h"
-#include"crypto/sha3.h"
 #include"crypto/sha256.h"
 #include"crypto/waves_crypto.h"
 
@@ -75,7 +74,7 @@ void get_entropy(uint8_t entropy[64]) {
     blake2b_final(S, entropy, 64);
 }
 
-bool check_char(vanity_settings *settings, char address[50], int i) {
+bool check_char(vanity_settings *settings, unsigned char address[50], int i) {
     char *mask = settings->mask;
     char *case_mask = settings->case_mask;
 
@@ -111,7 +110,7 @@ bool check_char(vanity_settings *settings, char address[50], int i) {
     return false;
 }
 
-bool check_mask(vanity_settings *settings, char address[50]) {
+bool check_mask(vanity_settings *settings, unsigned char address[50]) {
     char *mask = settings->mask;
 
     size_t len = strlen(mask);
@@ -121,7 +120,7 @@ bool check_mask(vanity_settings *settings, char address[50]) {
     return true;
 }
 
-char base58_map[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+unsigned char base58_map[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
 int base58char_to_i(char ch) {
     for(int i = 0 ; i < 58 ; i++) {
@@ -156,7 +155,7 @@ void calculate_heat_map(vanity_settings settings) {
     }
 }
 
-void fakebase58(char seed[128], uint8_t entropy[64]) {
+void fakebase58(unsigned char seed[128], uint8_t entropy[64]) {
     uint16_t *ent = (uint16_t*)entropy;
     for(int i = 0 ; i < 27 ; i++) {
         seed[i] = base58_map[ent[i] % 58];
@@ -164,7 +163,7 @@ void fakebase58(char seed[128], uint8_t entropy[64]) {
     seed[27] = 0;
 }
 
-int generate_addresses(bool testnet, int iterations, vanity_settings *settings, char seed[128], char address[50], uint8_t entropy[64]) {
+int generate_addresses(bool testnet, int iterations, vanity_settings *settings, unsigned char seed[128], unsigned char address[50], uint8_t entropy[64]) {
     blake2b_state S[1];
     blake2b_init(S, 64);
     blake2b_update(S, entropy, 64);
@@ -178,7 +177,11 @@ int generate_addresses(bool testnet, int iterations, vanity_settings *settings, 
 
         fakebase58(seed, entropy);
 
-        waves_seed_to_address(seed, testnet, address);
+        char network_id = 'W';
+
+        if (testnet) network_id = 'T';
+
+        waves_seed_to_address(seed, network_id, address);
 
 //        for(int u = 0 ; u < strlen(address) ; u++)
 //           heat_map[u][base58char_to_i(address[u])]++;
@@ -198,7 +201,7 @@ void print_heat_map() {
     for(int row = 0 ; row < 35 ; row++) {
         printf("{");
         for(int i = 0 ; i < 58 ; i++) {
-            printf("%lu", heat_map[row][i]);
+            printf("%llu", heat_map[row][i]);
             if(i < 57)
                 printf(", ");
         }
@@ -291,8 +294,8 @@ typedef struct {
     vanity_settings *settings;
     uint64_t iterations;
     bool completed;
-    char seed[128];
-    char address[128];
+    unsigned char seed[128];
+    unsigned char address[128];
     bool keep_working;
 } worker_thread_struct;
 
@@ -351,7 +354,7 @@ void *worker_thread(void *data) {
     get_entropy(entropy);
 
     while(worker->keep_working) {
-        uint64_t iter = generate_addresses(settings->testnet, ITERATIONS_PER_LOOP, settings, worker->seed, worker->address, entropy);
+        int iter = generate_addresses(settings->testnet, ITERATIONS_PER_LOOP, settings, worker->seed, worker->address, entropy);
         worker->iterations += iter;
         if(iter != ITERATIONS_PER_LOOP) {
             worker->iterations++;
@@ -362,7 +365,7 @@ void *worker_thread(void *data) {
     pthread_exit((void*) data);
 }
 
-int address_found(vanity_settings settings, worker_thread_struct *workers, char **seed, char **address) {
+int address_found(vanity_settings settings, worker_thread_struct *workers, unsigned char **seed, unsigned char **address) {
     for(int i = 0 ; i < settings.threads ; i++) {
         if(workers[i].completed) {
             *seed = workers[i].seed;
@@ -461,7 +464,7 @@ int main(int argc, char **argv) {
 
     display_settings(settings);
 
-    char *seed, *address;
+    unsigned char *seed, *address;
 
     calculate_heat_map(settings);
     uint64_t probability_50 = calculate_probability_50(&settings);
@@ -483,7 +486,7 @@ int main(int argc, char **argv) {
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-    printf("Iterations expected: %lu\n", probability_50);
+    printf("Iterations expected: %llu\n", probability_50);
 
     struct timeval tval_before, tval_after, tval_result;
     gettimeofday(&tval_before, NULL);
@@ -519,19 +522,19 @@ int main(int argc, char **argv) {
             int m = ((int)tval_result.tv_sec / 60) % 60;
             int s = (int)tval_result.tv_sec % 60;
 
-            printf("\r%lu  %lud %dh %dm %ds  %.2f keys/second  50%% chance: %lud %luh %dm %ds", iterations, d, h, m, s, speed, probability_50_h / 24, probability_50_h % 24, probability_50_m, probability_50_s);
+            printf("\r%llu  %llud %dh %dm %ds  %.2f keys/second  50%% chance: %llud %lluh %dm %ds", iterations, d, h, m, s, speed, probability_50_h / 24, probability_50_h % 24, probability_50_m, probability_50_s);
 
             uint64_t probability_95_h = (probability_50 * 4 / speed) / 3600;
             int probability_95_m = (uint64_t)((probability_50 * 4 / speed) / 60) % 60;
             int probability_95_s = (uint64_t)(probability_50 * 4 / speed) % 60;
 
-            printf("  95%% chance: %lud %luh %dm %ds", probability_95_h / 24, probability_95_h % 24, probability_95_m, probability_95_s);
+            printf("  95%% chance: %llud%lluuh %dm %ds", probability_95_h / 24, probability_95_h % 24, probability_95_m, probability_95_s);
             printf("          \r");
 //            print_heat_map();
 //            print_heat_map_f();
             fflush(stdout);
         } else {
-            printf("\nOverall iterations: %lu\nAddress: %s\nPassword: %s\n", iterations, address, seed);
+            printf("\nOverall iterations: %llu\nAddress: %s\nPassword: %s\n", iterations, address, seed);
             break;
         }
     }
