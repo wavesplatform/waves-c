@@ -119,7 +119,7 @@ bool my_dblsha256(void *hash, const void *data, size_t datasz)
 	return b58_sha256_impl(buf, data, datasz) && b58_sha256_impl(hash, buf, sizeof(buf));
 }
 
-int b58check(const void *bin, size_t binsz, const char *base58str, size_t b58sz)
+int b58check(const void *bin, size_t binsz, const char *base58str)
 {
 	unsigned char buf[32];
 	const uint8_t *binc = bin;
@@ -146,7 +146,7 @@ bool b58enc(char *b58, size_t *b58sz, const void *data, size_t binsz)
 {
 	const uint8_t *bin = data;
 	int carry;
-	ssize_t i, j, high, zcount = 0;
+	size_t i, j, high, zcount = 0;
 	size_t size;
 	
 	while (zcount < binsz && !bin[zcount])

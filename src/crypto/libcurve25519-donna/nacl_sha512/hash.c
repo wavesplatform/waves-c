@@ -36,7 +36,7 @@ int crypto_hash_sha512(unsigned char *out,const unsigned char *in,unsigned long 
   inlen &= 127;
   in -= inlen;
 
-  for (i = 0;i < inlen;++i) padded[i] = in[i];
+  for (i = 0; i < (int) inlen;++i) padded[i] = in[i];
   padded[inlen] = 0x80;
 
   if (inlen < 112) {

@@ -114,7 +114,7 @@ bool check_mask(vanity_settings *settings, unsigned char address[50]) {
     char *mask = settings->mask;
 
     size_t len = strlen(mask);
-    for(int i = 0 ; i < len ; i++)
+    for(int i = 0 ; i < (int) len ; i++)
         if(check_char(settings, address, i) == false)
             return false;
     return true;
@@ -321,7 +321,7 @@ vanity_settings default_settings() {
     return settings;
 }
 
-void help(int argc, char **argv) {
+void help(char **argv) {
     printf("Usage:\n  %s [OPTION...]\n\n", argv[0]);
     printf("Help Options:\n");
     printf("  -h                Show help options\n\n");
@@ -386,7 +386,7 @@ int sum_iterations(vanity_settings settings, worker_thread_struct *workers) {
 void validate_case_mask(char *case_mask) {
     bool valid = true;
 
-    for(int i = 0 ; i < strlen(case_mask) ; i++)
+    for(int i = 0 ; i < (int) strlen(case_mask) ; i++)
         if(!(case_mask[i] == '_' || case_mask[i] == 'x' || case_mask[i] == 'n' || case_mask[i] == 'u' || case_mask[i] == 'l' || case_mask[i] == 'p'))
             valid = false;
 
@@ -415,11 +415,11 @@ vanity_settings parse_settings(int argc, char **argv) {
         switch (c)
         {
           case 'h':
-            help(argc, argv);
+            help(argv);
             exit(0);
           case 'm':
             if(strlen(optarg) > 35) {
-                help(argc, argv);
+                help(argv);
                 exit(1);
             }
             memcpy(settings.mask, optarg, strlen(optarg));
@@ -430,7 +430,7 @@ vanity_settings parse_settings(int argc, char **argv) {
             break;
           case 'n':
             if(strlen(optarg) > 1 || !(optarg[0] == 't' || optarg[0] == 'm')) {
-                help(argc, argv);
+                help(argv);
                 exit(1);
             }
             if(optarg[0] == 't')
@@ -446,14 +446,14 @@ vanity_settings parse_settings(int argc, char **argv) {
             if (isprint (optopt))
                 printf("Unknown option -%c.\n\n", optopt);
 
-            help(argc, argv);
+            help(argv);
             exit(1);
           default:
             abort();
         }
 
     if(argc > optind) {
-        help(argc, argv);
+        help(argv);
         exit(1);
     }
     return settings;
