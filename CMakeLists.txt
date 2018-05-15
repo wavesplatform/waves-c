@@ -49,7 +49,7 @@ else()
 endif()
 
 enable_testing()
-set(CMAKE_C_FLAGS_DEBUG "-DWAVES_DEBUG")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DWAVES_DEBUG")
 if( NOT CMAKE_BUILD_TYPE )
     set( CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE )
 endif()
