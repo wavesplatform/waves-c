@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
+#include <math.h>
 
 #include "libbase58.h"
 
