@@ -42,13 +42,13 @@ bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int o
     }
 
     // copy little endian to big endian bytes
-    copy_in_reverse_order(&bytes[processed], (unsigned char *) &transaction_bytes->timestamp, 8);
+    copy_in_reverse_order((unsigned char *) &transaction_bytes->timestamp, &bytes[processed], 8);
     processed += 8;
 
-    copy_in_reverse_order(&bytes[processed], (unsigned char *) &transaction_bytes->amount, 8);
+    copy_in_reverse_order((unsigned char *) &transaction_bytes->amount, &bytes[processed], 8);
     processed += 8;
 
-    copy_in_reverse_order(&bytes[processed], (unsigned char *) &transaction_bytes->fee, 8);
+    copy_in_reverse_order((unsigned char *) &transaction_bytes->fee, &bytes[processed], 8);
     processed += 8;
 
     // address or alias flag is a part of address
@@ -58,7 +58,7 @@ bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int o
     } else {
         // also skip address scheme byte
         uint16_t alias_size = 0;
-        copy_in_reverse_order(&bytes[processed + 2], (unsigned char *) &alias_size, 2);
+        copy_in_reverse_order((unsigned char *) &alias_size, &bytes[processed + 2], 2);
 
         if (alias_size < 4 || alias_size > 30) {
             memset(transaction_bytes, 0, sizeof(TransferTransactionsBytes));
@@ -69,7 +69,7 @@ bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int o
         processed += 4 + alias_size;
     }
 
-    copy_in_reverse_order(&bytes[processed], (unsigned char *) &transaction_bytes->attachment_length, 2);
+    copy_in_reverse_order((unsigned char *) &transaction_bytes->attachment_length, &bytes[processed], 2);
     processed += 2;
 
     if (transaction_bytes->attachment_length > 140) {
@@ -108,13 +108,13 @@ bool waves_transfer_transaction_to_bytes(const TransferTransactionsBytes *transa
         writed += 32;
     }
     // copy big endian to little endian bytes
-    copy_in_reverse_order((unsigned char *) &transaction->timestamp, &bytes[writed], 8);
+    copy_in_reverse_order(&bytes[writed], (unsigned char *) &transaction->timestamp, 8);
     writed += 8;
 
-    copy_in_reverse_order((unsigned char *) &transaction->amount, &bytes[writed], 8);
+    copy_in_reverse_order(&bytes[writed], (unsigned char *) &transaction->amount, 8);
     writed += 8;
 
-    copy_in_reverse_order((unsigned char *) &transaction->fee, &bytes[writed], 8);
+    copy_in_reverse_order(&bytes[writed], (unsigned char *) &transaction->fee, 8);
     writed += 8;
 
     if (transaction->recipient_address_or_alias[0] == 1) {
@@ -122,13 +122,13 @@ bool waves_transfer_transaction_to_bytes(const TransferTransactionsBytes *transa
         writed += 26;
     } else {
         uint16_t alias_size = 0;
-        copy_in_reverse_order((const unsigned char *) &transaction->recipient_address_or_alias[2], (unsigned char *) &alias_size, 2);
+        copy_in_reverse_order((unsigned char *) &alias_size, (const unsigned char *) &transaction->recipient_address_or_alias[2], 2);
 
         memcpy(&bytes[writed], &transaction->recipient_address_or_alias, alias_size + 2);
         writed += alias_size + 2;
     }
 
-    copy_in_reverse_order((unsigned char *) &transaction->attachment_length, &bytes[writed], 2);
+    copy_in_reverse_order(&bytes[writed], (unsigned char *) &transaction->attachment_length, 2);
 
     writed += 2;
     memcpy(&bytes[writed], &transaction->attachment, transaction->attachment_length);
@@ -190,7 +190,7 @@ bool waves_read_transfer_transaction_data(const TransferTransactionsBytes *trans
         transaction_data->recipient_address_or_alias[1] = ':';
 
         uint16_t alias_size = 0;
-        copy_in_reverse_order((const unsigned char *) &transaction->recipient_address_or_alias[2], (unsigned char *) &alias_size, 2);
+        copy_in_reverse_order((unsigned char *) &alias_size, (const unsigned char *) &transaction->recipient_address_or_alias[2], 2);
 
         // as utf-8 string
         memcpy(&transaction_data->recipient_address_or_alias[2], &transaction->recipient_address_or_alias[4], alias_size);
@@ -241,7 +241,7 @@ bool waves_build_transfer_transaction(const TransferTransactionsData *transactio
         // chain id
         transaction_bytes->recipient_address_or_alias[1] = transaction_data->recipient_address_or_alias[0];
         uint16_t alias_size = (uint16_t) (strlen((const char *) transaction_data->recipient_address_or_alias) - 2);
-        copy_in_reverse_order((const unsigned char *) &transaction_bytes->recipient_address_or_alias[2], (unsigned char *) &alias_size, 2);
+        copy_in_reverse_order((unsigned char *) &alias_size, (const unsigned char *) &transaction_bytes->recipient_address_or_alias[2], 2);
         memcpy(&transaction_bytes->recipient_address_or_alias[4], &transaction_data->recipient_address_or_alias[2], alias_size);
     } else {
         tmp = 26;

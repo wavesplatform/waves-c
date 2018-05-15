@@ -194,6 +194,7 @@ void waves_build_transfer_transaction_test() {
 
     TransferTransactionsData transaction_data;
     memset(&transaction_data, 0, sizeof(TransferTransactionsData));
+    // sender address is not used here
     strcpy((char *) transaction_data.sender_public_key, (char *) expected_sender_pk_base58);
     strcpy((char *) transaction_data.amount_asset_id, (char *) expected_amount_asset_base58);
     strcpy((char *) transaction_data.fee_asset_id, (char *) expected_fee_asset_base58);
