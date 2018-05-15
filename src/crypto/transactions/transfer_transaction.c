@@ -173,6 +173,7 @@ bool waves_read_transfer_transaction_data(const TransferTransactionsBytes *trans
     memcpy(&transaction_data->fee, &transaction->fee, 8);
 
     buf_used = sizeof(buf);
+
     if (transaction->recipient_address_or_alias[0] == 1) {
         if (network_id != transaction->recipient_address_or_alias[1]) {
             return false;
@@ -180,6 +181,7 @@ bool waves_read_transfer_transaction_data(const TransferTransactionsBytes *trans
         b58enc(buf, &buf_used, transaction->recipient_address_or_alias, 26);
         memcpy(transaction_data->recipient_address_or_alias, buf, buf_used);
     } else {
+        // todo test alias
         if (network_id != transaction->recipient_address_or_alias[1]) {
             return false;
         }
@@ -195,8 +197,64 @@ bool waves_read_transfer_transaction_data(const TransferTransactionsBytes *trans
     }
 
     buf_used = sizeof(buf);
-    // as utf-8 string
-    memcpy(transaction_data->attachment, transaction->attachment, transaction->attachment_length);
+    b58enc(buf, &buf_used, transaction->attachment, transaction->attachment_length);
+    memcpy(transaction_data->attachment, buf, buf_used);
+
+    return true;
+}
+
+bool waves_build_transfer_transaction(const TransferTransactionsData *transaction_data, const unsigned char network_id, TransferTransactionsBytes *transaction_bytes) {
+    memset(transaction_bytes, 0, sizeof(TransferTransactionsBytes));
+
+    size_t tmp = 32;
+
+    transaction_bytes->type = 4;
+    b58tobin(transaction_bytes->sender_public_key, &tmp, (const char *) transaction_data->sender_public_key, 0);
+
+    if (strcmp((const char *) transaction_data->amount_asset_id, "WAVES") == 0 || strlen((const char *) transaction_data->amount_asset_id) == 0) {
+        transaction_bytes->amount_asset_flag = 0;
+    } else {
+        transaction_bytes->amount_asset_flag = 1;
+        tmp = 32;
+        b58tobin(transaction_bytes->amount_asset_id, &tmp, (const char *) transaction_data->amount_asset_id, 0);
+    }
+
+    if (strcmp((const char *) transaction_data->fee_asset_id, "WAVES") == 0 || strlen((const char *) transaction_data->fee_asset_id) == 0) {
+        transaction_bytes->fee_asset_flag = 0;
+    } else {
+        transaction_bytes->fee_asset_flag = 1;
+        tmp = 32;
+        b58tobin(transaction_bytes->fee_asset_id, &tmp, (const char *) transaction_data->fee_asset_id, 0);
+    }
+
+    memcpy(&transaction_bytes->timestamp, &transaction_data->timestamp, 8);
+    memcpy(&transaction_bytes->amount, &transaction_data->amount, 8);
+    memcpy(&transaction_bytes->fee, &transaction_data->fee, 8);
+
+    bool is_alias = transaction_data->recipient_address_or_alias[2] == ':';
+    if (is_alias) {
+        if (network_id != transaction_data->recipient_address_or_alias[0]) {
+            return false;
+        }
+        // todo test alias
+        transaction_bytes->recipient_address_or_alias[0] = 2;
+        // chain id
+        transaction_bytes->recipient_address_or_alias[1] = transaction_data->recipient_address_or_alias[0];
+        uint16_t alias_size = (uint16_t) (strlen((const char *) transaction_data->recipient_address_or_alias) - 2);
+        copy_in_reverse_order((const unsigned char *) &transaction_bytes->recipient_address_or_alias[2], (unsigned char *) &alias_size, 2);
+        memcpy(&transaction_bytes->recipient_address_or_alias[4], &transaction_data->recipient_address_or_alias[2], alias_size);
+    } else {
+        tmp = 26;
+        b58tobin(transaction_bytes->recipient_address_or_alias, &tmp, (const char *) transaction_data->recipient_address_or_alias, 0);
+        if (network_id != transaction_bytes->recipient_address_or_alias[1]) {
+            return false;
+        }
+    }
+    int attachment_strlen = (int) strlen((const char *) transaction_data->attachment);
+    tmp = (size_t) bytes_length_from_b58(attachment_strlen);
+    b58tobin(&transaction_bytes->attachment, &tmp, (const char *) transaction_data->attachment, 0);
+    uint16_t attachment_size = (uint16_t) tmp;
+    memcpy(&transaction_bytes->attachment_length, &attachment_size, 2);
 
     return true;
 }

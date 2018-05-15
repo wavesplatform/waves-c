@@ -38,20 +38,19 @@ struct TransferTransactionsData {
     uint64_t fee;
     // 44 for address as base58 string, 8 - 34 chars for alias + 2 bytes for chain id and separator as utf-8 string
     unsigned char recipient_address_or_alias[45];
-    // 140 bytes as utf-8 string
-    unsigned char attachment[141];
+    // 192 bytes as base58 string
+    unsigned char attachment[192];
 };
 typedef struct TransferTransactionsData TransferTransactionsData;
 
 bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int offset,
                                       TransferTransactionsBytes *transaction);
 
-bool waves_transfer_transaction_to_bytes(const TransferTransactionsBytes *transaction, unsigned char *bytes,
+bool waves_transfer_transaction_to_bytes(const TransferTransactionsBytes *transaction, unsigned char *bytes /* max size 364 bytes */,
                                          size_t *bytes_size, unsigned int offset);
 
 bool waves_read_transfer_transaction_data(const TransferTransactionsBytes *transaction, unsigned char network_id,
                                           TransferTransactionsData *transaction_data);
-// max size 364 bytes
-//void waves_build_transfer_transaction(const uint8_t *message, size_t message_len, char* result);
+bool waves_build_transfer_transaction(const TransferTransactionsData *transaction_data, unsigned char network_id, TransferTransactionsBytes *transaction_bytes);
 
 #endif

@@ -18,6 +18,7 @@ void transactions_tests() {
     waves_parse_transfer_transaction_test();
     waves_transfer_transaction_to_bytes_test();
     waves_read_transfer_transaction_data_test();
+    waves_build_transfer_transaction_test();
 }
 
 int main(int argc, char **argv) {
