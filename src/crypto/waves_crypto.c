@@ -3,6 +3,9 @@
 #include "blake2b/sse/blake2.h"
 #include "sha256.h"
 #include "sha3.h"
+#include "libcurve25519-donna/additions/curve_sigs.h"
+#include <openssl/rand.h>
+#include <keygen.h>
 
 void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[32])
 {
@@ -20,21 +23,25 @@ void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[
     memcpy(hash, c.sb, 32);
 }
 
-void waves_message_sign(const ed25519_private_key *private_key, const ed25519_public_key public_key, const unsigned char *message, ed25519_signature signature) {
-#ifndef USE_ED_25519
-    // ed25519 signature with the sha512 hashing
-//    cx_eddsa_sign(private_key, CX_LAST, CX_SHA512, message, sizeof(message), NULL, 0, signature, 64, NULL);
-    // set the sign bit from ed25519 public key (using 31 byte) for curve25519 validation used in waves (this makes the ed25519 signature invalid)
-    unsigned char sign_bit = public_key[32] & 0x80;
-    signature[63] |= sign_bit;
-#else
+bool waves_message_sign(const curve25519_secret_key *private_key, const unsigned char *message, const size_t message_size,
+                        curve25519_signature signature) {
+    unsigned char random[64];
+    RAND_bytes(random, 64);
+    return waves_message_sign_custom_random(private_key, message, message_size, signature, random);
+}
 
-#endif
+bool waves_message_sign_custom_random(const curve25519_secret_key *private_key, const unsigned char *message,
+                                      const size_t message_size, curve25519_signature signature, unsigned char *random64) {
+    return curve25519_sign(signature, (const unsigned char *) private_key, message, message_size, random64) == 0;
+}
+
+bool waves_message_verify(const curve25519_public_key *public_key, const unsigned char *message, const size_t message_size, const curve25519_signature signature) {
+    return curve25519_verify(signature, (const unsigned char *) public_key, message, message_size) == 0;
 }
 
 // todo move all that stuff to crypto module
 // Build waves address from the curve25519 public key, check https://github.com/wavesplatform/Waves/wiki/Data-Structures#address
-void waves_public_key_to_address(const ed25519_public_key public_key, const char network_byte, char *output) {
+void waves_public_key_to_address(const curve25519_public_key public_key, const unsigned char network_byte, unsigned char *output) {
     uint8_t public_key_hash[32];
     uint8_t address[26];
     uint8_t checksum[32];
@@ -49,17 +56,17 @@ void waves_public_key_to_address(const ed25519_public_key public_key, const char
     memmove(&address[22], checksum, 4);
 
     size_t length = 36;
-    b58enc(output, &length, address, 26);
+    b58enc((char *) output, &length, address, 26);
 }
 
-void waves_seed_to_address(const char *key, const char network_byte, char *output) {
+void waves_seed_to_address(const unsigned char *key, const unsigned char network_byte, unsigned char *output) {
     char realkey[1024] = {0, 0, 0, 0};
-    memcpy(&realkey[4], key, strlen(key));
+    memcpy(&realkey[4], key, strlen((const char *) key));
     uint8_t privkey[32];
 
     SHA256_CTX ctx;
 
-    waves_secure_hash((uint8_t*)realkey, strlen(key) + 4, privkey);
+    waves_secure_hash((uint8_t*)realkey, strlen((const char *) key) + 4, privkey);
 
     sha256_init(&ctx);
     sha256_update(&ctx, privkey, 32);
@@ -71,7 +78,7 @@ void waves_seed_to_address(const char *key, const char network_byte, char *outpu
 
     uint8_t pubkey[32];
 
-    curve25519_donna_basepoint(pubkey, privkey);
+    curve25519_keygen(pubkey, privkey);
 
     waves_public_key_to_address(pubkey, network_byte, output);
 }

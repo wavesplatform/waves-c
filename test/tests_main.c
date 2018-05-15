@@ -1,14 +1,27 @@
-#include "tests.h"
+#include "crypto_tests.h"
+#include "transactions/transfer_transaction_tests.h"
 
-void unit_test() {
-    unit_test_1();
-    unit_test_2();
-    unit_test_3();
-    unit_test_4();
-    unit_test_5();
-    unit_test_6();
+void crypto_tests() {
+    waves_secure_hash_test();
+    waves_public_key_to_address_mainnet_test();
+    waves_public_key_to_address_testnet_test();
+    curve25519_keygen_test();
+    waves_seed_to_address_testnet_test();
+    waves_seed_to_address_mainnet_test();
+    waves_message_sign_without_random_test();
+    waves_message_sign_test();
+    waves_message_verify_test();
+    waves_message_verify_negative_test();
+}
+
+void transactions_tests() {
+    waves_parse_transfer_transaction_test();
+    waves_transfer_transaction_to_bytes_test();
+    waves_read_transfer_transaction_data_test();
+    waves_build_transfer_transaction_test();
 }
 
 int main(int argc, char **argv) {
-    unit_test();
+    crypto_tests();
+    transactions_tests();
 }

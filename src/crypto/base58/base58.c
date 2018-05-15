@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
+#include <math.h>
 
 #include "libbase58.h"
 
@@ -119,7 +120,7 @@ bool my_dblsha256(void *hash, const void *data, size_t datasz)
 	return b58_sha256_impl(buf, data, datasz) && b58_sha256_impl(hash, buf, sizeof(buf));
 }
 
-int b58check(const void *bin, size_t binsz, const char *base58str, size_t b58sz)
+int b58check(const void *bin, size_t binsz, const char *base58str)
 {
 	unsigned char buf[32];
 	const uint8_t *binc = bin;
@@ -146,7 +147,7 @@ bool b58enc(char *b58, size_t *b58sz, const void *data, size_t binsz)
 {
 	const uint8_t *bin = data;
 	int carry;
-	ssize_t i, j, high, zcount = 0;
+	size_t i, j, high, zcount = 0;
 	size_t size;
 	
 	while (zcount < binsz && !bin[zcount])
@@ -198,4 +199,12 @@ bool b58check_enc(char *b58c, size_t *b58c_sz, uint8_t ver, const void *data, si
 	}
 	
 	return b58enc(b58c, b58c_sz, buf, 1 + datasz + 4);
+}
+
+int b58_length_from_bytes(int byteArrayLength) {
+	return (int) ceil(log(256) / log(58) * byteArrayLength);
+}
+
+int bytes_length_from_b58(int base58Length) {
+	return (int) ceil(log(58) / log(256) * base58Length);
 }
