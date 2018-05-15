@@ -199,3 +199,11 @@ bool b58check_enc(char *b58c, size_t *b58c_sz, uint8_t ver, const void *data, si
 	
 	return b58enc(b58c, b58c_sz, buf, 1 + datasz + 4);
 }
+
+int b58_length_from_bytes(int byteArrayLength) {
+	return (int) ceil(log(256) / log(58) * byteArrayLength);
+}
+
+int bytes_length_from_b58(int base58Length) {
+	return (int) ceil(log(58) / log(256) * base58Length);
+}
