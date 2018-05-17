@@ -3,7 +3,7 @@ project(${UNIT_TEST})
 
 file( GLOB CS "*.c" "transactions/*.c" )
 
-add_executable( ${UNIT_TEST} ${CS} tests_main.c )
+add_executable( ${UNIT_TEST} ${CS} tests_main.c utils_tests.h)
 target_link_libraries(${UNIT_TEST} waves_c)
 add_test(NAME ${UNIT_TEST} COMMAND ${UNIT_TEST})
 
