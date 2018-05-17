@@ -28,6 +28,7 @@ void utils_tests() {
     print_amount_test_3();
     print_amount_test_4();
     print_amount_test_5();
+    print_amount_test_6();
 }
 
 int main(int argc, char **argv) {

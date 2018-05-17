@@ -15,6 +15,8 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
     uint64_t dVal = amount;
     int i, j;
 
+    if (decimals == 0) decimals--;
+
     memset(buffer, 0, len);
     for (i = 0; dVal > 0 || i < decimals + 2; i++) {
         if (dVal > 0) {

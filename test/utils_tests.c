@@ -55,3 +55,14 @@ void print_amount_test_5() {
         exit(-1);
     }
 }
+
+void print_amount_test_6() {
+    unsigned char expected[] = "1";
+    unsigned char amount_str[100];
+    bool result = print_amount(1, 0, amount_str, sizeof(amount_str));
+    result &= strcmp(expected, amount_str) == 0;
+    if (!result) {
+        printf("print_amount_test 6 failed\n");
+        exit(-1);
+    }
+}
