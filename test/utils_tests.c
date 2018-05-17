@@ -2,7 +2,7 @@
 #include "utils.h"
 
 void print_amount_test_1() {
-    unsigned char expected[] = ".00000001";
+    unsigned char expected[] = "0.00000001";
     unsigned char amount_str[100];
     bool result = print_amount(1, 8, amount_str, sizeof(amount_str));
     result &= strcmp(expected, amount_str) == 0;
@@ -13,7 +13,7 @@ void print_amount_test_1() {
 }
 
 void print_amount_test_2() {
-    unsigned char expected[] = ".001";
+    unsigned char expected[] = "0.001";
     unsigned char amount_str[100];
     bool result = print_amount(100000, 8, amount_str, sizeof(amount_str));
     result &= strcmp(expected, amount_str) == 0;
@@ -46,9 +46,9 @@ void print_amount_test_4() {
 }
 
 void print_amount_test_5() {
-    unsigned char expected[] = "1";
+    unsigned char expected[] = "10000";
     unsigned char amount_str[100];
-    bool result = print_amount(100, 2, amount_str, sizeof(amount_str));
+    bool result = print_amount(10000, 0, amount_str, sizeof(amount_str));
     result &= strcmp(expected, amount_str) == 0;
     if (!result) {
         printf("print_amount_test 5 failed\n");

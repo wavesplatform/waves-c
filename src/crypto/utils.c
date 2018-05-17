@@ -16,7 +16,7 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
     int i, j;
 
     memset(buffer, 0, len);
-    for (i = 0; dVal > 0 || i < decimals + 1; i++) {
+    for (i = 0; dVal > 0 || i < decimals + 2; i++) {
         if (dVal > 0) {
             buffer[i] = (char) ((dVal % 10) + '0');
             dVal /= 10;
@@ -37,11 +37,13 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
     for (i -= 1, j = 0; i >= 0 && j < len-1; i--, j++) {
         out[j] = buffer[i];
     }
-    // strip trailing 0s
-    for (j -= 1; j > 0; j--) {
-        if (out[j] != '0') break;
+    if (decimals > 0) {
+        // strip trailing 0s
+        for (j -= 1; j > 0; j--) {
+            if (out[j] != '0') break;
+        }
+        j += 1;
     }
-    j += 1;
 
     out[j] = '\0';
     return  true;
