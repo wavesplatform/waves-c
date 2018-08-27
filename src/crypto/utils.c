@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <memory.h>
 #include <stdbool.h>
+#include <printf.h>
 #include "utils.h"
 
 void copy_in_reverse_order(unsigned char *to, const unsigned char *from, const unsigned int len) {
@@ -27,9 +28,7 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
         }
         if (i == decimals - 1) {
             i += 1;
-            if (dVal == 0) {
-                buffer[i] = '.';
-            }
+            buffer[i] = '.';
         }
         if (i >= len) {
             return false;
@@ -37,7 +36,9 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
     }
     // reverse order
     for (i -= 1, j = 0; i >= 0 && j < len-1; i--, j++) {
-        out[j] = buffer[i];
+        if (!(j == 0 && buffer[i] == '.')) {
+            out[j] = buffer[i];
+        }
     }
     if (decimals > 0) {
         // strip trailing 0s
@@ -45,6 +46,7 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
             if (out[j] != '0') break;
         }
         j += 1;
+        if (out[j - 1] == '.') j -= 1;
     }
 
     out[j] = '\0';

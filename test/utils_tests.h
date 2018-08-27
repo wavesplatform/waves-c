@@ -7,5 +7,6 @@ void print_amount_test_3();
 void print_amount_test_4();
 void print_amount_test_5();
 void print_amount_test_6();
+void print_amount_test_7();
 
 #endif //UTILS_H
