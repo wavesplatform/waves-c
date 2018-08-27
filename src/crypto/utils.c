@@ -36,9 +36,7 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
     }
     // reverse order
     for (i -= 1, j = 0; i >= 0 && j < len-1; i--, j++) {
-        if (!(j == 0 && buffer[i] == '.')) {
-            out[j] = buffer[i];
-        }
+        out[j] = buffer[i];
     }
     if (decimals > 0) {
         // strip trailing 0s
