@@ -80,18 +80,23 @@ bool b58tobin(void *bin, size_t *binszp, const char *b58, size_t b58sz)
 	}
 	
 	j = 0;
-	switch (bytesleft) {
-		case 3:
-			*(binu++) = (outi[0] &   0xff0000) >> 16;
-		case 2:
-			*(binu++) = (outi[0] &     0xff00) >>  8;
-		case 1:
-			*(binu++) = (outi[0] &       0xff);
-			++j;
-		default:
-			break;
-	}
-	
+
+    if (bytesleft == 3)
+    {
+        *(binu++) = (outi[0] &   0xff0000) >> 16;
+        *(binu++) = (outi[0] &     0xff00) >>  8;
+        *(binu++) = (outi[0] &       0xff);
+    }
+    else if (bytesleft == 2)
+    {
+        *(binu++) = (outi[0] &     0xff00) >>  8;
+        *(binu++) = (outi[0] &       0xff);
+    }
+    else if (bytesleft == 1)
+    {
+        *(binu++) = (outi[0] &       0xff);
+    }
+
 	for (; j < outisz; ++j)
 	{
 		*(binu++) = (outi[j] >> 0x18) & 0xff;

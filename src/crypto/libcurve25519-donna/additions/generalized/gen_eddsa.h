@@ -13,6 +13,11 @@
 
    r = hash(B || labelset || Z || pad1 || k || pad2 || labelset || K || extra || M) (mod q)
 */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int generalized_commit(unsigned char* R_bytes, unsigned char* r_scalar,
             const unsigned char* labelset, const unsigned long labelset_len,
             const unsigned char* extra, const unsigned long extra_len,
@@ -61,5 +66,9 @@ int generalized_eddsa_25519_verify(
                   const unsigned long msg_len,
                   const unsigned char* customization_label,
                   const unsigned long customization_label_len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

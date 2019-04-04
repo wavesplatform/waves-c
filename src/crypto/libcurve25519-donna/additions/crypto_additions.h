@@ -8,6 +8,10 @@
 
 #define MAX_MSG_LEN 256
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void sc_neg(unsigned char *b, const unsigned char *a);
 void sc_cmov(unsigned char* f, const unsigned char* g, unsigned char b);
 
@@ -40,6 +44,10 @@ int crypto_sign_open_modified(
   const unsigned char *sm,unsigned long long smlen,
   const unsigned char *pk
   );
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

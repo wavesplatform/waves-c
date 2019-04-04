@@ -71,6 +71,10 @@ typedef struct {
 #define ge_scalarmult_base crypto_sign_ed25519_ref10_ge_scalarmult_base
 #define ge_double_scalarmult_vartime crypto_sign_ed25519_ref10_ge_double_scalarmult_vartime
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void ge_tobytes(unsigned char *,const ge_p2 *);
 extern void ge_p3_tobytes(unsigned char *,const ge_p3 *);
 extern int ge_frombytes_negate_vartime(ge_p3 *,const unsigned char *);
@@ -91,5 +95,9 @@ extern void ge_add(ge_p1p1 *,const ge_p3 *,const ge_cached *);
 extern void ge_sub(ge_p1p1 *,const ge_p3 *,const ge_cached *);
 extern void ge_scalarmult_base(ge_p3 *,const unsigned char *);
 extern void ge_double_scalarmult_vartime(ge_p2 *,const unsigned char *,const ge_p3 *,const unsigned char *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
