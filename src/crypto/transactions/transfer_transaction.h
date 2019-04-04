@@ -43,6 +43,10 @@ struct TransferTransactionsData {
 };
 typedef struct TransferTransactionsData TransferTransactionsData;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int offset,
                                       TransferTransactionsBytes *transaction);
 
@@ -52,5 +56,9 @@ bool waves_transfer_transaction_to_bytes(const TransferTransactionsBytes *transa
 bool waves_read_transfer_transaction_data(const TransferTransactionsBytes *transaction, unsigned char network_id,
                                           TransferTransactionsData *transaction_data);
 bool waves_build_transfer_transaction(const TransferTransactionsData *transaction_data, unsigned char network_id, TransferTransactionsBytes *transaction_bytes);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

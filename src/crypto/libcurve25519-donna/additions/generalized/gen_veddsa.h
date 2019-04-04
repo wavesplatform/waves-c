@@ -1,6 +1,10 @@
 #ifndef __GEN_VEDDSA_H__
 #define __GEN_VEDDSA_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int generalized_veddsa_25519_sign(
                   unsigned char* signature_out,
                   const unsigned char* eddsa_25519_pubkey_bytes,
@@ -19,5 +23,10 @@ int generalized_veddsa_25519_verify(
                   const unsigned long msg_len,
                   const unsigned char* customization_label,
                   const unsigned long customization_label_len);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

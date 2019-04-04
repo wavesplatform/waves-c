@@ -26,9 +26,17 @@ typedef struct {
 	WORD state[8];
 } SHA256_CTX;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*********************** FUNCTION DECLARATIONS **********************/
 void sha256_init(SHA256_CTX *ctx);
 void sha256_update(SHA256_CTX *ctx, const BYTE data[], size_t len);
 void sha256_final(SHA256_CTX *ctx, BYTE hash[]);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif   // SHA256_H

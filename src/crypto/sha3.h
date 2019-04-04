@@ -15,6 +15,8 @@
  *
  * Aug 2015. Andrey Jivsov. crypto@brainhub.org
  * ---------------------------------------------------------------------- */
+#ifndef SHA3_H
+#define SHA3_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -338,5 +340,8 @@ sha3_Finalize(void *priv)
  * the output of the sha3sum on Fedora Core 20 (which is Perl's based).
  *
  */
+
+#endif  // SHA3_H
+
 
 
