@@ -18,7 +18,7 @@
 #include <sys/types.h>
 #include <math.h>
 
-#include "libbase58.h"
+#include "b58.h"
 
 bool (*b58_sha256_impl)(void *, const void *, size_t) = NULL;
 
@@ -40,7 +40,6 @@ ssize_t b58tobin(void *bin, size_t *binszp, const char *b58, size_t b58sz)
 	unsigned char *binu = bin;
 	size_t outisz = (binsz + 3) / 4;
     uint8_t outi[outisz];
-    uint64_t t;
 	uint32_t c;
 	size_t i, j;
 	uint8_t bytesleft = binsz % 4;
@@ -67,9 +66,9 @@ ssize_t b58tobin(void *bin, size_t *binszp, const char *b58, size_t b58sz)
 		c = (unsigned)b58digits_map[b58u[i]];
 		for (j = outisz; j--; )
 		{
-            t = ((uint64_t)outi[j]) * 58 + c;
-            c = (t & 0x3f00000000) >> 32;
-            outi[j] = t & 0xffffffff;
+            c += (uint64_t)outi[j] * 58;
+            outi[j] = c & 0xFF;
+            c >>= 8;
 		}
         if (c)
 			// Output number too big (carry to the next int32)

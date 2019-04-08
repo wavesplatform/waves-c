@@ -35,9 +35,9 @@
 #include<sys/statvfs.h>
 
 #include"crypto/blake2b/sse/blake2.h"
-#include"crypto/base58/libbase58.h"
+#include"crypto/base58/b58.h"
 #include"crypto/sha256.h"
-#include"crypto/waves_crypto.h"
+#include"crypto/crypto.h"
 
 
 const int ITERATIONS_PER_LOOP = 513;
@@ -181,7 +181,7 @@ int generate_addresses(bool testnet, int iterations, vanity_settings *settings, 
 
         if (testnet) network_id = 'T';
 
-        waves_seed_to_address(seed, network_id, address);
+        waves_b58_seed_to_address(seed, network_id, address);
 
 //        for(int u = 0 ; u < strlen(address) ; u++)
 //           heat_map[u][base58char_to_i(address[u])]++;
