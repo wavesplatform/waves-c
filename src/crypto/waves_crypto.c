@@ -1,5 +1,4 @@
 #include "crypto.h"
-#include "base58/b58.h"
 #include "blake2b/sse/blake2.h"
 #include "sha256.h"
 #include "sha3.h"
