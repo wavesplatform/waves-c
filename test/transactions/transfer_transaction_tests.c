@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "transfer_transaction_tests.h"
 #include "transactions/transfer_transaction.h"
-#include "base58/libbase58.h"
+#include "base58/b58.h"
 
 bool compare_transfer_transactions_bytes(TransferTransactionsBytes *transfer_transactions_bytes,
                                         const unsigned char expected_type_base58[],

@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <utils.h>
 #include <printf.h>
-#include <libbase58.h>
-#include <waves_crypto.h>
+#include <b58.h>
+#include "crypto.h"
 
 
 bool waves_parse_transfer_transaction(const unsigned char *bytes, unsigned int offset,
@@ -149,7 +149,7 @@ bool waves_read_transfer_transaction_data(const TransferTransactionsBytes *trans
     memcpy(transaction_data->sender_public_key, buf, buf_used);
 
     unsigned char address_bytes[36];
-    waves_public_key_to_address(transaction->sender_public_key, network_id, address_bytes);
+    waves_b58_public_key_to_address(transaction->sender_public_key, network_id, address_bytes);
     memcpy(transaction_data->sender_address, address_bytes, 36);
 
     buf_used = sizeof(buf);

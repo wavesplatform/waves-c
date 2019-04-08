@@ -12,8 +12,8 @@ set_target_properties(waves_c_shared PROPERTIES OUTPUT_NAME waves_c)
 target_link_libraries(waves_c ${OPENSSL_LIBRARIES} m crypto)
 add_definitions(-Wall -O3 -Werror -Wextra -Wno-format)
 
-install(FILES crypto/base58/libbase58.h DESTINATION include/waves/ RENAME b58.h)
-install(FILES crypto/waves_crypto.h DESTINATION include/waves/ RENAME crypto.h)
+install(FILES crypto/base58/b58.h DESTINATION include/waves)
+install(FILES crypto/crypto.h DESTINATION include/waves)
 
 install(TARGETS waves_c waves_c_shared
         ARCHIVE DESTINATION lib/waves
