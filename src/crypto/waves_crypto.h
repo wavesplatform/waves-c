@@ -16,6 +16,7 @@ extern "C" {
 #endif
 
 void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[32]);
+void waves_public_key_to_address_bin(const curve25519_public_key public_key, const unsigned char network_byte, unsigned char address[26]);
 void waves_public_key_to_address(const curve25519_public_key public_key /* 32 bytes */, unsigned char network_byte, unsigned char output[36]);
 bool waves_message_sign(const curve25519_secret_key *private_key /* 32 bytes */, const unsigned char *message,
                         size_t message_size, curve25519_signature signature /* 64 bytes */);
