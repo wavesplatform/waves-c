@@ -1,10 +1,10 @@
 #include "crypto_tests.h"
-#include <crypto.h>
+#include "crypto.h"
+#include "b58.h"
+#include "libcurve25519-donna/additions/keygen.h"
 #include <printf.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <b58.h>
-#include <libcurve25519-donna/additions/keygen.h>
 
 void waves_secure_hash_test() {
     uint8_t input[] = "A nice, long test to make the day great! :-)";
