@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <utils.h>
 #include <printf.h>
 #include <b58.h>
@@ -144,26 +145,26 @@ bool waves_read_transfer_transaction_data(const TransferTransactionsBytes *trans
 
     char buf[512];
 
-    size_t buf_used = sizeof(buf);
-    b58enc(buf, &buf_used, transaction->sender_public_key, 32);
-    memcpy(transaction_data->sender_public_key, buf, buf_used);
+    base58_encode(buf, transaction->sender_public_key, 32);
+    strcpy((char*)transaction_data->sender_public_key, buf);
 
-    unsigned char address_bytes[36];
-    waves_b58_public_key_to_address(transaction->sender_public_key, network_id, address_bytes);
-    memcpy(transaction_data->sender_address, address_bytes, 36);
+    unsigned char address_bytes[26];
+    char address_bytes_b58[36];
+    waves_public_key_to_address(transaction->sender_public_key, network_id, address_bytes);
+    base58_encode(address_bytes_b58, address_bytes, sizeof(address_bytes));
 
-    buf_used = sizeof(buf);
+    memcpy(transaction_data->sender_address, address_bytes_b58, 36);
+
     if (transaction->amount_asset_flag == 1) {
-        b58enc(buf, &buf_used, transaction->amount_asset_id, 32);
-        memcpy(transaction_data->amount_asset_id, buf, buf_used);
+        base58_encode(buf, transaction->amount_asset_id, 32);
+        strcpy((char*)transaction_data->amount_asset_id, buf);
     } else {
         sprintf((char *) transaction_data->amount_asset_id, "WAVES");
     }
 
-    buf_used = sizeof(buf);
     if (transaction->fee_asset_flag == 1) {
-        b58enc(buf, &buf_used, transaction->fee_asset_id, 32);
-        memcpy(transaction_data->fee_asset_id, buf, buf_used);
+        base58_encode(buf, transaction->fee_asset_id, 32);
+        strcpy((char*)transaction_data->fee_asset_id, buf);
     } else {
         sprintf((char *) transaction_data->fee_asset_id, "WAVES");
     }
@@ -172,14 +173,12 @@ bool waves_read_transfer_transaction_data(const TransferTransactionsBytes *trans
     memcpy(&transaction_data->amount, &transaction->amount, 8);
     memcpy(&transaction_data->fee, &transaction->fee, 8);
 
-    buf_used = sizeof(buf);
-
     if (transaction->recipient_address_or_alias[0] == 1) {
         if (network_id != transaction->recipient_address_or_alias[1]) {
             return false;
         }
-        b58enc(buf, &buf_used, transaction->recipient_address_or_alias, 26);
-        memcpy(transaction_data->recipient_address_or_alias, buf, buf_used);
+        base58_encode(buf, transaction->recipient_address_or_alias, 26);
+        strcpy((char*)transaction_data->recipient_address_or_alias, buf);
     } else {
         // todo test alias
         if (network_id != transaction->recipient_address_or_alias[1]) {
@@ -196,9 +195,8 @@ bool waves_read_transfer_transaction_data(const TransferTransactionsBytes *trans
         memcpy(&transaction_data->recipient_address_or_alias[2], &transaction->recipient_address_or_alias[4], alias_size);
     }
 
-    buf_used = sizeof(buf);
-    b58enc(buf, &buf_used, transaction->attachment, transaction->attachment_length);
-    memcpy(transaction_data->attachment, buf, buf_used);
+    base58_encode(buf, transaction->attachment, transaction->attachment_length);
+    strcpy((char*)transaction_data->attachment, buf);
 
     return true;
 }
@@ -209,14 +207,14 @@ bool waves_build_transfer_transaction(const TransferTransactionsData *transactio
     size_t tmp = 32;
 
     transaction_bytes->type = 4;
-    b58tobin(transaction_bytes->sender_public_key, &tmp, (const char *) transaction_data->sender_public_key, 0);
+    base58_decode(transaction_bytes->sender_public_key, (const char *) transaction_data->sender_public_key);
 
     if (strcmp((const char *) transaction_data->amount_asset_id, "WAVES") == 0 || strlen((const char *) transaction_data->amount_asset_id) == 0) {
         transaction_bytes->amount_asset_flag = 0;
     } else {
         transaction_bytes->amount_asset_flag = 1;
         tmp = 32;
-        b58tobin(transaction_bytes->amount_asset_id, &tmp, (const char *) transaction_data->amount_asset_id, 0);
+        base58_decode(transaction_bytes->amount_asset_id, (const char *) transaction_data->amount_asset_id);
     }
 
     if (strcmp((const char *) transaction_data->fee_asset_id, "WAVES") == 0 || strlen((const char *) transaction_data->fee_asset_id) == 0) {
@@ -224,7 +222,7 @@ bool waves_build_transfer_transaction(const TransferTransactionsData *transactio
     } else {
         transaction_bytes->fee_asset_flag = 1;
         tmp = 32;
-        b58tobin(transaction_bytes->fee_asset_id, &tmp, (const char *) transaction_data->fee_asset_id, 0);
+        base58_decode(transaction_bytes->fee_asset_id, (const char *) transaction_data->fee_asset_id);
     }
 
     memcpy(&transaction_bytes->timestamp, &transaction_data->timestamp, 8);
@@ -245,14 +243,14 @@ bool waves_build_transfer_transaction(const TransferTransactionsData *transactio
         memcpy(&transaction_bytes->recipient_address_or_alias[4], &transaction_data->recipient_address_or_alias[2], alias_size);
     } else {
         tmp = 26;
-        b58tobin(transaction_bytes->recipient_address_or_alias, &tmp, (const char *) transaction_data->recipient_address_or_alias, 0);
+        base58_decode(transaction_bytes->recipient_address_or_alias, (const char *) transaction_data->recipient_address_or_alias);
         if (network_id != transaction_bytes->recipient_address_or_alias[1]) {
             return false;
         }
     }
     int attachment_strlen = (int) strlen((const char *) transaction_data->attachment);
     tmp = (size_t) bytes_length_from_b58(attachment_strlen);
-    b58tobin(&transaction_bytes->attachment, &tmp, (const char *) transaction_data->attachment, 0);
+    base58_decode(transaction_bytes->attachment, (const char *) transaction_data->attachment);
     uint16_t attachment_size = (uint16_t) tmp;
     memcpy(&transaction_bytes->attachment_length, &attachment_size, 2);
 

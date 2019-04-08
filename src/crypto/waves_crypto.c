@@ -23,47 +23,25 @@ void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[
     memcpy(hash, c.sb, 32);
 }
 
-bool waves_bin_sign_message(const curve25519_secret_key *private_key, const unsigned char *message, const size_t message_size,
+bool waves_sign_message(const curve25519_secret_key *private_key, const unsigned char *message, const size_t message_size,
                             curve25519_signature signature) {
     unsigned char random[64];
     RAND_bytes(random, 64);
-    return waves_bin_sign_message_custom_random(private_key, message, message_size, signature, random);
+    return waves_sign_message_custom_random(private_key, message, message_size, signature, random);
 }
 
-bool waves_b58_sign_message(const curve25519_secret_key *private_key, const unsigned char *message, const size_t message_size,
-                            unsigned char* signature_b58, size_t* signature_b58_size) {
-    unsigned char random[64];
-    RAND_bytes(random, 64);
-    return waves_b58_sign_message_custom_random(private_key, message, message_size, signature_b58, signature_b58_size, random);
-}
-
-bool waves_bin_sign_message_custom_random(const curve25519_secret_key *private_key, const unsigned char *message,
+bool waves_sign_message_custom_random(const curve25519_secret_key *private_key, const unsigned char *message,
                                       const size_t message_size, curve25519_signature signature, unsigned char *random64) {
     return curve25519_sign(signature, (const unsigned char *) private_key, message, message_size, random64) == 0;
 }
 
-bool waves_b58_sign_message_custom_random(const curve25519_secret_key *private_key, const unsigned char *message,
-                                      const size_t message_size, unsigned char* signature_base58, size_t* signature_base58_size, unsigned char *random64) {
-    curve25519_signature signature;
-    if (curve25519_sign(signature, (const unsigned char *) private_key, message, message_size, random64))
-        return false;
-    return b58enc((char *)signature_base58, signature_base58_size, signature, 64);
-}
-
-bool waves_bin_verify_message(const curve25519_public_key *public_key, const unsigned char *message, const size_t message_size, const curve25519_signature signature) {
-    return curve25519_verify(signature, (const unsigned char *) public_key, message, message_size) == 0;
-}
-
-bool waves_b58_verify_message(const curve25519_public_key *public_key, const unsigned char *message, const size_t message_size, char* signature_base58) {
-    curve25519_signature signature;
-    size_t signature_size = sizeof(signature);
-    b58tobin(signature, &signature_size, signature_base58, 0);
+bool waves_verify_message(const curve25519_public_key *public_key, const unsigned char *message, const size_t message_size, const curve25519_signature signature) {
     return curve25519_verify(signature, (const unsigned char *) public_key, message, message_size) == 0;
 }
 
 // todo move all that stuff to crypto module
 // Build waves address from the curve25519 public key, check https://docs.wavesplatform.com/en/waves-environment/waves-protocol/data-structures.html#section-884d9804999fc47a3c2694e49ad2536a
-void waves_bin_public_key_to_address(const curve25519_public_key public_key, const unsigned char network_byte, unsigned char address[26])
+void waves_public_key_to_address(const curve25519_public_key public_key, const unsigned char network_byte, unsigned char address[26])
 {
     uint8_t public_key_hash[32];
 
@@ -79,15 +57,7 @@ void waves_bin_public_key_to_address(const curve25519_public_key public_key, con
     memmove(&address[22], checksum, 4);
 }
 
-void waves_b58_public_key_to_address(const curve25519_public_key public_key, const unsigned char network_byte, unsigned char *output)
-{
-    uint8_t address[26];
-    size_t length = 36;
-    waves_bin_public_key_to_address(public_key, network_byte, address);
-    b58enc((char *) output, &length, address, 26);
-}
-
-void waves_bin_seed_to_address(const unsigned char *key, const unsigned char network_byte, unsigned char *output)
+void waves_seed_to_address(const unsigned char *key, const unsigned char network_byte, unsigned char *output)
 {
     char realkey[1024] = {0, 0, 0, 0};
     memcpy(&realkey[4], key, strlen((const char *) key));
@@ -109,9 +79,10 @@ void waves_bin_seed_to_address(const unsigned char *key, const unsigned char net
 
     curve25519_keygen(pubkey, privkey);
 
-    waves_bin_public_key_to_address(pubkey, network_byte, output);
+    waves_public_key_to_address(pubkey, network_byte, output);
 }
 
+/*
 void waves_b58_seed_to_address(const unsigned char *key, const unsigned char network_byte, unsigned char *output)
 {
     uint8_t address[26];
@@ -119,3 +90,4 @@ void waves_b58_seed_to_address(const unsigned char *key, const unsigned char net
     waves_bin_seed_to_address(key, network_byte, address);
     b58enc((char *) output, &length, address, 26);
 }
+*/

@@ -170,6 +170,8 @@ int generate_addresses(bool testnet, int iterations, vanity_settings *settings, 
     blake2b_final(S, entropy, 64);
 
     uint32_t *ent = (uint32_t*)entropy;
+    unsigned char address_bin[26];
+
     for(int i = 0; i < iterations ; i++) {
         ent[0]++;
         if(i % 58 == 0)
@@ -181,7 +183,8 @@ int generate_addresses(bool testnet, int iterations, vanity_settings *settings, 
 
         if (testnet) network_id = 'T';
 
-        waves_b58_seed_to_address(seed, network_id, address);
+        waves_seed_to_address(seed, network_id, address_bin);
+        base58_encode((char*)address, address_bin, sizeof(address_bin));
 
 //        for(int u = 0 ; u < strlen(address) ; u++)
 //           heat_map[u][base58char_to_i(address[u])]++;
