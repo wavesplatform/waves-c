@@ -42,8 +42,16 @@ bool waves_message_verify(const curve25519_public_key *public_key, const unsigne
 // todo move all that stuff to crypto module
 // Build waves address from the curve25519 public key, check https://docs.wavesplatform.com/en/waves-environment/waves-protocol/data-structures.html#section-884d9804999fc47a3c2694e49ad2536a
 void waves_public_key_to_address(const curve25519_public_key public_key, const unsigned char network_byte, unsigned char *output) {
-    uint8_t public_key_hash[32];
     uint8_t address[26];
+    waves_public_key_to_address_bin(public_key, network_byte, address);
+    size_t length = 36;
+    b58enc((char *) output, &length, address, 26);
+}
+
+void waves_public_key_to_address_bin(const curve25519_public_key public_key, const unsigned char network_byte, unsigned char address[26])
+{
+    uint8_t public_key_hash[32];
+
     uint8_t checksum[32];
     waves_secure_hash(public_key, 32, public_key_hash);
 
@@ -54,9 +62,6 @@ void waves_public_key_to_address(const curve25519_public_key public_key, const u
     waves_secure_hash(address, 22, checksum);
 
     memmove(&address[22], checksum, 4);
-
-    size_t length = 36;
-    b58enc((char *) output, &length, address, 26);
 }
 
 void waves_seed_to_address(const unsigned char *key, const unsigned char network_byte, unsigned char *output) {

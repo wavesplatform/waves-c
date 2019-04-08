@@ -33,14 +33,14 @@ static const int8_t b58digits_map[] = {
 	47,48,49,50,51,52,53,54, 55,56,57,-1,-1,-1,-1,-1,
 };
 
-bool b58tobin(void *bin, size_t *binszp, const char *b58, size_t b58sz)
+ssize_t b58tobin(void *bin, size_t *binszp, const char *b58, size_t b58sz)
 {
 	size_t binsz = *binszp;
 	const unsigned char *b58u = (void*)b58;
 	unsigned char *binu = bin;
 	size_t outisz = (binsz + 3) / 4;
-	uint32_t outi[outisz];
-	uint64_t t;
+    uint8_t outi[outisz];
+    uint64_t t;
 	uint32_t c;
 	size_t i, j;
 	uint8_t bytesleft = binsz % 4;
@@ -60,23 +60,23 @@ bool b58tobin(void *bin, size_t *binszp, const char *b58, size_t b58sz)
 	{
 		if (b58u[i] & 0x80)
 			// High-bit set on invalid digit
-			return false;
+            return -b58sz + i;
 		if (b58digits_map[b58u[i]] == -1)
 			// Invalid base58 digit
-			return false;
+            return -b58sz + i;
 		c = (unsigned)b58digits_map[b58u[i]];
 		for (j = outisz; j--; )
 		{
-			t = ((uint64_t)outi[j]) * 58 + c;
-			c = (t & 0x3f00000000) >> 32;
-			outi[j] = t & 0xffffffff;
+            t = ((uint64_t)outi[j]) * 58 + c;
+            c = (t & 0x3f00000000) >> 32;
+            outi[j] = t & 0xffffffff;
 		}
-		if (c)
+        if (c)
 			// Output number too big (carry to the next int32)
-			return false;
+            return -b58sz + i;
 		if (outi[0] & zeromask)
 			// Output number too big (last int32 filled too far)
-			return false;
+            return -b58sz + i;
 	}
 	
 	j = 0;
@@ -115,7 +115,7 @@ bool b58tobin(void *bin, size_t *binszp, const char *b58, size_t b58sz)
 	}
 	*binszp += zerocount;
 	
-	return true;
+    return 0;
 }
 
 static
