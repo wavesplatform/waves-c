@@ -20,10 +20,12 @@ void waves_secure_hash_test() {
 void waves_public_key_to_address_testnet_test() {
     uint8_t input[] = {0xd8, 0x5b, 0x2f, 0x9e, 0x00, 0xde, 0xa8, 0x88, 0x65, 0x55, 0x3b, 0x6f, 0x69, 0xda, 0x53, 0x18, 0xbe, 0x64, 0x4f, 0x4d, 0x39, 0xa9, 0xc4, 0x8e, 0xba, 0xed, 0x71, 0x46, 0xcb, 0x7a, 0xfb, 0x73};
     unsigned char output[512];
-    unsigned char expected[] = "3PAtGGSLnHJ3wuK8jWPvAA487pKamvQHyQw";
-    waves_b58_public_key_to_address(input, 'W', output);
+    unsigned char expected[] = "3MxsTK7Sv9kfKT1iUS8vChgJkvoowpNXDJU";
+    unsigned char address_bin[26];
+    waves_public_key_to_address(input, 'T', address_bin);
+    base58_encode(output, address_bin, sizeof(address_bin));
     if(strcmp((const char *) output, (const char *) expected) != 0) {
-        printf("waves_public_key_to_address mainnet test failed\n");
+        printf("waves_public_key_to_address testnet test failed\n");
         exit(-1);
     }
 }
@@ -31,10 +33,12 @@ void waves_public_key_to_address_testnet_test() {
 void waves_public_key_to_address_mainnet_test() {
     uint8_t input[] = {0xdb, 0x3b, 0xe4, 0xbb, 0x58, 0x3e, 0x58, 0xe5, 0x7b, 0xae, 0xb2, 0xa7, 0xad, 0x40, 0x8f, 0x73, 0xb2, 0x04, 0xab, 0x26, 0xd6, 0x4c, 0x73, 0x0e, 0xbb, 0xe1, 0x4d, 0xd0, 0xaf, 0x33, 0xe8, 0x23};
     unsigned char output[512];
-    unsigned char expected[] = "3Mv61qe6egMSjRDZiiuvJDnf3Q1qW9tTZDB";
-    waves_b58_public_key_to_address(input, 'T', output);
+    unsigned char expected[] = "3P86pnxzWotqMsWyyoAvFgAUQHXcLNedasy";
+    unsigned char address_bin[26];
+    waves_public_key_to_address(input, 'W', address_bin);
+    base58_encode(output, address_bin, sizeof(address_bin));
     if(strcmp((const char *) output, (const char *) expected) != 0) {
-        printf("waves_public_key_to_address testnet test failed\n");
+        printf("waves_public_key_to_address mainnet test failed\n");
         exit(-1);
     }
 }
@@ -60,7 +64,9 @@ void waves_seed_to_address_testnet_test() {
     unsigned char test[] = "industry detail rifle scan weird join crawl connect demand top club hello entry second cargo";
     unsigned char output[512];
     unsigned char expected[] = "3NCyi16BFfFvYhCeg1pKrMKMLDXwazkPuhP";
-    waves_b58_seed_to_address(test, 'T', output);
+    unsigned char address_bin[26];
+    waves_seed_to_address(test, 'T', address_bin);
+    base58_encode(output, address_bin, sizeof(address_bin));
     if(strcmp((const char *) output, (const char *) expected) != 0) {
         printf("waves_seed_to_address testnet test failed\n");
         exit(-1);
@@ -71,7 +77,9 @@ void waves_seed_to_address_mainnet_test() {
     unsigned char test[] = "try south announce math salute shoe blast finish state battle nest tube enjoy yellow layer";
     unsigned char output[512];
     unsigned char expected[] = "3PJXLWbp5ft3LCeesqgJyTpGQRgU9nTY3PA";
-    waves_b58_seed_to_address(test, 'W', output);
+    unsigned char address_bin[26];
+    waves_seed_to_address(test, 'W', address_bin);
+    base58_encode(output, address_bin, sizeof(address_bin));
     if(strcmp((const char *) output, (const char *) expected) != 0) {
         printf("waves_seed_to_address mainnet test failed\n");
         exit(-1);
@@ -94,7 +102,6 @@ void waves_message_sign_without_random_test() {
     uint8_t signature[64];
 
     unsigned char signature_base58[89];
-    size_t signature_base58_size = sizeof(signature_base58);
 
     uint8_t message[] = {0x01, 0x02, 0x03, 0x04, 0x05};
 
@@ -113,14 +120,14 @@ void waves_message_sign_without_random_test() {
     b58enc(message_base58, &message_base58_size, message, 5);
 #endif
 
-    if(!waves_bin_sign_message_custom_random((curve25519_secret_key const *) privkey, message, sizeof(message), signature, zero_random64)) {
+    if(!waves_sign_message_custom_random((curve25519_secret_key const *) privkey, message, sizeof(message), signature, zero_random64)) {
         printf("waves_message_sign_without_random test failed\n");
         exit(-1);
     }
 
-    b58enc((char *) signature_base58, &signature_base58_size, signature, 64);
+    base58_encode((char*)signature_base58, signature, 64);
 
-    if(strcmp((const char *) signature_base58, (const char *) expected) != 0) {
+    if(strcmp((const char*) signature_base58, (const char *) expected) != 0) {
         printf("waves_message_sign test failed 1\n");
         exit(-1);
     }
@@ -137,18 +144,17 @@ void waves_message_sign_test() {
     uint8_t signature[64];
 
     char signature_base58[89];
-    size_t signature_base58_size = sizeof(signature_base58);
 
     uint8_t message[] = {0x01, 0x02, 0x03, 0x04, 0x05};
 
-    if(!waves_bin_sign_message((curve25519_secret_key const *) privkey, message, sizeof(message), signature)) {
+    if(!waves_sign_message((curve25519_secret_key const *) privkey, message, sizeof(message), signature)) {
         printf("waves_message_sign test failed\n");
         exit(-1);
     }
 
-    b58enc(signature_base58, &signature_base58_size, signature, 64);
+    base58_encode(signature_base58, signature, 64);
 
-    if(!waves_bin_verify_message((curve25519_public_key const *) pubkey, message, sizeof(message), signature)) {
+    if(!waves_verify_message((curve25519_public_key const *) pubkey, message, sizeof(message), signature)) {
         printf("waves_message_sign test failed 1\n");
         exit(-1);
     }
@@ -166,9 +172,8 @@ void waves_message_verify_test() {
 
     char signature_base58[] = "5HRwSL8XGhSEbtLuBfZT1AkfKaybYA67aKTUpg3v47aTZfCLiBMDLj1P9PmoirWcNCVFCoja4gmv5nkjDnYAULus";
     uint8_t signature[64];
-    size_t signature_size = sizeof(signature);
 
-    b58tobin(signature, &signature_size, signature_base58, 0);
+    base58_decode(signature, signature_base58);
 
 #ifndef WAVES_DEBUG
     char privkey_base58[45];
@@ -185,7 +190,7 @@ void waves_message_verify_test() {
     b58enc(signature_base582, &signature_base58_size, signature, 64);
 #endif
 
-    if(!waves_bin_verify_message((curve25519_public_key const *) pubkey, message, sizeof(message), signature)) {
+    if(!waves_verify_message((curve25519_public_key const *) pubkey, message, sizeof(message), signature)) {
         printf("waves_message_verify test failed\n");
         exit(-1);
     }
@@ -204,14 +209,13 @@ void waves_message_verify_negative_test() {
     char signature_base58[] = "5HRwSL8XGhSEbtLuBfZT1AkfKaybYA67aKTUpg3v47aTZfCLiBMDLj1P9PmoirWcNCVFCoja4gmv5nkjDnYAULus";
 
     uint8_t signature[64];
-    size_t signature_size = sizeof(signature);
 
-    b58tobin(signature, &signature_size, signature_base58, 0);
+    base58_decode(signature, signature_base58);
 
     // oops
     signature[0] = '1';
 
-    if(waves_bin_verify_message((curve25519_public_key const *) pubkey, message, sizeof(message), signature)) {
+    if(waves_verify_message((curve25519_public_key const *) pubkey, message, sizeof(message), signature)) {
         printf("waves_message_verify_negative test failed\n");
         exit(-1);
     }

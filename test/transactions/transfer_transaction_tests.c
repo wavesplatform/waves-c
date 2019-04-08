@@ -21,48 +21,40 @@ bool compare_transfer_transactions_bytes(TransferTransactionsBytes *transfer_tra
 ) {
     char buf[512];
     memset(buf, 0, sizeof(buf));
-    size_t buf_used = sizeof(buf);
 
     bool result = true;
 
-    b58enc(buf, &buf_used, &transfer_transactions_bytes->type, 1);
+    base58_encode(buf, &transfer_transactions_bytes->type, 1);
     result &= memcmp(buf, expected_type_base58, strlen((const char *) expected_type_base58)) == 0;
 
-    buf_used = sizeof(buf);
-    b58enc(buf, &buf_used, &transfer_transactions_bytes->sender_public_key, 32);
+    base58_encode(buf, transfer_transactions_bytes->sender_public_key, 32);
     result &= memcmp(buf, expected_sender_pk_base58, strlen((const char *) expected_sender_pk_base58)) == 0;
 
-    buf_used = sizeof(buf);
-    b58enc(buf, &buf_used, &transfer_transactions_bytes->amount_asset_flag, 1);
+    base58_encode(buf, &transfer_transactions_bytes->amount_asset_flag, 1);
     result &= memcmp(buf, expected_amount_asset_flag_base58, strlen(
             (const char *) expected_amount_asset_flag_base58)) == 0;
 
-    buf_used = sizeof(buf);
-    b58enc(buf, &buf_used, &transfer_transactions_bytes->amount_asset_id, 32);
-   result &= memcmp(buf, expected_amount_asset_base58, strlen((const char *) expected_amount_asset_base58)) == 0;
+    base58_encode(buf, transfer_transactions_bytes->amount_asset_id, 32);
+    result &= memcmp(buf, expected_amount_asset_base58, strlen((const char *) expected_amount_asset_base58)) == 0;
 
-    buf_used = sizeof(buf);
-    b58enc(buf, &buf_used, &transfer_transactions_bytes->fee_asset_flag, 1);
+    base58_encode(buf, &transfer_transactions_bytes->fee_asset_flag, 1);
     result &= memcmp(buf, expected_fee_asset_flag_base58, strlen((const char *) expected_fee_asset_flag_base58)) == 0;
 
-    buf_used = sizeof(buf);
-    b58enc(buf, &buf_used, &transfer_transactions_bytes->fee_asset_id, 32);
+    base58_encode(buf, transfer_transactions_bytes->fee_asset_id, 32);
     result &= memcmp(buf, expected_fee_asset_base58, strlen((const char *) expected_fee_asset_base58)) == 0;
 
     result &= transfer_transactions_bytes->timestamp == expected_timestamp;
     result &= transfer_transactions_bytes->amount == expected_amount;
     result &= transfer_transactions_bytes->fee == expected_fee;
 
-    buf_used = sizeof(buf);
-    b58enc(buf, &buf_used, &transfer_transactions_bytes->recipient_address_or_alias, strlen(
+    base58_encode(buf, transfer_transactions_bytes->recipient_address_or_alias, strlen(
             (const char *) transfer_transactions_bytes->recipient_address_or_alias));
     result &= memcmp(buf, expected_recipient_address_base58, strlen(
             (const char *) expected_recipient_address_base58)) == 0;
 
     result &= transfer_transactions_bytes->attachment_length == expected_attachment_length;
 
-    buf_used = sizeof(buf);
-    b58enc(buf, &buf_used, &transfer_transactions_bytes->attachment, transfer_transactions_bytes->attachment_length);
+    base58_encode(buf, transfer_transactions_bytes->attachment, transfer_transactions_bytes->attachment_length);
     result &= memcmp(buf, expected_attachment_base58, strlen((const char *) expected_attachment_base58)) == 0;
 
     return result;
@@ -86,8 +78,7 @@ void waves_parse_transfer_transaction_test() {
     const unsigned char expected_attachment_base58[] = "2VfUX";
 
     unsigned char transfer_bytes[512];
-    size_t transfer_bytes_size = sizeof(transfer_bytes);
-    b58tobin(transfer_bytes, &transfer_bytes_size, (const char *) transfer_base58, 0);
+    size_t transfer_bytes_size = base58_decode(transfer_bytes, (const char *) transfer_base58);
     TransferTransactionsBytes transfer_transactions_bytes;
     bool result = waves_parse_transfer_transaction(transfer_bytes, sizeof(transfer_bytes) - transfer_bytes_size,
                                                    &transfer_transactions_bytes);
@@ -113,8 +104,7 @@ void waves_transfer_transaction_to_bytes_test() {
     const char expected_transfer_base58[] = "Ht7FtLJBrnukwWtywum4o1PbQSNyDWMgb4nXR5ZkV78krj9qVt17jz74XYSrKSTQe6wXuPdt3aCvmnF5hfjhnd1gyij36hN1zSDaiDg3TFi7c7RbXTHDDUbRgGajXci8PJB3iJM1tZvh8AL5wD4o4DCo1VJoKk2PUWX3cUydB7brxWGUxC6mPxKMdXefXwHeB4khwugbvcsPgk8F6YB";
 
     char expected_transfer_bytes[512];
-    size_t expected_transfer_bytes_size = sizeof(expected_transfer_bytes);
-    b58tobin(expected_transfer_bytes, &expected_transfer_bytes_size, expected_transfer_base58, 0);
+    size_t expected_transfer_bytes_size = base58_decode(expected_transfer_bytes, expected_transfer_base58);
 
     TransferTransactionsBytes transfer_transactions_bytes;
     waves_parse_transfer_transaction((const unsigned char *) expected_transfer_bytes, sizeof(expected_transfer_bytes) - expected_transfer_bytes_size,
@@ -127,9 +117,8 @@ void waves_transfer_transaction_to_bytes_test() {
 
     char transfer_base58[512];
     memset(transfer_base58, 0, sizeof(transfer_base58));
-    size_t transfer_base58_used = sizeof(transfer_base58);
 
-    b58enc(transfer_base58, &transfer_base58_used, &transfer_bytes, transfer_bytes_size);
+    base58_encode(transfer_base58, transfer_bytes, transfer_bytes_size);
     result &= memcmp(transfer_base58, expected_transfer_base58, strlen(expected_transfer_base58)) == 0;
 
     if (!result || strcmp(expected_transfer_base58, transfer_base58) != 0) {
@@ -152,8 +141,7 @@ void waves_read_transfer_transaction_data_test() {
     const unsigned char expected_attachment_utf8[] = "2VfUX";
 
     char expected_transfer_bytes[512];
-    size_t expected_transfer_bytes_size = sizeof(expected_transfer_bytes);
-    b58tobin(expected_transfer_bytes, &expected_transfer_bytes_size, expected_transfer_base58, 0);
+    size_t expected_transfer_bytes_size = base58_decode(expected_transfer_bytes, expected_transfer_base58);
 
     TransferTransactionsBytes transfer_transactions_bytes;
     waves_parse_transfer_transaction((const unsigned char *) expected_transfer_bytes, sizeof(expected_transfer_bytes) - expected_transfer_bytes_size,
