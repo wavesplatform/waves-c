@@ -1,5 +1,5 @@
-#ifndef __WAVES_CRYPTO_H__
-#define __WAVES_CRYPTO_H__
+#ifndef __WAVES_CRYPTO_CRYPTO_H_11517__
+#define __WAVES_CRYPTO_CRYPTO_H_11517__
 
 #include <stdint.h>
 
@@ -30,4 +30,4 @@ void waves_seed_to_address(const unsigned char *key, unsigned char network_byte,
 }
 #endif
 
-#endif
+#endif /* __WAVES_CRYPTO_CRYPTO_H_11517__ */
