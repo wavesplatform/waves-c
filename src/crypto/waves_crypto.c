@@ -30,7 +30,7 @@ bool waves_sign_message(const curve25519_secret_key *private_key, const unsigned
 }
 
 bool waves_sign_message_custom_random(const curve25519_secret_key *private_key, const unsigned char *message,
-                                      const size_t message_size, curve25519_signature signature, unsigned char *random64) {
+                                      const size_t message_size, curve25519_signature signature, const unsigned char *random64) {
     return curve25519_sign(signature, (const unsigned char *) private_key, message, message_size, random64) == 0;
 }
 
@@ -56,7 +56,7 @@ void waves_public_key_to_address(const curve25519_public_key public_key, const u
     memmove(&address[22], checksum, 4);
 }
 
-void waves_seed_to_address(const unsigned char *key, const unsigned char network_byte, unsigned char *output)
+void waves_seed_to_address(const unsigned char *key, const unsigned char network_byte, unsigned char output[26])
 {
     char realkey[1024] = {0, 0, 0, 0};
     memcpy(&realkey[4], key, strlen((const char *) key));
