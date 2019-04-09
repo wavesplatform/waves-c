@@ -48,7 +48,7 @@ ssize_t base58_decode(unsigned char *out, const char *in)
         *(out++) = 0;
     }
 
-    size_t outisz = (b58sz - zerocount) * 733 / 1000;
+    size_t outisz = (b58sz - zerocount) * 733 / 1000 + 1;
     uint8_t outi[outisz];
 	memset(outi, 0, outisz * sizeof(*outi));
 	
@@ -67,9 +67,9 @@ ssize_t base58_decode(unsigned char *out, const char *in)
             outi[j] = c & 0xFF;
             c >>= 8;
 		}
-        if (c)
+        //if (c)
 			// Output number too big (carry to the next int32)
-            return -b58sz + i;
+        //    return -b58sz + i;
 	}
 
     for (j = 0; j < outisz; ++j)
@@ -82,7 +82,7 @@ ssize_t base58_decode(unsigned char *out, const char *in)
     {
          *(out++) = outi[j];
     }
-    return bin_sz;
+    return bin_sz + zerocount;
 }
 
 static const char b58digits_ordered[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
