@@ -38,17 +38,19 @@ ssize_t base58_decode(unsigned char *out, const char *in)
 {
     const unsigned char *b58u = (void*)in;
     size_t b58sz = strlen(in);
-    size_t outisz = b58sz * 733 / 1000;
-    uint8_t outi[outisz];
 	uint32_t c;
 	size_t i, j;
+
 	unsigned zerocount = 0;
-	
+    for (i = 0; i < b58sz && b58u[i] == '1'; ++i)
+    {
+        ++zerocount;
+        *(out++) = 0;
+    }
+
+    size_t outisz = (b58sz - zerocount) * 733 / 1000;
+    uint8_t outi[outisz];
 	memset(outi, 0, outisz * sizeof(*outi));
-	
-	// Leading zeros, just count
-	for (i = 0; i < b58sz && b58u[i] == '1'; ++i)
-		++zerocount;
 	
 	for ( ; i < b58sz; ++i)
 	{
@@ -61,7 +63,7 @@ ssize_t base58_decode(unsigned char *out, const char *in)
 		c = (unsigned)b58digits_map[b58u[i]];
 		for (j = outisz; j--; )
 		{
-            c += (uint64_t)outi[j] * 58;
+            c += (unsigned char)outi[j] * 58;
             outi[j] = c & 0xFF;
             c >>= 8;
 		}
