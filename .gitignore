@@ -63,3 +63,13 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Linux backup files
+*~
+
+# CPack temporary files and directories
+CPackConfig.cmake
+CPackSourceConfig.cmake
+_CPack_Packages/
+*.deb
+
+bin/
