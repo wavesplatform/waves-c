@@ -40,8 +40,8 @@ bool waves_sign_message_custom_random(const curve25519_secret_key *private_key, 
     return curve25519_sign(signature, (const unsigned char *) private_key, message, message_size, random64) == 0;
 }
 
-bool waves_verify_message(const curve25519_public_key *public_key, const unsigned char *message, const size_t message_size, const curve25519_signature signature) {
-    return curve25519_verify(signature, (const unsigned char *) public_key, message, message_size) == 0;
+bool waves_verify_message(const curve25519_public_key *public_key, const unsigned char *message, const size_t message_size, const curve25519_signature *signature) {
+    return curve25519_verify((const unsigned char*) signature, (const unsigned char *) public_key, message, message_size) == 0;
 }
 
 // todo move all that stuff to crypto module
