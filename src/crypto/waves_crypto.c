@@ -22,6 +22,12 @@ void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[
     memcpy(hash, c.sb, 32);
 }
 
+
+void waves_gen_public_key(curve25519_public_key pubkey, curve25519_secret_key privkey)
+{
+    curve25519_keygen(pubkey, privkey);
+}
+
 bool waves_sign_message(const curve25519_secret_key *private_key, const unsigned char *message, const size_t message_size,
                             curve25519_signature signature) {
     unsigned char random[64];
