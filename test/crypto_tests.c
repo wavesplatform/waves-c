@@ -68,7 +68,7 @@ void waves_seed_to_address_testnet_test() {
 
     uint8_t priv_key[32];
     uint8_t pub_key[32];
-    waves_gen_private_key(priv_key, test);
+    waves_gen_private_key(priv_key, (const unsigned char *)test);
     waves_gen_public_key(pub_key, priv_key);
     waves_public_key_to_address(pub_key, 'T', address_bin);
     base58_encode((char*)output, address_bin, sizeof(address_bin));
@@ -131,7 +131,7 @@ void waves_message_sign_without_random_test() {
     b58enc(message_base58, &message_base58_size, message, 5);
 #endif
 
-    if(!waves_sign_message_custom_random((curve25519_secret_key const *) privkey, message, sizeof(message), signature, zero_random64)) {
+    if(!waves_sign_message_custom_random(privkey, message, sizeof(message), signature, zero_random64)) {
         printf("waves_message_sign_without_random test failed\n");
         exit(-1);
     }
@@ -158,14 +158,14 @@ void waves_message_sign_test() {
 
     uint8_t message[] = {0x01, 0x02, 0x03, 0x04, 0x05};
 
-    if(!waves_sign_message((curve25519_secret_key const *) privkey, message, sizeof(message), signature)) {
+    if(!waves_sign_message(privkey, message, sizeof(message), signature)) {
         printf("waves_message_sign test failed\n");
         exit(-1);
     }
 
     base58_encode(signature_base58, signature, 64);
 
-    if(!waves_verify_message((curve25519_public_key const *) pubkey, message, sizeof(message), (curve25519_signature const *)signature)) {
+    if(!waves_verify_message(pubkey, message, sizeof(message), signature)) {
         printf("waves_message_sign test failed 1\n");
         exit(-1);
     }
@@ -201,7 +201,7 @@ void waves_message_verify_test() {
     b58enc(signature_base582, &signature_base58_size, signature, 64);
 #endif
 
-    if(!waves_verify_message((curve25519_public_key const *) pubkey, message, sizeof(message), (curve25519_signature const *) signature)) {
+    if(!waves_verify_message(pubkey, message, sizeof(message), signature)) {
         printf("waves_message_verify test failed\n");
         exit(-1);
     }
@@ -226,7 +226,7 @@ void waves_message_verify_negative_test() {
     // oops
     signature[0] = '1';
 
-    if(waves_verify_message((curve25519_public_key const *) pubkey, message, sizeof(message), (curve25519_signature const *)signature)) {
+    if(waves_verify_message(pubkey, message, sizeof(message), signature)) {
         printf("waves_message_verify_negative test failed\n");
         exit(-1);
     }
