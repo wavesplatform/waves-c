@@ -183,7 +183,11 @@ int generate_addresses(bool testnet, int iterations, vanity_settings *settings, 
 
         if (testnet) network_id = 'T';
 
-        waves_seed_to_address(seed, network_id, address_bin);
+        uint8_t priv_key[32];
+        uint8_t pub_key[32];
+        waves_gen_private_key(priv_key, seed);
+        waves_gen_public_key(pub_key, priv_key);
+        waves_public_key_to_address(pub_key, network_id, address_bin);
         base58_encode((char*)address, address_bin, sizeof(address_bin));
 
 //        for(int u = 0 ; u < strlen(address) ; u++)

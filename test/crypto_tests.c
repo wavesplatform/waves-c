@@ -65,7 +65,13 @@ void waves_seed_to_address_testnet_test() {
     unsigned char output[512];
     unsigned char expected[] = "3NCyi16BFfFvYhCeg1pKrMKMLDXwazkPuhP";
     unsigned char address_bin[26];
-    waves_seed_to_address(test, 'T', address_bin);
+
+    uint8_t priv_key[32];
+    uint8_t pub_key[32];
+    waves_gen_private_key(priv_key, test);
+    waves_gen_public_key(pub_key, priv_key);
+    waves_public_key_to_address(pub_key, 'T', address_bin);
+    base58_encode((char*)output, address_bin, sizeof(address_bin));
     base58_encode(output, address_bin, sizeof(address_bin));
     if(strcmp((const char *) output, (const char *) expected) != 0) {
         printf("waves_seed_to_address testnet test failed\n");
@@ -78,8 +84,13 @@ void waves_seed_to_address_mainnet_test() {
     unsigned char output[512];
     unsigned char expected[] = "3PJXLWbp5ft3LCeesqgJyTpGQRgU9nTY3PA";
     unsigned char address_bin[26];
-    waves_seed_to_address(test, 'W', address_bin);
-    base58_encode(output, address_bin, sizeof(address_bin));
+
+    uint8_t priv_key[32];
+    uint8_t pub_key[32];
+    waves_gen_private_key(priv_key, test);
+    waves_gen_public_key(pub_key, priv_key);
+    waves_public_key_to_address(pub_key, 'W', address_bin);
+    base58_encode((char*)output, address_bin, sizeof(address_bin));
     if(strcmp((const char *) output, (const char *) expected) != 0) {
         printf("waves_seed_to_address mainnet test failed\n");
         exit(-1);
