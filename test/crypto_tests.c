@@ -116,7 +116,8 @@ void waves_message_sign_without_random_test() {
 
     uint8_t message[] = {0x01, 0x02, 0x03, 0x04, 0x05};
 
-#ifndef WAVES_DEBUG
+    /* XXX Where b58enc() function comes from?! */
+#if 0 && !defined(WAVES_DEBUG)
     char message_base58[89];
     size_t message_base58_size = sizeof(message_base58);
 

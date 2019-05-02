@@ -80,7 +80,7 @@ void waves_public_key_to_address(const curve25519_public_key public_key, const u
     memmove(&address[22], checksum, 4);
 }
 
-/*
+#if 0
 void waves_b58_seed_to_address(const unsigned char *key, const unsigned char network_byte, unsigned char *output)
 {
     uint8_t address[26];
@@ -88,4 +88,4 @@ void waves_b58_seed_to_address(const unsigned char *key, const unsigned char net
     waves_bin_seed_to_address(key, network_byte, address);
     b58enc((char *) output, &length, address, 26);
 }
-*/
+#endif
