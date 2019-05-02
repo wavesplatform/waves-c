@@ -187,7 +187,8 @@ void waves_message_verify_test() {
 
     base58_decode(signature, signature_base58);
 
-#ifndef WAVES_DEBUG
+    /* XXX Where b58enc() function comes from?! */
+#if 0 && !defined(WAVES_DEBUG)
     char privkey_base58[45];
     size_t privkey_base58_size = sizeof(privkey_base58);
 
