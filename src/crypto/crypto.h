@@ -26,7 +26,6 @@ bool waves_sign_message_custom_random(const curve25519_secret_key private_key /*
                                       const unsigned char *random64 /* 64 bytes */);
 bool waves_verify_message(const curve25519_public_key public_key, const unsigned char *message,
                           const size_t message_size, const curve25519_signature signature);
-void waves_seed_to_address(const unsigned char *key, unsigned char network_byte, unsigned char output[26]);
 
 #ifdef __cplusplus
 }
