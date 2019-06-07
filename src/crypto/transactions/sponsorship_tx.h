@@ -1,7 +1,7 @@
 #ifndef __WAVES_SPONSORSHIP_TRANSACTION_H_29740__
 #define __WAVES_SPONSORSHIP_TRANSACTION_H_29740__
 
-#include "transaction_common.h"
+#include "tx_common.h"
 
 typedef struct sponsorship_tx_bytes_s
 {

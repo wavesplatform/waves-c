@@ -1,7 +1,7 @@
 #ifndef __WAVES_LEASE_CANCEL_TRANSACTION_H_18749__
 #define __WAVES_LEASE_CANCEL_TRANSACTION_H_18749__
 
-#include "transaction_common.h"
+#include "tx_common.h"
 
 typedef struct lease_cancel_tx_bytes_s
 {

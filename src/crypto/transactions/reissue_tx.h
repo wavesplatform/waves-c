@@ -1,7 +1,7 @@
 #ifndef __WAVES_REISSUE_TRANSACTION_H_25505__
 #define __WAVES_REISSUE_TRANSACTION_H_25505__
 
-#include "transaction_common.h"
+#include "tx_common.h"
 
 typedef struct reissue_tx_bytes_s
 {
