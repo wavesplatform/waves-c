@@ -20,6 +20,12 @@ typedef unsigned char tx_lease_asset_id_bytes_t [32];
 typedef char tx_alias_str_t [31];
 typedef unsigned char tx_rcpt_addr_bytes_t [26];
 
+typedef struct tx_optional_asset_id_s
+{
+    uint8_t valid;
+    tx_asset_id_bytes_t data;
+} tx_optional_asset_id_t;
+
 enum
 {
     TX_VERSION_0 = 0,
@@ -73,6 +79,9 @@ size_t tx_copy_public_key(unsigned char* dst, const unsigned char* src);
 size_t tx_copy_lease_id(unsigned char* dst, const unsigned char* src);
 size_t tx_copy_asset_id(unsigned char* dst, const unsigned char* src);
 size_t tx_copy_lease_asset_id(unsigned char* dst, const unsigned char* src);
+
+ssize_t tx_load_optional_asset_id(tx_optional_asset_id_t* dst, const unsigned char* src);
+size_t tx_store_optional_asset_id(unsigned char* dst, const tx_optional_asset_id_t* src);
 
 ssize_t tx_load_alias(tx_alias_t* dst, const unsigned char* src);
 size_t tx_store_alias(unsigned char* dst, const tx_alias_t *src);
@@ -168,5 +177,108 @@ void tx_destroy_data_entry(tx_data_entry_t *s);
 void tx_init_data_entry_array(tx_data_entry_array_t* arr, tx_size_t len);
 void tx_destroy_data_entry_array(tx_data_entry_array_t* arr);
 
+typedef tx_data_string_t tx_script_t;
+typedef tx_data_string_t tx_attachment_t;
+#define tx_init_attachment(s, len) tx_init_data_string(s, len)
+#define tx_destroy_attachment(s) tx_destroy_data_string(s)
+#define tx_load_attachment(dst, src) tx_load_data_string(dst, src)
+#define tx_store_attachment(dst, src) tx_store_data_string(dst, src)
+
+ssize_t tx_load_script(tx_script_t* dst, const unsigned char* src);
+size_t tx_store_script(unsigned char* dst, const tx_script_t *src);
+
+typedef struct tx_payment_s
+{
+    tx_amount_t amount;
+    tx_optional_asset_id_t asset_id;
+} tx_payment_t;
+
+typedef struct tx_payment_array_s
+{
+    tx_payment_t* array;
+    uint16_t len;
+} tx_payment_array_t;
+
+typedef struct tx_transfer_s
+{
+    tx_rcpt_addr_or_alias_t recepient;
+    tx_amount_t amount;
+} tx_transfer_t;
+
+typedef struct tx_transfer_array_s
+{
+    tx_transfer_t* array;
+    uint16_t len;
+} tx_transfer_array_t;
+
+void tx_init_transfer_array(tx_transfer_array_t* arr, tx_size_t len);
+void tx_destroy_transfer_array(tx_transfer_array_t* arr);
+
+void tx_init_payment_array(tx_payment_array_t* arr, tx_size_t len);
+void tx_destroy_payment_array(tx_payment_array_t* arr);
+
+ssize_t tx_load_transfer(tx_transfer_t* dst, const unsigned char* src);
+size_t tx_store_transfer(unsigned char* dst, tx_transfer_t* src);
+ssize_t tx_load_transfer_array(tx_transfer_array_t* dst, const unsigned char* src);
+size_t tx_store_transfer_array(unsigned char* dst, const tx_transfer_array_t *src);
+
+ssize_t tx_load_payment(tx_payment_t* dst, const unsigned char* src);
+size_t tx_store_payment(unsigned char* dst, tx_payment_t* src);
+ssize_t tx_load_payment_array(tx_payment_array_t* dst, const unsigned char* src);
+size_t tx_store_payment_array(unsigned char* dst, const tx_payment_array_t *src);
+
+ssize_t tx_load_reissuable(tx_reissuable_t* dst, const unsigned char* src);
+size_t tx_store_reissuable(unsigned char* dst, tx_reissuable_t src);
+
+enum
+{
+    TX_FUNC_ARG_INT = 0,
+    TX_FUNC_ARG_BIN = 1,
+    TX_FUNC_ARG_STR = 2,
+    TX_FUNC_ARG_TRUE = 6,
+    TX_FUNC_ARG_FALSE = 7
+};
+
+typedef uint64_t tx_func_arg_integer_t;
+typedef bool tx_func_arg_boolean_t;
+
+typedef struct tx_func_arg_string_s
+{
+    char* data;
+    uint32_t len;
+} tx_func_arg_string_t;
+
+typedef struct tx_func_arg_s
+{
+    uint8_t arg_type;
+    union {
+        tx_func_arg_integer_t integer;
+        tx_func_arg_boolean_t boolean;
+        tx_func_arg_string_t binary;
+        tx_func_arg_string_t string;
+    } types;
+} tx_func_arg_t;
+
+typedef struct tx_func_arg_array_s
+{
+    uint32_t len;
+    tx_func_arg_t* arr;
+} tx_func_arg_array_t;
+
+void tx_init_func_arg_array(tx_func_arg_array_t* arr, uint32_t len);
+void tx_destroy_func_arg_array(tx_func_arg_array_t* arr);
+
+ssize_t tx_load_func_arg(tx_func_arg_t* dst, const unsigned char* src);
+size_t tx_store_func_arg(unsigned char* dst, tx_func_arg_t* src);
+void tx_destroy_func_arg(tx_func_arg_t* arg);
+
+typedef struct tx_func_call_s
+{
+    tx_func_arg_string_t function_name;
+    tx_func_arg_array_t args;
+} tx_func_call_t;
+
+ssize_t tx_load_func_call(tx_func_call_t* dst, const unsigned char* src);
+size_t tx_store_func_call(unsigned char* dst, const tx_func_call_t *src);
 
 #endif /* __WAVES_TRANSACTION_COMMON_H_19640__ */

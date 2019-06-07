@@ -1,7 +1,7 @@
 #ifndef __WAVES_DATA_TRANSACTION_H_30553__
 #define __WAVES_DATA_TRANSACTION_H_30553__
 
-#include "transaction_common.h"
+#include "tx_common.h"
 
 typedef struct data_tx_bytes_s
 {

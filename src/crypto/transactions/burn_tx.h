@@ -1,7 +1,7 @@
 #ifndef __WAVES_BURN_TRANSACTION_H_26080__
 #define __WAVES_BURN_TRANSACTION_H_26080__
 
-#include "transaction_common.h"
+#include "tx_common.h"
 
 typedef struct burn_tx_bytes_s
 {

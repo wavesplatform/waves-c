@@ -1,7 +1,7 @@
 #ifndef __WAVES_ALIAS_TRANSACTION_H_31520__
 #define __WAVES_ALIAS_TRANSACTION_H_31520__
 
-#include "transaction_common.h"
+#include "tx_common.h"
 
 typedef struct alias_tx_bytes_s
 {

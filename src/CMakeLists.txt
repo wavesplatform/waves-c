@@ -14,6 +14,8 @@ add_definitions(-Wall -O3 -Werror -Wextra -Wno-format)
 
 install(FILES crypto/base58/b58.h DESTINATION include/waves)
 install(FILES crypto/crypto.h DESTINATION include/waves)
+file(GLOB TX_FILES "crypto/transactions/*_tx.h")
+install(FILES ${TX_FILES} crypto/transactions/tx_common.h crypto/transactions/tx.h DESTINATION include/waves)
 
 install(TARGETS waves_c waves_c_shared
         ARCHIVE DESTINATION lib/waves

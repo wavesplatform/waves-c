@@ -1,7 +1,7 @@
 #ifndef __WAVES_LEASE_TRANSACTION_H_20038__
 #define __WAVES_LEASE_TRANSACTION_H_20038__
 
-#include "transaction_common.h"
+#include "tx_common.h"
 
 typedef struct lease_tx_bytes_s
 {
