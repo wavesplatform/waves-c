@@ -1,6 +1,7 @@
 #include "crypto_tests.h"
 #include "utils_tests.h"
 #include "transactions/transfer_transaction_tests.h"
+#include "tx_tests.h"
 
 void crypto_tests() {
     waves_secure_hash_test();
@@ -34,6 +35,7 @@ void utils_tests() {
 
 int main(int argc, char **argv) {
     crypto_tests();
+    test_data_tx_bytes();
     transactions_tests();
     utils_tests();
 }
