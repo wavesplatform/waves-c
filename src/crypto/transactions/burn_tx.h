@@ -15,5 +15,6 @@ typedef struct burn_tx_bytes_s
 
 ssize_t waves_burn_tx_from_bytes(burn_tx_bytes_t* tx, const unsigned char *src);
 size_t waves_burn_tx_to_bytes(unsigned char *dst, const burn_tx_bytes_t* tx);
+size_t waves_burn_tx_buffer_size(const burn_tx_bytes_t* tx);
 
 #endif /* __WAVES_BURN_TRANSACTION_H_26080__ */

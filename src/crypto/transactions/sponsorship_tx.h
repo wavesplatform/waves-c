@@ -14,5 +14,6 @@ typedef struct sponsorship_tx_bytes_s
 
 ssize_t waves_sponsorship_tx_from_bytes(sponsorship_tx_bytes_t* tx, const unsigned char *src);
 size_t waves_sponsorship_tx_to_bytes(unsigned char *dst, const sponsorship_tx_bytes_t* tx);
+size_t waves_sponsorship_tx_buffer_size(const sponsorship_tx_bytes_t* tx);
 
 #endif /* __WAVES_SPONSORSHIP_TRANSACTION_H_29740__ */

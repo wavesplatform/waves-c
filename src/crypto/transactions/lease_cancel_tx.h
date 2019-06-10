@@ -14,5 +14,6 @@ typedef struct lease_cancel_tx_bytes_s
 
 ssize_t waves_lease_cancel_tx_from_bytes(lease_cancel_tx_bytes_t *tx, const unsigned char *src);
 size_t waves_lease_cancel_tx_to_bytes(unsigned char *src, const lease_cancel_tx_bytes_t *tx);
+size_t waves_lease_cancel_tx_buffer_size(const lease_cancel_tx_bytes_t *tx);
 
 #endif /* __WAVES_LEASE_CANCEL_TRANSACTION_H_18749__ */

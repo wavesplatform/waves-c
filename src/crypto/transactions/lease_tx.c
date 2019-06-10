@@ -34,8 +34,20 @@ size_t waves_lease_tx_to_bytes(unsigned char *dst, const lease_tx_bytes_t* tx)
     p += tx_copy_lease_asset_id(p, tx->lease_asset_id);
     p += tx_copy_public_key(p, tx->sender_public_key);
     p += tx_store_rcpt_addr_or_alias(p, &tx->rcpt_addr_or_alias);
-    p += tx_store_uint_big_endian(p, tx->amount, sizeof(tx->amount));
-    p += tx_store_uint_big_endian(p, tx->fee, sizeof(tx->fee));
-    p += tx_store_uint_big_endian(p, tx->timestamp, sizeof(tx->timestamp));
+    p += tx_store_amount(p, tx->amount);
+    p += tx_store_fee(p, tx->fee);
+    p += tx_store_timestamp(p, tx->timestamp);
     return p - dst;
+}
+
+size_t waves_lease_tx_buffer_size(const lease_tx_bytes_t *tx)
+{
+    size_t nb = 2;
+    nb += sizeof(tx->lease_asset_id);
+    nb += sizeof(tx->sender_public_key);
+    nb += tx_addr_or_alias_buffer_size(&tx->rcpt_addr_or_alias);
+    nb += sizeof(tx->amount);
+    nb += sizeof(tx->fee);
+    nb += sizeof(tx->timestamp);
+    return nb;
 }
