@@ -493,8 +493,10 @@ void tx_destroy_payment_array(tx_payment_array_t* arr)
 
 size_t tx_payment_buffer_size(const tx_payment_t* v)
 {
-    size_t nb = sizeof(v->amount);
-    return nb + tx_optional_asset_id_buffer_size(&v->asset_id);
+    size_t nb = sizeof(v->length);
+    nb += sizeof(v->amount);
+    nb += tx_optional_asset_id_buffer_size(&v->asset_id);
+    return nb;
 }
 
 size_t tx_payment_array_buffer_size(const tx_payment_array_t* arr)
@@ -562,18 +564,26 @@ ssize_t tx_load_payment(tx_payment_t* dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
+    p += tx_load_len(&dst->length, p);
+    const unsigned char* data_p = p;
     p += tx_load_amount(&dst->amount, p);
     if ((nbytes = tx_load_optional_asset_id(&dst->asset_id, p)) < 0)
     {
         return tx_parse_error_pos(p, src);
     }
     p += nbytes;
+    if ((p - data_p) != dst->length)
+    {
+        return tx_parse_error_pos(p, src);
+    }
     return p - src;
 }
 
 size_t tx_store_payment(unsigned char* dst, tx_payment_t* src)
 {
     unsigned char* p = dst;
+    tx_size_t length = tx_payment_buffer_size(src) - sizeof(src->length);
+    p += tx_store_len(p, length);
     p += tx_store_amount(p, src->amount);
     p += tx_store_optional_asset_id(p, &src->asset_id);
     return p - dst;
