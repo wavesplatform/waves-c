@@ -15,5 +15,6 @@ typedef struct set_asset_script_tx_bytes_s
 
 ssize_t waves_set_asset_script_tx_from_bytes(set_asset_script_tx_bytes_t* tx, const unsigned char *src);
 size_t waves_set_asset_script_tx_to_bytes(unsigned char *dst, const set_asset_script_tx_bytes_t *tx);
+void waves_destroy_set_asset_script_tx(set_asset_script_tx_bytes_t* tx);
 
 #endif /* __WAVES_SET_ASSET_SCRIPT_TRANSACTION_H_10130__ */

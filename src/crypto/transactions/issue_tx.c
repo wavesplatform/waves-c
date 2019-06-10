@@ -42,3 +42,10 @@ size_t waves_issue_tx_to_bytes(unsigned char* dst, const issue_tx_bytes_t* tx)
     p += tx_store_script(p, &tx->script);
     return p - dst;
 }
+
+void waves_destroy_issue_tx(issue_tx_bytes_t* tx)
+{
+    tx_destroy_data_string(&tx->asset_name);
+    tx_destroy_data_string(&tx->asset_description);
+    tx_destroy_data_string(&tx->script);
+}

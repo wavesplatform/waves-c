@@ -17,5 +17,6 @@ typedef struct transfer_tx_bytes_s
 
 ssize_t waves_transfer_tx_from_bytes(transfer_tx_bytes_t *tx, const unsigned char *src);
 size_t waves_transfer_tx_to_bytes(unsigned char* dst, const transfer_tx_bytes_t* tx);
+void waves_destroy_transfer_tx(transfer_tx_bytes_t* tx);
 
 #endif /* __WAVES_TRANSFER_TRANSACTION_H_23281__ */

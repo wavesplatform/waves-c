@@ -50,7 +50,7 @@ enum
     TRANSACTION_TYPE_SET_SCRIPT = 13,
     TRANSACTION_TYPE_SPONSORSHIP = 14,
     TRANSACTION_TYPE_SET_ASSET_SCRIPT = 15,
-    TRANSACTION_TYPE_INVOKE_SCRIPT = 16,
+    TRANSACTION_TYPE_INVOKE_SCRIPT = 16
 };
 
 typedef struct tx_alias_s
@@ -280,5 +280,6 @@ typedef struct tx_func_call_s
 
 ssize_t tx_load_func_call(tx_func_call_t* dst, const unsigned char* src);
 size_t tx_store_func_call(unsigned char* dst, const tx_func_call_t *src);
+void tx_destroy_func_call(tx_func_call_t* fcall);
 
 #endif /* __WAVES_TRANSACTION_COMMON_H_19640__ */

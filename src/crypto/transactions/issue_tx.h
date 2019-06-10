@@ -19,5 +19,6 @@ typedef struct issue_tx_bytes_s
 
 ssize_t waves_issue_tx_from_bytes(issue_tx_bytes_t *tx, const unsigned char *src);
 size_t waves_issue_tx_to_bytes(unsigned char* bytes, const issue_tx_bytes_t* tx);
+void waves_destroy_issue_tx(issue_tx_bytes_t *tx);
 
 #endif /* __WAVES_ISSUE_TRANSACTION_H_27938__ */

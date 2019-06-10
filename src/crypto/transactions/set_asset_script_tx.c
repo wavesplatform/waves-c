@@ -37,3 +37,8 @@ size_t waves_set_asset_script_tx_to_bytes(unsigned char *dst, const set_asset_sc
     p += tx_store_script(p, &tx->script);
     return p - dst;
 }
+
+void waves_destroy_set_asset_script_tx(set_asset_script_tx_bytes_t* tx)
+{
+    tx_destroy_data_string(&tx->script);
+}

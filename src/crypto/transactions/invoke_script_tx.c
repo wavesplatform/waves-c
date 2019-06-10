@@ -50,3 +50,9 @@ size_t waves_invoke_script_tx_to_bytes(unsigned char *dst, const invoke_script_t
     p += tx_store_timestamp(p, tx->timestamp);
     return p - dst;
 }
+
+void waves_destroy_invoke_script_tx(invoke_script_tx_bytes_t* tx)
+{
+    tx_destroy_payment_array(&tx->payments);
+    tx_destroy_func_call(&tx->function_call);
+}

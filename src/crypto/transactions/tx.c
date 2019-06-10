@@ -88,3 +88,40 @@ size_t waves_tx_to_bytes(unsigned char *dst, const tx_bytes_t* tx)
     }
 }
 
+void waves_destroy_tx(tx_bytes_t* tx)
+{
+    switch (tx->type)
+    {
+        case TRANSACTION_TYPE_ISSUE:
+            waves_destroy_issue_tx(&tx->data.issue);
+            break;
+        case TRANSACTION_TYPE_TRANSFER:
+            waves_destroy_transfer_tx(&tx->data.transfer);
+            break;
+        case TRANSACTION_TYPE_MASS_TRANSFER:
+            waves_destroy_mass_transfer_tx(&tx->data.mass_transfer);
+            break;
+        case TRANSACTION_TYPE_DATA:
+            waves_destroy_data_tx(&tx->data.data);
+            break;
+        case TRANSACTION_TYPE_SET_SCRIPT:
+            waves_destroy_set_script_tx(&tx->data.set_script);
+            break;
+        case TRANSACTION_TYPE_SET_ASSET_SCRIPT:
+            waves_destroy_set_asset_script_tx(&tx->data.set_asset_script);
+            break;
+        case TRANSACTION_TYPE_INVOKE_SCRIPT:
+            waves_destroy_invoke_script_tx(&tx->data.invoke_script);
+            break;
+        case TRANSACTION_TYPE_REISSUE:
+        case TRANSACTION_TYPE_BURN:
+        case TRANSACTION_TYPE_LEASE:
+        case TRANSACTION_TYPE_CANCEL_LEASE:
+        case TRANSACTION_TYPE_ALIAS:
+        case TRANSACTION_TYPE_SPONSORSHIP:
+            // do nothing
+        default:;
+    }
+    tx->type = 0;
+}
+
