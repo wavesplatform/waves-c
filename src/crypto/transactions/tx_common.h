@@ -206,6 +206,7 @@ size_t tx_script_buffer_size(const tx_script_t* v);
 
 typedef struct tx_payment_s
 {
+    tx_size_t length;
     tx_amount_t amount;
     tx_optional_asset_id_t asset_id;
 } tx_payment_t;
