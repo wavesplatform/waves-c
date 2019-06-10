@@ -5,7 +5,6 @@
 
 typedef struct reissue_tx_bytes_s
 {
-    uint8_t version;
     tx_chain_id_t chain_id;
     tx_public_key_bytes_t sender_public_key;
     tx_asset_id_bytes_t asset_id;

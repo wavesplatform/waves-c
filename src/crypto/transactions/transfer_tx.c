@@ -46,3 +46,8 @@ size_t waves_transfer_tx_to_bytes(unsigned char* dst, const transfer_tx_bytes_t*
     p += tx_store_attachment(p, &tx->attachment);
     return p - dst;
 }
+
+void waves_destroy_transfer_tx(transfer_tx_bytes_t* tx)
+{
+    tx_destroy_data_string(&tx->attachment);
+}

@@ -33,5 +33,9 @@ size_t waves_data_tx_to_bytes(unsigned char *dst, const data_tx_bytes_t* tx)
     p += tx_store_fee(p, tx->fee);
     p += tx_store_timestamp(p, tx->timestamp);
     return p - dst;
+}
 
+void waves_destroy_data_tx(data_tx_bytes_t* tx)
+{
+    tx_destroy_data_entry_array(&tx->data);
 }

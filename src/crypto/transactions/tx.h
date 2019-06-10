@@ -37,5 +37,6 @@ typedef struct tx_bytes_s
 
 ssize_t waves_tx_from_bytes(tx_bytes_t* tx, const unsigned char *src);
 size_t waves_tx_to_bytes(unsigned char *dst, const tx_bytes_t* tx);
+void waves_destroy_tx(tx_bytes_t *tx);
 
 #endif /* __WAVES_ALL_TRANSACTION_H_6112__ */

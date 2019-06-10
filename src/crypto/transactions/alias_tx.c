@@ -1,10 +1,5 @@
 #include "alias_tx.h"
 
-tx_public_key_bytes_t sender_public_key;
-tx_alias_t alias;
-tx_fee_t fee;
-tx_timestamp_t timestamp;
-
 ssize_t waves_alias_tx_from_bytes(alias_tx_bytes_t* tx, const unsigned char *src)
 {
     const unsigned char* p = src;

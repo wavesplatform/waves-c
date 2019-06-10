@@ -17,6 +17,6 @@ typedef struct invoke_script_tx_bytes_s
 
 ssize_t waves_invoke_script_tx_from_bytes(invoke_script_tx_bytes_t* tx, const unsigned char *src);
 size_t waves_invoke_script_tx_to_bytes(unsigned char *dst, const invoke_script_tx_bytes_t* tx);
-
+void waves_destroy_invoke_script_tx(invoke_script_tx_bytes_t* tx);
 
 #endif /* __WAVES_INVOKE_SCRIPT_TRANSACTION_H_25515__ */

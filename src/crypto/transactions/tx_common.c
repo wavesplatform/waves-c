@@ -653,3 +653,9 @@ size_t tx_store_func_call(unsigned char* dst, const tx_func_call_t* src)
     p += tx_store_func_arg_array(p, &src->args);
     return p - dst;
 }
+
+void tx_destroy_func_call(tx_func_call_t* fcall)
+{
+    tx_destroy_func_arg_string(&fcall->function_name);
+    tx_destroy_func_arg_array(&fcall->args);
+}
