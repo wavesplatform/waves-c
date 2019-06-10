@@ -15,6 +15,14 @@
 #include "set_asset_script_tx.h"
 #include "invoke_script_tx.h"
 
+typedef struct tx_buffer_s
+{
+    unsigned char* data;
+    size_t size;
+} tx_buffer_t;
+
+void waves_destroy_tx_buffer(tx_buffer_t* buf);
+
 typedef struct tx_bytes_s
 {
     uint8_t type;
@@ -37,6 +45,8 @@ typedef struct tx_bytes_s
 
 ssize_t waves_tx_from_bytes(tx_bytes_t* tx, const unsigned char *src);
 size_t waves_tx_to_bytes(unsigned char *dst, const tx_bytes_t* tx);
+tx_buffer_t waves_tx_to_byte_buffer(const tx_bytes_t* tx);
+size_t waves_tx_buffer_size(const tx_bytes_t* tx);
 void waves_destroy_tx(tx_bytes_t *tx);
 
 #endif /* __WAVES_ALL_TRANSACTION_H_6112__ */

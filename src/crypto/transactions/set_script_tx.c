@@ -40,3 +40,14 @@ void waves_destroy_set_script_tx(set_script_tx_bytes_t* tx)
 {
     tx_destroy_data_string(&tx->script);
 }
+
+size_t waves_set_script_tx_buffer_size(const set_script_tx_bytes_t *tx)
+{
+    size_t nb = 2;
+    nb += sizeof(tx->chain_id);
+    nb += sizeof(tx->sender_public_key);
+    nb += tx_script_buffer_size(&tx->script);
+    nb += sizeof(tx->fee);
+    nb += sizeof(tx->timestamp);
+    return nb;
+}

@@ -13,5 +13,6 @@ typedef struct alias_tx_bytes_s
 
 ssize_t waves_alias_tx_from_bytes(alias_tx_bytes_t* tx, const unsigned char *src);
 size_t waves_alias_tx_to_bytes(unsigned char *src, const alias_tx_bytes_t* tx);
+size_t waves_alias_tx_buffer_size(const alias_tx_bytes_t *tx);
 
 #endif /* __WAVES_ALIAS_TRANSACTION_H_31520__ */

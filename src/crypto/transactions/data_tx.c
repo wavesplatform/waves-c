@@ -39,3 +39,13 @@ void waves_destroy_data_tx(data_tx_bytes_t* tx)
 {
     tx_destroy_data_entry_array(&tx->data);
 }
+
+size_t waves_data_tx_buffer_size(const data_tx_bytes_t* tx)
+{
+    size_t nb = 2;
+    nb += sizeof(tx->sender_public_key);
+    nb += tx_data_entry_array_buffer_size(&tx->data);
+    nb += sizeof(tx->fee);
+    nb += sizeof(tx->timestamp);
+    return nb;
+}

@@ -1,5 +1,15 @@
 #include "tx.h"
 
+void waves_destroy_tx_buffer(tx_buffer_t* buf)
+{
+    if (buf->data != NULL)
+    {
+        tx_free(buf->data);
+        buf->data = NULL;
+    }
+    buf->size = 0;
+}
+
 ssize_t waves_tx_from_bytes(tx_bytes_t* tx, const unsigned char *src)
 {
     ssize_t nbytes;
@@ -55,7 +65,8 @@ ssize_t waves_tx_from_bytes(tx_bytes_t* tx, const unsigned char *src)
 
 size_t waves_tx_to_bytes(unsigned char *dst, const tx_bytes_t* tx)
 {
-    switch (tx->type) {
+    switch (tx->type)
+    {
     case TRANSACTION_TYPE_ISSUE:
         return waves_issue_tx_to_bytes(dst, &tx->data.issue);
     case TRANSACTION_TYPE_TRANSFER:
@@ -83,6 +94,52 @@ size_t waves_tx_to_bytes(unsigned char *dst, const tx_bytes_t* tx)
         return waves_set_asset_script_tx_to_bytes(dst, &tx->data.set_asset_script);
     case TRANSACTION_TYPE_INVOKE_SCRIPT:
         return waves_invoke_script_tx_to_bytes(dst, &tx->data.invoke_script);
+    default:
+        return 0;
+    }
+}
+
+tx_buffer_t waves_tx_to_byte_buffer(const tx_bytes_t* tx)
+{
+    size_t nb = waves_tx_buffer_size(tx);
+    tx_buffer_t buffer;
+    buffer.data = (unsigned char*)tx_malloc(nb);
+    buffer.size = nb;
+    waves_tx_to_bytes(buffer.data, tx);
+    return buffer;
+}
+
+size_t waves_tx_buffer_size(const tx_bytes_t* tx)
+{
+    switch (tx->type)
+    {
+    case TRANSACTION_TYPE_ISSUE:
+        return waves_issue_tx_buffer_size(&tx->data.issue);
+    case TRANSACTION_TYPE_TRANSFER:
+        return waves_transfer_tx_buffer_size(&tx->data.transfer);
+    case TRANSACTION_TYPE_REISSUE:
+        return waves_reissue_tx_buffer_size(&tx->data.reissue);
+    case TRANSACTION_TYPE_BURN:
+        return waves_burn_tx_buffer_size(&tx->data.burn);
+    // case TRANSACTION_TYPE_EXCHANGE
+    case TRANSACTION_TYPE_LEASE:
+        return waves_lease_tx_buffer_size(&tx->data.lease);
+    case TRANSACTION_TYPE_CANCEL_LEASE:
+        return waves_lease_cancel_tx_buffer_size(&tx->data.lease_cancel);
+    case TRANSACTION_TYPE_ALIAS:
+        return waves_alias_tx_buffer_size(&tx->data.alias);
+    case TRANSACTION_TYPE_MASS_TRANSFER:
+        return waves_mass_transfer_tx_buffer_size(&tx->data.mass_transfer);
+    case TRANSACTION_TYPE_DATA:
+        return waves_data_tx_buffer_size(&tx->data.data);
+    case TRANSACTION_TYPE_SET_SCRIPT:
+        return waves_set_script_tx_buffer_size(&tx->data.set_script);
+    case TRANSACTION_TYPE_SPONSORSHIP:
+        return waves_sponsorship_tx_buffer_size(&tx->data.sponsorship);
+    case TRANSACTION_TYPE_SET_ASSET_SCRIPT:
+        return waves_set_asset_script_tx_buffer_size(&tx->data.set_asset_script);
+    case TRANSACTION_TYPE_INVOKE_SCRIPT:
+        return waves_invoke_script_tx_buffer_size(&tx->data.invoke_script);
     default:
         return 0;
     }

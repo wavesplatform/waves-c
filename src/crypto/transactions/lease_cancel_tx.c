@@ -32,3 +32,14 @@ size_t waves_lease_cancel_tx_to_bytes(unsigned char* src, const lease_cancel_tx_
     return p - src;
 }
 
+size_t waves_lease_cancel_tx_buffer_size(const lease_cancel_tx_bytes_t *tx)
+{
+    size_t nb = 2;
+    nb += sizeof(tx->chain_id);
+    nb += sizeof(tx->sender_public_key);
+    nb += sizeof(tx->fee);
+    nb += sizeof(tx->timestamp);
+    nb += sizeof(tx->lease_id);
+    return nb;
+}
+

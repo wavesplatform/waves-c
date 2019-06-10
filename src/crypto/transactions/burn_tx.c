@@ -33,3 +33,15 @@ size_t waves_burn_tx_to_bytes(unsigned char *dst, const burn_tx_bytes_t* tx)
     p += tx_store_timestamp(p, tx->timestamp);
     return p - dst;
 }
+
+size_t waves_burn_tx_buffer_size(const burn_tx_bytes_t* tx)
+{
+    size_t nb = 2;
+    nb += sizeof(tx->chain_id);
+    nb += sizeof(tx->sender_public_key);
+    nb += sizeof(tx->asset_id);
+    nb += sizeof(tx->quantity);
+    nb += sizeof(tx->fee);
+    nb += sizeof(tx->timestamp);
+    return nb;
+}

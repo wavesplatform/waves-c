@@ -28,5 +28,14 @@ size_t waves_alias_tx_to_bytes(unsigned char *dst, const alias_tx_bytes_t* tx)
     p += tx_store_fee(p, tx->fee);
     p += tx_store_timestamp(p, tx->timestamp);
     return p - dst;
+}
 
+size_t waves_alias_tx_buffer_size(const alias_tx_bytes_t* tx)
+{
+    size_t nb = 2;
+    nb += sizeof(tx->sender_public_key);
+    nb += tx_alias_buffer_size(&tx->alias);
+    nb += sizeof(tx->fee);
+    nb += sizeof(tx->timestamp);
+    return nb;
 }

@@ -49,3 +49,19 @@ void waves_destroy_issue_tx(issue_tx_bytes_t* tx)
     tx_destroy_data_string(&tx->asset_description);
     tx_destroy_data_string(&tx->script);
 }
+
+size_t waves_issue_tx_buffer_size(const issue_tx_bytes_t *tx)
+{
+    size_t nb = 2;
+    nb += sizeof(tx->chain_id);
+    nb += sizeof(tx->sender_public_key);
+    nb += tx_data_string_buffer_size(&tx->asset_name);
+    nb += tx_data_string_buffer_size(&tx->asset_description);
+    nb += sizeof(tx->quantity);
+    nb += sizeof(tx->decimals);
+    nb += sizeof(tx->reissuable);
+    nb += sizeof(tx->fee);
+    nb += sizeof(tx->timestamp);
+    nb += tx_script_buffer_size(&tx->script);
+    return nb;
+}

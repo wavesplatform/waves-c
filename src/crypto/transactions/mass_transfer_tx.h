@@ -16,5 +16,6 @@ typedef struct mass_transfer_tx_bytes_s
 ssize_t waves_mass_transfer_tx_from_bytes(mass_transfer_tx_bytes_t *tx, const unsigned char *src);
 size_t waves_mass_transfer_tx_to_bytes(unsigned char* dst, const mass_transfer_tx_bytes_t* tx);
 void waves_destroy_mass_transfer_tx(mass_transfer_tx_bytes_t* tx);
+size_t waves_mass_transfer_tx_buffer_size(const mass_transfer_tx_bytes_t* tx);
 
 #endif /* __WAVES_MASS_TRANSFER_TRANSACTION_H_25185__ */

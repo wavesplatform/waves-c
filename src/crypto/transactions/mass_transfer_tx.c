@@ -47,3 +47,15 @@ void waves_destroy_mass_transfer_tx(mass_transfer_tx_bytes_t* tx)
     tx_destroy_transfer_array(&tx->transfers);
     tx_destroy_data_string(&tx->attachment);
 }
+
+size_t waves_mass_transfer_tx_buffer_size(const mass_transfer_tx_bytes_t* tx)
+{
+    size_t nb = 2;
+    nb += sizeof(tx->sender_public_key);
+    nb += tx_optional_asset_id_buffer_size(&tx->asset_id);
+    nb += tx_transfer_array_buffer_size(&tx->transfers);
+    nb += sizeof(tx->timestamp);
+    nb += sizeof(tx->fee);
+    nb += tx_data_string_buffer_size(&tx->attachment);
+    return nb;
+}

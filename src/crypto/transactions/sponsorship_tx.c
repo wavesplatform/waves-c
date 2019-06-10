@@ -30,5 +30,15 @@ size_t waves_sponsorship_tx_to_bytes(unsigned char *dst, const sponsorship_tx_by
     p += tx_store_fee(p, tx->fee);
     p += tx_store_timestamp(p, tx->timestamp);
     return p - dst;
+}
 
+size_t waves_sponsorship_tx_buffer_size(const sponsorship_tx_bytes_t* tx)
+{
+    size_t nb = 2;
+    nb += sizeof(tx->sender_public_key);
+    nb += sizeof(tx->asset_id);
+    nb += sizeof(tx->sponsored_asset_fee);
+    nb += sizeof(tx->fee);
+    nb += sizeof(tx->timestamp);
+    return nb;
 }

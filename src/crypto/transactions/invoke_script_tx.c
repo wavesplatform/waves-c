@@ -56,3 +56,17 @@ void waves_destroy_invoke_script_tx(invoke_script_tx_bytes_t* tx)
     tx_destroy_payment_array(&tx->payments);
     tx_destroy_func_call(&tx->function_call);
 }
+
+size_t waves_invoke_script_tx_buffer_size(const invoke_script_tx_bytes_t* tx)
+{
+    size_t nb = 2;
+    nb += sizeof(tx->chain_id);
+    nb += sizeof(tx->sender_public_key);
+    nb += tx_addr_or_alias_buffer_size(&tx->dapp);
+    nb += tx_func_call_buffer_size(&tx->function_call);
+    nb += tx_payment_array_buffer_size(&tx->payments);
+    nb += sizeof(tx->fee);
+    nb += tx_optional_asset_id_buffer_size(&tx->fee_asset_id);
+    nb += sizeof(tx->timestamp);
+    return nb;
+}

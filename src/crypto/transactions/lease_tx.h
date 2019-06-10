@@ -15,5 +15,6 @@ typedef struct lease_tx_bytes_s
 
 ssize_t waves_lease_tx_from_bytes(lease_tx_bytes_t* tx, const unsigned char *src);
 size_t waves_lease_tx_to_bytes(unsigned char *dst, const lease_tx_bytes_t *tx);
+size_t waves_lease_tx_buffer_size(const lease_tx_bytes_t *tx);
 
 #endif /* __WAVES_LEASE_TRANSACTION_H_20038__ */

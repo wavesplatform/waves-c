@@ -5,6 +5,46 @@
 
 #define ALIAS_VERSION 2
 
+tx_alloc_func_t g_tx_alloc_func = NULL;
+tx_free_func_t g_tx_free_func = NULL;
+
+void* tx_malloc(size_t size)
+{
+    if (g_tx_alloc_func != NULL)
+    {
+        return g_tx_alloc_func(size);
+    }
+    return malloc(size);
+}
+
+void* tx_calloc(size_t num, size_t size)
+{
+    size_t nb = num*size;
+    void* p = tx_malloc(nb);
+    memset(p, 0, nb);
+    return p;
+}
+
+void tx_free(void *ptr)
+{
+    if (g_tx_free_func != NULL)
+    {
+        g_tx_free_func(ptr);
+        return;
+    }
+    free(ptr);
+}
+
+void tx_register_alloc_func(tx_alloc_func_t f)
+{
+    g_tx_alloc_func = f;
+}
+
+void tx_register_free_func(tx_free_func_t f)
+{
+    g_tx_free_func = f;
+}
+
 size_t tx_store_uint_big_endian(unsigned char *dst, uint64_t val, size_t sz)
 {
     for (size_t i = 0; i < sz; i++)
@@ -102,6 +142,15 @@ size_t tx_store_alias(unsigned char* dst, const tx_alias_t* src)
     return p - dst;
 }
 
+size_t tx_alias_buffer_size(const tx_alias_t* alias)
+{
+    size_t nb = 1;
+    nb += sizeof(tx_chain_id_t);
+    nb += sizeof(tx_size_t);
+    nb += strlen(alias->alias);
+    return nb;
+}
+
 ssize_t tx_load_rcpt_addr_or_alias(tx_rcpt_addr_or_alias_t* dst, const unsigned char* src)
 {
     dst->is_alias = (*src == ALIAS_VERSION);
@@ -113,17 +162,22 @@ size_t tx_store_rcpt_addr_or_alias(unsigned char* dst, const tx_rcpt_addr_or_ali
     return src->is_alias ? tx_store_alias(dst, &src->data.alias) : tx_copy_address(dst, src->data.address);
 }
 
+size_t tx_addr_or_alias_buffer_size(const tx_rcpt_addr_or_alias_t* v)
+{
+    return v->is_alias ? tx_alias_buffer_size(&v->data.alias) : sizeof(v->data.address);
+}
+
 void tx_init_data_string(tx_data_string_t* s, uint16_t len)
 {
     s->len = len;
-    s->data = (char*)malloc(len);
+    s->data = (char*)tx_malloc(len);
 }
 
 void tx_destroy_data_string(tx_data_string_t* s)
 {
     if (s->data)
     {
-        free(s->data);
+        tx_free(s->data);
         s->data = NULL;
     }
     s->len = 0;
@@ -145,6 +199,11 @@ size_t tx_store_data_string(unsigned char* dst, const tx_data_string_t *src)
     p += tx_store_len(p, src->len);
     memcpy(p, src->data, src->len);
     return src->len + sizeof(src->len);
+}
+
+size_t tx_data_string_buffer_size(const tx_data_string_t *v)
+{
+    return sizeof(v->len) + v->len;
 }
 
 ssize_t tx_load_data(tx_data_t* dst, const unsigned char* src)
@@ -190,6 +249,25 @@ size_t tx_store_data(unsigned char* dst, tx_data_t* src)
     return p - dst;
 }
 
+size_t tx_data_buffer_size(const tx_data_t *v)
+{
+    size_t nb = sizeof(v->data_type);
+    switch(v->data_type)
+    {
+    case TX_DATA_TYPE_INTEGER:
+        nb += sizeof(v->types.integer);
+        break;
+    case TX_DATA_TYPE_BOOLEAN:
+        nb += sizeof(v->types.boolean);
+        break;
+    case TX_DATA_TYPE_STRING:
+    case TX_DATA_TYPE_BINARY:
+        nb += tx_data_string_buffer_size(&v->types.string);
+        break;
+    }
+    return nb;
+}
+
 ssize_t tx_load_data_entry(tx_data_entry_t* dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
@@ -214,6 +292,13 @@ size_t tx_store_data_entry(unsigned char* dst, tx_data_entry_t* src)
     p += tx_store_data_string(p, &src->key);
     p += tx_store_data(p, &src->value);
     return p - dst;
+}
+
+size_t tx_data_entry_buffer_size(const tx_data_entry_t* v)
+{
+    size_t nb = tx_data_string_buffer_size(&v->key);
+    nb += tx_data_buffer_size(&v->value);
+    return nb;
 }
 
 ssize_t tx_load_data_entry_array(tx_data_entry_array_t* dst, const unsigned char* src)
@@ -249,6 +334,16 @@ size_t tx_store_data_entry_array(unsigned char* dst, const tx_data_entry_array_t
     return p - dst;
 }
 
+size_t tx_data_entry_array_buffer_size(const tx_data_entry_array_t* v)
+{
+    size_t nb = sizeof(v->len);
+    for (uint16_t i = 0; i < v->len; i++)
+    {
+        nb += tx_data_entry_buffer_size(&v->array[i]);
+    }
+    return nb;
+}
+
 void tx_destroy_data(tx_data_t* s)
 {
     if (s->data_type == TX_DATA_TYPE_BINARY || s->data_type == TX_DATA_TYPE_STRING)
@@ -266,7 +361,7 @@ void tx_destroy_data_entry(tx_data_entry_t *s)
 void tx_init_data_entry_array(tx_data_entry_array_t* arr, tx_size_t len)
 {
     arr->len = len;
-    arr->array = (tx_data_entry_t*)calloc(len, sizeof(tx_data_entry_t));
+    arr->array = (tx_data_entry_t*)tx_calloc(len, sizeof(tx_data_entry_t));
 }
 
 void tx_destroy_data_entry_array(tx_data_entry_array_t* arr)
@@ -279,7 +374,7 @@ void tx_destroy_data_entry_array(tx_data_entry_array_t* arr)
     {
         tx_destroy_data_entry(&arr->array[i]);
     }
-    free(arr->array);
+    tx_free(arr->array);
 }
 
 ssize_t tx_load_optional_asset_id(tx_optional_asset_id_t* dst, const unsigned char* src)
@@ -306,6 +401,11 @@ size_t tx_store_optional_asset_id(unsigned char* dst, const tx_optional_asset_id
         p += tx_store_u8(p, 0);
     }
     return p - dst;
+}
+
+size_t tx_optional_asset_id_buffer_size(const tx_optional_asset_id_t* v)
+{
+    return v->valid ? sizeof(v->data) + 1 : 1;
 }
 
 ssize_t tx_load_script(tx_script_t* dst, const unsigned char* src)
@@ -340,34 +440,71 @@ size_t tx_store_script(unsigned char* dst, const tx_script_t* src)
     return p - dst;
 }
 
+size_t tx_script_buffer_size(const tx_script_t* v)
+{
+    return v->len == 0 ? 1 : 1 + tx_data_string_buffer_size(v);
+}
+
 void tx_init_transfer_array(tx_transfer_array_t* arr, tx_size_t len)
 {
     arr->len = len;
-    arr->array = (tx_transfer_t*)calloc(len, sizeof(tx_transfer_t));
+    arr->array = (tx_transfer_t*)tx_calloc(len, sizeof(tx_transfer_t));
 }
 
 void tx_destroy_transfer_array(tx_transfer_array_t* arr)
 {
     if (arr->array != NULL)
     {
-        free(arr->array);
+        tx_free(arr->array);
         return;
     }
+}
+
+size_t tx_transfer_buffer_size(tx_transfer_t* v)
+{
+    size_t nb = sizeof(v->amount);
+    return nb + tx_addr_or_alias_buffer_size(&v->recepient);
+}
+
+size_t tx_transfer_array_buffer_size(const tx_transfer_array_t* arr)
+{
+    size_t nb = sizeof(arr->len);
+    for (uint16_t i = 0; i < arr->len; i++)
+    {
+        nb += tx_transfer_buffer_size(&arr->array[i]);
+    }
+    return nb;
 }
 
 void tx_init_payment_array(tx_payment_array_t* arr, tx_size_t len)
 {
     arr->len = len;
-    arr->array = (tx_payment_t*)calloc(len, sizeof(tx_payment_t));
+    arr->array = (tx_payment_t*)tx_calloc(len, sizeof(tx_payment_t));
 }
 
 void tx_destroy_payment_array(tx_payment_array_t* arr)
 {
     if (arr->array != NULL)
     {
-        free(arr->array);
+        tx_free(arr->array);
         return;
     }
+}
+
+size_t tx_payment_buffer_size(const tx_payment_t* v)
+{
+    size_t nb = sizeof(v->amount);
+    return nb + tx_optional_asset_id_buffer_size(&v->asset_id);
+}
+
+size_t tx_payment_array_buffer_size(const tx_payment_array_t* arr)
+{
+    size_t nb = sizeof(arr->len);
+    for (uint16_t i = 0; i < arr->len; i++)
+    {
+        nb += tx_payment_buffer_size(&arr->array[i]);
+    }
+    return nb;
 }
 
 ssize_t tx_load_transfer(tx_transfer_t* dst, const unsigned char* src)
@@ -490,14 +627,14 @@ size_t tx_store_reissuable(unsigned char* dst, tx_reissuable_t src)
 void tx_init_func_arg_string(tx_func_arg_string_t* s, uint32_t len)
 {
     s->len = len;
-    s->data = (char*)malloc(len);
+    s->data = (char*)tx_malloc(len);
 }
 
 void tx_destroy_func_arg_string(tx_func_arg_string_t* s)
 {
     if (s->data)
     {
-        free(s->data);
+        tx_free(s->data);
         s->data = NULL;
     }
     s->len = 0;
@@ -519,6 +656,11 @@ size_t tx_store_func_arg_string(unsigned char* dst, const tx_func_arg_string_t *
     p += tx_store_u32(p, src->len);
     memcpy(p, src->data, src->len);
     return src->len + sizeof(src->len);
+}
+
+size_t tx_func_arg_string_buffer_size(const tx_func_arg_string_t *v)
+{
+    return sizeof(v->len) + v->len;
 }
 
 ssize_t tx_load_func_arg(tx_func_arg_t* dst, const unsigned char* src)
@@ -564,6 +706,22 @@ size_t tx_store_func_arg(unsigned char* dst, tx_func_arg_t* src)
     return p - dst;
 }
 
+size_t tx_func_arg_buffer_size(tx_func_arg_t* v)
+{
+    size_t nb = sizeof(v->arg_type);
+    switch (v->arg_type)
+    {
+    case TX_FUNC_ARG_INT:
+        nb += sizeof(v->types.integer);
+        break;
+    case TX_FUNC_ARG_STR:
+    case TX_FUNC_ARG_BIN:
+        nb += tx_func_arg_string_buffer_size(&v->types.string);
+        break;
+    }
+    return nb;
+}
+
 void tx_destroy_func_arg(tx_func_arg_t* arg)
 {
     if (arg->arg_type == TX_FUNC_ARG_STR || arg->arg_type == TX_FUNC_ARG_BIN)
@@ -575,7 +733,7 @@ void tx_destroy_func_arg(tx_func_arg_t* arg)
 void tx_init_func_arg_array(tx_func_arg_array_t* arr, uint32_t len)
 {
     arr->len = len;
-    arr->arr = (tx_func_arg_t*)calloc(len, sizeof(tx_func_arg_t));
+    arr->arr = (tx_func_arg_t*)tx_calloc(len, sizeof(tx_func_arg_t));
 }
 
 void tx_destroy_func_arg_array(tx_func_arg_array_t* arr)
@@ -588,7 +746,7 @@ void tx_destroy_func_arg_array(tx_func_arg_array_t* arr)
     {
         tx_destroy_func_arg(&arr->arr[i]);
     }
-    free(arr->arr);
+    tx_free(arr->arr);
 }
 
 ssize_t tx_load_func_arg_array(tx_func_arg_array_t* dst, const unsigned char* src)
@@ -624,6 +782,16 @@ size_t tx_store_func_arg_array(unsigned char* dst, const tx_func_arg_array_t* sr
     return p - dst;
 }
 
+size_t tx_func_arg_array_buffer_size(const tx_func_arg_array_t* v)
+{
+    size_t nb = sizeof(v->len);
+    for (uint32_t i = 0; i < v->len; i++)
+    {
+        nb += tx_func_arg_buffer_size(&v->arr[i]);
+    }
+    return nb;
+}
+
 ssize_t tx_load_func_call(tx_func_call_t* dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
@@ -652,6 +820,12 @@ size_t tx_store_func_call(unsigned char* dst, const tx_func_call_t* src)
     p += tx_store_func_arg_string(p, &src->function_name);
     p += tx_store_func_arg_array(p, &src->args);
     return p - dst;
+}
+
+size_t tx_func_call_buffer_size(const tx_func_call_t *v)
+{
+    size_t nb = tx_func_arg_string_buffer_size(&v->function_name);
+    return nb += tx_func_arg_array_buffer_size(&v->args);
 }
 
 void tx_destroy_func_call(tx_func_call_t* fcall)
