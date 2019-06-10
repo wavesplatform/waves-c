@@ -6,5 +6,6 @@
 
 void copy_in_reverse_order(unsigned char *to, const unsigned char *from, unsigned int len);
 bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len);
+int hex2bin (char* dst, const char* src);
 
 #endif //WAVES_C_PROJECT_UTILS_H

@@ -18,8 +18,8 @@ ssize_t waves_data_tx_from_bytes(data_tx_bytes_t* tx, const unsigned char *src)
         return tx_parse_error_pos(p, src);
     }
     p += nbytes;
-    p += tx_load_fee(&tx->fee, p);
     p += tx_load_timestamp(&tx->timestamp, p);
+    p += tx_load_fee(&tx->fee, p);
     return p - src;
 }
 
@@ -30,8 +30,8 @@ size_t waves_data_tx_to_bytes(unsigned char *dst, const data_tx_bytes_t* tx)
     *p++ = TX_VERSION_1;
     p += tx_copy_public_key(p, tx->sender_public_key);
     p += tx_store_data_entry_array(p, &tx->data);
-    p += tx_store_fee(p, tx->fee);
     p += tx_store_timestamp(p, tx->timestamp);
+    p += tx_store_fee(p, tx->fee);
     return p - dst;
 }
 
