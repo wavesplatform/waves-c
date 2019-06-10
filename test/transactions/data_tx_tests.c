@@ -102,5 +102,18 @@ void test_data_tx_bytes()
        fprintf(stderr, "%.*s != %s\n", e1->value.types.string.len, e1->value.types.string.data, expected_value2);
        exit(-1);
    }
+
+   tx_buffer_t tx_buf = waves_tx_to_byte_buffer(&data_tx);
+   if (tx_buf.size != sizeof(tx_bytes)) {
+        fprintf(stderr, "tx_buf.size != %d\n", (int)sizeof(tx_bytes));
+        exit(-1);
+   }
+
+   if (memcmp(tx_buf.data, tx_bytes, tx_buf.size) != 0) {
+       fprintf(stderr, "memcmp(tx_buf.data, tx_bytes, tx_buf.size) != 0\n");
+       exit(-1);
+   }
+
+   waves_destroy_tx_buffer(&tx_buf);
    waves_destroy_tx(&data_tx);
 }
