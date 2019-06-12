@@ -22,7 +22,6 @@ typedef uint64_t tx_quantity_t;
 typedef uint64_t tx_timestamp_t;
 typedef uint64_t tx_amount_t;
 typedef bool tx_reissuable_t;
-typedef char tx_alias_str_t [31];
 
 typedef struct tx_base58_string_s {
     char* data;
@@ -68,6 +67,18 @@ size_t tx_store_base58_string_fixed(unsigned char *dst, const tx_base58_string_t
 #define tx_store_lease_asset_id(dst, src) tx_store_base58_string_fixed(dst, src, 32)
 #define tx_store_address(dst, src) tx_store_base58_string_fixed(dst, src, 26)
 
+typedef struct tx_string_s
+{
+    char* data;
+    uint16_t len;
+} tx_string_t;
+
+void tx_init_string(tx_string_t* s, uint16_t len);
+void tx_destroy_string(tx_string_t* s);
+ssize_t tx_load_string(tx_string_t* dst, const unsigned char* src);
+size_t tx_store_string(unsigned char* dst, const tx_string_t *src);
+size_t tx_string_buffer_size(const tx_string_t *v);
+
 typedef struct tx_optional_asset_id_s
 {
     uint8_t valid;
@@ -104,7 +115,7 @@ enum
 typedef struct tx_alias_s
 {
     tx_chain_id_t chain_id;
-    tx_alias_str_t alias;
+    tx_string_t alias;
 } tx_alias_t;
 
 typedef struct tx_addr_or_alias_s
@@ -120,9 +131,6 @@ typedef struct tx_addr_or_alias_s
 size_t tx_store_uint_big_endian(unsigned char* dst, uint64_t val, size_t sz);
 size_t tx_load_uint_big_endian(void *dst, const unsigned char* src, size_t sz);
 
-size_t tx_store_string(unsigned char* dst, const char* src);
-size_t tx_load_string(char* dst, const unsigned char* src);
-
 ssize_t tx_load_optional_asset_id(tx_optional_asset_id_t* dst, const unsigned char* src);
 size_t tx_store_optional_asset_id(unsigned char* dst, const tx_optional_asset_id_t* src);
 size_t tx_optional_asset_id_buffer_size(const tx_optional_asset_id_t *v);
@@ -131,6 +139,7 @@ void tx_destroy_optional_asset_id(tx_optional_asset_id_t *v);
 ssize_t tx_load_alias(tx_alias_t* dst, const unsigned char* src);
 size_t tx_store_alias(unsigned char* dst, const tx_alias_t *src);
 size_t tx_alias_buffer_size(const tx_alias_t* alias);
+void tx_destroy_alias(tx_alias_t* alias);
 
 ssize_t tx_load_alias_with_len(tx_alias_t* dst, const unsigned char* src);
 size_t tx_store_alias_with_len(unsigned char* dst, const tx_alias_t *src);
@@ -172,18 +181,7 @@ void tx_destroy_addr_or_alias(tx_addr_or_alias_t* v);
 typedef uint16_t tx_size_t;
 typedef uint64_t tx_data_integer_t;
 typedef uint8_t tx_data_boolean_t;
-
-typedef struct tx_data_string_s
-{
-    char* data;
-    uint16_t len;
-} tx_data_string_t;
-
-void tx_init_data_string(tx_data_string_t* s, uint16_t len);
-void tx_destroy_data_string(tx_data_string_t* s);
-ssize_t tx_load_data_string(tx_data_string_t* dst, const unsigned char* src);
-size_t tx_store_data_string(unsigned char* dst, const tx_data_string_t *src);
-size_t tx_data_string_buffer_size(const tx_data_string_t *v);
+typedef tx_string_t tx_data_string_t;
 
 enum
 {
@@ -206,7 +204,7 @@ typedef struct tx_data_s
 
 typedef struct tx_data_entry_s
 {
-    tx_data_string_t key;
+    tx_string_t key;
     tx_data_t value;
 } tx_data_entry_t;
 
@@ -233,12 +231,12 @@ void tx_destroy_data_entry(tx_data_entry_t *s);
 void tx_init_data_entry_array(tx_data_entry_array_t* arr, tx_size_t len);
 void tx_destroy_data_entry_array(tx_data_entry_array_t* arr);
 
-typedef tx_data_string_t tx_script_t;
-typedef tx_data_string_t tx_attachment_t;
+typedef tx_string_t tx_script_t;
+typedef tx_string_t tx_attachment_t;
 #define tx_init_attachment(s, len) tx_init_data_string(s, len)
 #define tx_destroy_attachment(s) tx_destroy_data_string(s)
-#define tx_load_attachment(dst, src) tx_load_data_string(dst, src)
-#define tx_store_attachment(dst, src) tx_store_data_string(dst, src)
+#define tx_load_attachment(dst, src) tx_load_string(dst, src)
+#define tx_store_attachment(dst, src) tx_store_string(dst, src)
 
 ssize_t tx_load_script(tx_script_t* dst, const unsigned char* src);
 size_t tx_store_script(unsigned char* dst, const tx_script_t *src);

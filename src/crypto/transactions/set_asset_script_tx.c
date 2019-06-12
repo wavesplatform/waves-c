@@ -42,7 +42,7 @@ void waves_destroy_set_asset_script_tx(set_asset_script_tx_bytes_t* tx)
 {
     tx_destroy_public_key(&tx->sender_public_key);
     tx_destroy_asset_id(&tx->asset_id);
-    tx_destroy_data_string(&tx->script);
+    tx_destroy_string(&tx->script);
 }
 
 size_t waves_set_asset_script_tx_buffer_size(const set_asset_script_tx_bytes_t *tx)

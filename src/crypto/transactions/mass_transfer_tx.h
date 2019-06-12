@@ -10,7 +10,7 @@ typedef struct mass_transfer_tx_bytes_s
     tx_transfer_array_t transfers;
     tx_timestamp_t timestamp;
     tx_fee_t fee;
-    tx_data_string_t attachment;
+    tx_string_t attachment;
 } mass_transfer_tx_bytes_t;
 
 ssize_t waves_mass_transfer_tx_from_bytes(mass_transfer_tx_bytes_t *tx, const unsigned char *src);
