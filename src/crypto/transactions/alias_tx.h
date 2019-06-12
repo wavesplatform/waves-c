@@ -6,7 +6,6 @@
 typedef struct alias_tx_bytes_s
 {
     tx_public_key_t sender_public_key;
-    tx_size_t alias_length;
     tx_alias_t alias;
     tx_fee_t fee;
     tx_timestamp_t timestamp;
