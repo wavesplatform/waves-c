@@ -6,7 +6,7 @@
 typedef struct set_script_tx_bytes_s
 {
     tx_chain_id_t chain_id;
-    tx_public_key_bytes_t sender_public_key;
+    tx_public_key_t sender_public_key;
     tx_script_t script;
     tx_fee_t fee;
     tx_timestamp_t timestamp;
