@@ -178,6 +178,36 @@ size_t tx_alias_buffer_size(const tx_alias_t* alias)
     return nb;
 }
 
+ssize_t tx_load_alias_with_len(tx_alias_t* dst, const unsigned char* src)
+{
+    ssize_t nbytes;
+    const unsigned char* p = src;
+    uint16_t len;
+    p += tx_load_len(&len, p);
+    nbytes = tx_load_alias(dst, p);
+    if (nbytes != len)
+    {
+        return tx_parse_error_pos(p, src);
+    }
+    p += nbytes;
+    return p - src;
+}
+
+size_t tx_store_alias_with_len(unsigned char* dst, const tx_alias_t *src)
+{
+    unsigned char* p = dst;
+    uint16_t len = tx_alias_buffer_size(src);
+    p += tx_store_len(p, len);
+    p += tx_store_alias(p, src);
+    return p - dst;
+}
+
+size_t tx_alias_with_len_buffer_size(const tx_alias_t* alias)
+{
+    size_t nb = sizeof(uint16_t);
+    return nb + tx_alias_buffer_size(alias);
+}
+
 ssize_t tx_load_addr_or_alias(tx_addr_or_alias_t* dst, const unsigned char* src)
 {
     dst->is_alias = (*src == ALIAS_VERSION);
@@ -787,20 +817,20 @@ void tx_destroy_func_arg(tx_func_arg_t* arg)
 void tx_init_func_arg_array(tx_func_arg_array_t* arr, uint32_t len)
 {
     arr->len = len;
-    arr->arr = (tx_func_arg_t*)tx_calloc(len, sizeof(tx_func_arg_t));
+    arr->array = (tx_func_arg_t*)tx_calloc(len, sizeof(tx_func_arg_t));
 }
 
 void tx_destroy_func_arg_array(tx_func_arg_array_t* arr)
 {
-    if (arr->arr == NULL)
+    if (arr->array == NULL)
     {
         return;
     }
     for (uint32_t i = 0; i < arr->len; i++)
     {
-        tx_destroy_func_arg(&arr->arr[i]);
+        tx_destroy_func_arg(&arr->array[i]);
     }
-    tx_free(arr->arr);
+    tx_free(arr->array);
 }
 
 ssize_t tx_load_func_arg_array(tx_func_arg_array_t* dst, const unsigned char* src)
@@ -812,11 +842,11 @@ ssize_t tx_load_func_arg_array(tx_func_arg_array_t* dst, const unsigned char* sr
     tx_init_func_arg_array(dst, len);
     for (uint32_t i = 0; i < dst->len; i++)
     {
-        if ((nbytes = tx_load_func_arg(&dst->arr[i], p)) < 0)
+        if ((nbytes = tx_load_func_arg(&dst->array[i], p)) < 0)
         {
             for (uint32_t j = i; j > 0; j--)
             {
-                tx_destroy_func_arg(&dst->arr[j-1]);
+                tx_destroy_func_arg(&dst->array[j-1]);
             }
             return tx_parse_error_pos(p, src);
         }
@@ -831,7 +861,7 @@ size_t tx_store_func_arg_array(unsigned char* dst, const tx_func_arg_array_t* sr
     p += tx_store_u32(p, src->len);
     for (uint32_t i = 0; i < src->len; i++)
     {
-        p += tx_store_func_arg(p, &src->arr[i]);
+        p += tx_store_func_arg(p, &src->array[i]);
     }
     return p - dst;
 }
@@ -841,7 +871,7 @@ size_t tx_func_arg_array_buffer_size(const tx_func_arg_array_t* v)
     size_t nb = sizeof(v->len);
     for (uint32_t i = 0; i < v->len; i++)
     {
-        nb += tx_func_arg_buffer_size(&v->arr[i]);
+        nb += tx_func_arg_buffer_size(&v->array[i]);
     }
     return nb;
 }

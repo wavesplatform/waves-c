@@ -132,6 +132,10 @@ ssize_t tx_load_alias(tx_alias_t* dst, const unsigned char* src);
 size_t tx_store_alias(unsigned char* dst, const tx_alias_t *src);
 size_t tx_alias_buffer_size(const tx_alias_t* alias);
 
+ssize_t tx_load_alias_with_len(tx_alias_t* dst, const unsigned char* src);
+size_t tx_store_alias_with_len(unsigned char* dst, const tx_alias_t *src);
+size_t tx_alias_with_len_buffer_size(const tx_alias_t* alias);
+
 ssize_t tx_load_addr_or_alias(tx_addr_or_alias_t *dst, const unsigned char* src);
 size_t tx_store_addr_or_alias(unsigned char* dst, const tx_addr_or_alias_t *src);
 size_t tx_addr_or_alias_buffer_size(const tx_addr_or_alias_t* v);
@@ -318,7 +322,7 @@ typedef struct tx_func_arg_s
 typedef struct tx_func_arg_array_s
 {
     uint32_t len;
-    tx_func_arg_t* arr;
+    tx_func_arg_t* array;
 } tx_func_arg_array_t;
 
 void tx_init_func_arg_array(tx_func_arg_array_t* arr, uint32_t len);
