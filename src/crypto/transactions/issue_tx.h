@@ -7,8 +7,8 @@ typedef struct issue_tx_bytes_s
 {
     tx_chain_id_t chain_id;
     tx_public_key_t sender_public_key;
-    tx_string_t asset_name;
-    tx_string_t asset_description;
+    tx_string_t name;
+    tx_string_t description;
     tx_quantity_t quantity;
     tx_decimals_t decimals;
     tx_reissuable_t reissuable;

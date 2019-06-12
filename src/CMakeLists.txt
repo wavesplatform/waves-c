@@ -1,6 +1,6 @@
 project( waves-c )
 
-file(GLOB CS "crypto/*.c" "crypto/base58/*.c"
+file(GLOB CS "crypto/*.c" "crypto/base58/*.c" "crypto/base64/*.c"
         "crypto/blake2b/sse/*.c" "crypto/transactions/*.c" "crypto/libcurve25519-donna/*.c" "crypto/libcurve25519-donna/additions/*.c"
         "crypto/libcurve25519-donna/nacl_includes/*.c"  "crypto/libcurve25519-donna/nacl_sha512/*.c")
 
@@ -12,7 +12,7 @@ set_target_properties(waves_c_shared PROPERTIES OUTPUT_NAME waves_c)
 target_link_libraries(waves_c ${OPENSSL_LIBRARIES} m crypto)
 add_definitions(-Wall -O3 -Werror -Wextra -Wno-format)
 
-install(FILES crypto/base58/b58.h DESTINATION include/waves)
+install(FILES crypto/base58/b58.h crypto/base64/b64.h DESTINATION include/waves)
 install(FILES crypto/crypto.h DESTINATION include/waves)
 file(GLOB TX_FILES "crypto/transactions/*_tx.h")
 install(FILES ${TX_FILES} crypto/transactions/tx_common.h crypto/transactions/tx.h DESTINATION include/waves)
