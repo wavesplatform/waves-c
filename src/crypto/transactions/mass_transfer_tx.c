@@ -18,6 +18,7 @@ ssize_t waves_mass_transfer_tx_from_bytes(mass_transfer_tx_bytes_t *tx, const un
     {
         return tx_parse_error_pos(p, src);
     }
+    p += nbytes;
     p += tx_load_timestamp(&tx->timestamp, p);
     p += tx_load_fee(&tx->fee, p);
     if ((nbytes = tx_load_attachment(&tx->attachment, p)) < 0)
