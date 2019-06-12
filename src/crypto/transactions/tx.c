@@ -171,12 +171,23 @@ void waves_destroy_tx(tx_bytes_t* tx)
             waves_destroy_invoke_script_tx(&tx->data.invoke_script);
             break;
         case TRANSACTION_TYPE_REISSUE:
+            waves_destroy_reissue_tx(&tx->data.reissue);
+            break;
         case TRANSACTION_TYPE_BURN:
+            waves_destroy_burn_tx(&tx->data.burn);
+            break;
         case TRANSACTION_TYPE_LEASE:
+            waves_destroy_lease_tx(&tx->data.lease);
+            break;
         case TRANSACTION_TYPE_CANCEL_LEASE:
+            waves_destroy_lease_cancel_tx(&tx->data.lease_cancel);
+            break;
         case TRANSACTION_TYPE_ALIAS:
+            waves_destroy_alias_tx(&tx->data.alias);
+            break;
         case TRANSACTION_TYPE_SPONSORSHIP:
-            // do nothing
+            waves_destroy_sponsorship_tx(&tx->data.sponsorship);
+            break;
         default:;
     }
     tx->type = 0;

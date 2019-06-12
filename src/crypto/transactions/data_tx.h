@@ -5,7 +5,7 @@
 
 typedef struct data_tx_bytes_s
 {
-    tx_public_key_bytes_t sender_public_key;
+    tx_public_key_t sender_public_key;
     tx_data_entry_array_t data;
     tx_fee_t fee;
     tx_timestamp_t timestamp;

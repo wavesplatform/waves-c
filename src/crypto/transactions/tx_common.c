@@ -1,4 +1,6 @@
 #include "tx_common.h"
+#include "base58/b58.h"
+
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -72,6 +74,61 @@ size_t tx_load_uint_big_endian(void* dst, const unsigned char* src, size_t sz)
     return sz;
 }
 
+void tx_init_base58_string(tx_base58_string_t* s, size_t decoded_len)
+{
+    size_t encoded_len = decoded_len * 2;
+    s->data = (char*)tx_malloc(encoded_len + 1);
+    s->encoded_len = encoded_len;
+    s->decoded_len = decoded_len;
+}
+
+void tx_destroy_base58_string(tx_base58_string_t* s)
+{
+    if (s->data)
+    {
+        tx_free(s->data);
+    }
+    s->encoded_len = 0;
+    s->decoded_len = 0;
+}
+
+size_t tx_base58_buffer_size(const tx_base58_string_t *s)
+{
+    return s->decoded_len;
+}
+
+ssize_t tx_load_base58_string(tx_base58_string_t* dst, const unsigned char *src)
+{
+    const unsigned char* p = src;
+    tx_size_t decoded_len;
+    p += tx_load_len(&decoded_len, p);
+    p += tx_load_base58_string_fixed(dst, p, decoded_len);
+    return p - src;
+}
+
+size_t tx_store_base58_string(unsigned char *dst, tx_base58_string_t* src)
+{
+    unsigned char buf[src->encoded_len];
+    tx_size_t len = base58_decode(buf, src->data);
+    unsigned char* p = dst;
+    p += tx_store_len(p, len);
+    memcpy(p, buf, len);
+    return sizeof(tx_size_t) + len;
+}
+
+ssize_t tx_load_base58_string_fixed(tx_base58_string_t* dst, const unsigned char *src, size_t sz)
+{
+    tx_init_base58_string(dst, sz);
+    dst->encoded_len = base58_encode(dst->data, src, sz) - 1;
+    return sz;
+}
+
+size_t tx_store_base58_string_fixed(unsigned char *dst, const tx_base58_string_t* src, size_t sz)
+{
+    base58_decode(dst, src->data);
+    return sz;
+}
+
 size_t tx_store_string(unsigned char* dst, const char* src)
 {
     unsigned char* p = dst;
@@ -89,36 +146,6 @@ size_t tx_load_string(char* dst, const unsigned char* src)
     memcpy(dst, p, str_sz);
     dst[str_sz] = '\0';
     return str_sz + sizeof(uint16_t);
-}
-
-inline size_t tx_copy_public_key(unsigned char* dst, const unsigned char* src)
-{
-    memcpy(dst, src, sizeof(tx_public_key_bytes_t));
-    return sizeof(tx_public_key_bytes_t);
-}
-
-inline size_t tx_copy_lease_id(unsigned char* dst, const unsigned char* src)
-{
-    memcpy(dst, src, sizeof(tx_lease_id_bytes_t));
-    return sizeof(tx_lease_id_bytes_t);
-}
-
-inline size_t tx_copy_asset_id(unsigned char* dst, const unsigned char* src)
-{
-    memcpy(dst, src, sizeof(tx_asset_id_bytes_t));
-    return sizeof(tx_asset_id_bytes_t);
-}
-
-inline size_t tx_copy_lease_asset_id(unsigned char* dst, const unsigned char* src)
-{
-    memcpy(dst, src, sizeof(tx_lease_asset_id_bytes_t));
-    return sizeof(tx_lease_asset_id_bytes_t);
-}
-
-inline size_t tx_copy_address(unsigned char* dst, const unsigned char* src)
-{
-    memcpy(dst, src, sizeof(tx_rcpt_addr_bytes_t));
-    return sizeof(tx_rcpt_addr_bytes_t);
 }
 
 ssize_t tx_load_alias(tx_alias_t* dst, const unsigned char* src)
@@ -151,20 +178,28 @@ size_t tx_alias_buffer_size(const tx_alias_t* alias)
     return nb;
 }
 
-ssize_t tx_load_rcpt_addr_or_alias(tx_rcpt_addr_or_alias_t* dst, const unsigned char* src)
+ssize_t tx_load_addr_or_alias(tx_addr_or_alias_t* dst, const unsigned char* src)
 {
     dst->is_alias = (*src == ALIAS_VERSION);
-    return dst->is_alias ? tx_load_alias(&dst->data.alias, src) : (ssize_t)tx_copy_address(dst->data.address, src);
+    return dst->is_alias ? tx_load_alias(&dst->data.alias, src) : (ssize_t)(tx_load_address(&dst->data.address, src));
 }
 
-size_t tx_store_rcpt_addr_or_alias(unsigned char* dst, const tx_rcpt_addr_or_alias_t* src)
+size_t tx_store_addr_or_alias(unsigned char* dst, const tx_addr_or_alias_t* src)
 {
-    return src->is_alias ? tx_store_alias(dst, &src->data.alias) : tx_copy_address(dst, src->data.address);
+    return src->is_alias ? tx_store_alias(dst, &src->data.alias) : tx_store_address(dst, &src->data.address);
 }
 
-size_t tx_addr_or_alias_buffer_size(const tx_rcpt_addr_or_alias_t* v)
+size_t tx_addr_or_alias_buffer_size(const tx_addr_or_alias_t* v)
 {
-    return v->is_alias ? tx_alias_buffer_size(&v->data.alias) : sizeof(v->data.address);
+    return v->is_alias ? tx_alias_buffer_size(&v->data.alias) : tx_address_buffer_size(&v->data.address);
+}
+
+void tx_destroy_addr_or_alias(tx_addr_or_alias_t* v)
+{
+    if (v->is_alias)
+    {
+        tx_destroy_address(&v->data.address);
+    }
 }
 
 void tx_init_data_string(tx_data_string_t* s, uint16_t len)
@@ -383,7 +418,7 @@ ssize_t tx_load_optional_asset_id(tx_optional_asset_id_t* dst, const unsigned ch
     p += tx_load_u8(&dst->valid, p);
     if (dst->valid)
     {
-        p += tx_copy_asset_id(dst->data, p);
+        p += tx_load_asset_id(&dst->asset_id, p);
     }
     return p - src;
 }
@@ -394,7 +429,7 @@ size_t tx_store_optional_asset_id(unsigned char* dst, const tx_optional_asset_id
     if (src->valid)
     {
         p += tx_store_u8(p, 1);
-        p += tx_copy_asset_id(p, src->data);
+        p += tx_store_asset_id(p, &src->asset_id);
     }
     else
     {
@@ -405,7 +440,16 @@ size_t tx_store_optional_asset_id(unsigned char* dst, const tx_optional_asset_id
 
 size_t tx_optional_asset_id_buffer_size(const tx_optional_asset_id_t* v)
 {
-    return v->valid ? sizeof(v->data) + 1 : 1;
+    return v->valid ? tx_asset_id_buffer_size(&v->asset_id) + 1 : 1;
+}
+
+void tx_destroy_optional_asset_id(tx_optional_asset_id_t *v)
+{
+    if (v->valid)
+    {
+        tx_destroy_asset_id(&v->asset_id);
+        v->valid = false;
+    }
 }
 
 ssize_t tx_load_script(tx_script_t* dst, const unsigned char* src)
@@ -513,7 +557,7 @@ ssize_t tx_load_transfer(tx_transfer_t* dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
-    if ((nbytes = tx_load_rcpt_addr_or_alias(&dst->recepient, p)) < 0)
+    if ((nbytes = tx_load_addr_or_alias(&dst->recepient, p)) < 0)
     {
         return tx_parse_error_pos(p, src);
     }
@@ -525,7 +569,7 @@ ssize_t tx_load_transfer(tx_transfer_t* dst, const unsigned char* src)
 size_t tx_store_transfer(unsigned char* dst, tx_transfer_t* src)
 {
     unsigned char* p = dst;
-    p += tx_store_rcpt_addr_or_alias(p, &src->recepient);
+    p += tx_store_addr_or_alias(p, &src->recepient);
     p += tx_store_amount(p, src->amount);
     return p - dst;
 }

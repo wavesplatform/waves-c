@@ -6,8 +6,8 @@
 typedef struct invoke_script_tx_bytes_s
 {
     tx_chain_id_t chain_id;
-    tx_public_key_bytes_t sender_public_key;
-    tx_rcpt_addr_or_alias_t dapp;
+    tx_public_key_t sender_public_key;
+    tx_addr_or_alias_t dapp;
     tx_func_call_t function_call;
     tx_payment_array_t payments;
     tx_fee_t fee;

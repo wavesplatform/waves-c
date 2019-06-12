@@ -58,10 +58,7 @@ void test_data_tx_bytes()
        exit(-1);
    }
    const char* expected_pk = "Ezmfw3GgJerTZFgSdzEnXydu1LJ52LsAFZXUF5c63UrF";
-   char sender_pk [strlen(expected_pk)+1];
-
-   ssize_t encoded = base58_encode(sender_pk, data_tx.data.data.sender_public_key, sizeof(tx_public_key_bytes_t));
-   sender_pk[encoded] = '\0';
+   const char* sender_pk = data_tx.data.data.sender_public_key.data;
 
    if (strcmp(sender_pk, expected_pk) != 0) {
        fprintf(stderr, "%s != %s\n", sender_pk, expected_pk);

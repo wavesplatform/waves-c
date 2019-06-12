@@ -12,8 +12,8 @@ ssize_t waves_reissue_tx_from_bytes(reissue_tx_bytes_t *tx, const unsigned char 
         return tx_parse_error_pos(p, src);
     }
     p += tx_load_chain_id(&tx->chain_id, p);
-    p += tx_copy_public_key(tx->sender_public_key, p);
-    p += tx_copy_asset_id(tx->asset_id, p);
+    p += tx_load_public_key(&tx->sender_public_key, p);
+    p += tx_load_asset_id(&tx->asset_id, p);
     p += tx_load_quantity(&tx->quantity, p);
     p += tx_load_reissuable(&tx->reissuable, p);
     p += tx_load_fee(&tx->fee, p);
@@ -27,8 +27,8 @@ size_t waves_reissue_tx_to_bytes(unsigned char* dst, const reissue_tx_bytes_t* t
     *p++ = TRANSACTION_TYPE_REISSUE;
     *p++ = TX_VERSION_2;
     p += tx_store_chain_id(p, tx->chain_id);
-    p += tx_copy_public_key(p, tx->sender_public_key);
-    p += tx_copy_asset_id(p, tx->asset_id);
+    p += tx_store_public_key(p, &tx->sender_public_key);
+    p += tx_store_asset_id(p, &tx->asset_id);
     p += tx_store_quantity(p, tx->quantity);
     p += tx_store_reissuable(p, tx->reissuable);
     p += tx_store_fee(p, tx->fee);
@@ -40,11 +40,17 @@ size_t waves_reissue_tx_buffer_size(const reissue_tx_bytes_t* tx)
 {
     size_t nb = 2;
     nb += sizeof(tx->chain_id);
-    nb += sizeof(tx->sender_public_key);
-    nb += sizeof(tx->asset_id);
+    nb += tx_public_key_buffer_size(&tx->sender_public_key);
+    nb += tx_asset_id_buffer_size(&tx->asset_id);
     nb += sizeof(tx->quantity);
     nb += sizeof(tx->reissuable);
     nb += sizeof(tx->fee);
     nb += sizeof(tx->timestamp);
     return nb;
+}
+
+void waves_destroy_reissue_tx(reissue_tx_bytes_t *tx)
+{
+    tx_destroy_public_key(&tx->sender_public_key);
+    tx_destroy_asset_id(&tx->asset_id);
 }
