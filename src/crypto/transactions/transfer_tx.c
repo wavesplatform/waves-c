@@ -53,7 +53,7 @@ void waves_destroy_transfer_tx(transfer_tx_bytes_t* tx)
     tx_destroy_optional_asset_id(&tx->asset_id);
     tx_destroy_optional_asset_id(&tx->fee_asset_id);
     tx_destroy_addr_or_alias(&tx->recepient);
-    tx_destroy_data_string(&tx->attachment);
+    tx_destroy_string(&tx->attachment);
 }
 
 size_t waves_transfer_tx_buffer_size(const transfer_tx_bytes_t *tx)
@@ -66,6 +66,6 @@ size_t waves_transfer_tx_buffer_size(const transfer_tx_bytes_t *tx)
     nb += sizeof(tx->amount);
     nb += sizeof(tx->fee);
     nb += tx_addr_or_alias_buffer_size(&tx->recepient);
-    nb += tx_data_string_buffer_size(&tx->attachment);
+    nb += tx_string_buffer_size(&tx->attachment);
     return nb;
 }

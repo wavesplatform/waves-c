@@ -43,5 +43,6 @@ size_t waves_alias_tx_buffer_size(const alias_tx_bytes_t* tx)
 void waves_destroy_alias_tx(alias_tx_bytes_t* tx)
 {
     tx_destroy_public_key(&tx->sender_public_key);
+    tx_destroy_alias(&tx->alias);
 }
 

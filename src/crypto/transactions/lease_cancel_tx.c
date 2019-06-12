@@ -1,5 +1,6 @@
 #include "lease_cancel_tx.h"
 #include <string.h>
+#include <stdio.h>
 
 ssize_t waves_lease_cancel_tx_from_bytes(lease_cancel_tx_bytes_t *tx, const unsigned char *src)
 {
@@ -12,6 +13,7 @@ ssize_t waves_lease_cancel_tx_from_bytes(lease_cancel_tx_bytes_t *tx, const unsi
     {
         return tx_parse_error_pos(p-1, src);
     }
+    p += tx_load_chain_id(&tx->chain_id, p);
     p += tx_load_public_key(&tx->sender_public_key, p);
     p += tx_load_fee(&tx->fee, p);
     p += tx_load_timestamp(&tx->timestamp, p);
@@ -19,9 +21,9 @@ ssize_t waves_lease_cancel_tx_from_bytes(lease_cancel_tx_bytes_t *tx, const unsi
     return p - src;
 }
 
-size_t waves_lease_cancel_tx_to_bytes(unsigned char* src, const lease_cancel_tx_bytes_t* tx)
+size_t waves_lease_cancel_tx_to_bytes(unsigned char* dst, const lease_cancel_tx_bytes_t* tx)
 {
-    unsigned char* p = src;
+    unsigned char* p = dst;
     *p++ = TRANSACTION_TYPE_CANCEL_LEASE;
     *p++ = TX_VERSION_2;
     p += tx_store_chain_id(p, tx->chain_id);
@@ -29,7 +31,7 @@ size_t waves_lease_cancel_tx_to_bytes(unsigned char* src, const lease_cancel_tx_
     p += tx_store_fee(p, tx->fee);
     p += tx_store_timestamp(p, tx->timestamp);
     p += tx_store_lease_id(p, &tx->lease_id);
-    return p - src;
+    return p - dst;
 }
 
 size_t waves_lease_cancel_tx_buffer_size(const lease_cancel_tx_bytes_t *tx)

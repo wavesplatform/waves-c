@@ -12,7 +12,7 @@ typedef struct transfer_tx_bytes_s
     tx_amount_t amount;
     tx_fee_t fee;
     tx_addr_or_alias_t recepient;
-    tx_data_string_t attachment;
+    tx_string_t attachment;
 } transfer_tx_bytes_t;
 
 ssize_t waves_transfer_tx_from_bytes(transfer_tx_bytes_t *tx, const unsigned char *src);

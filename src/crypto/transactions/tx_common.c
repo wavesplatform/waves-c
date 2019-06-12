@@ -129,25 +129,6 @@ size_t tx_store_base58_string_fixed(unsigned char *dst, const tx_base58_string_t
     return sz;
 }
 
-size_t tx_store_string(unsigned char* dst, const char* src)
-{
-    unsigned char* p = dst;
-    size_t str_sz = strlen(src);
-    p += tx_store_uint_big_endian(p, (uint16_t)str_sz, sizeof(uint16_t));
-    memcpy(p, src, str_sz);
-    return str_sz + sizeof(uint16_t);
-}
-
-size_t tx_load_string(char* dst, const unsigned char* src)
-{
-    const unsigned char* p = src;
-    uint16_t str_sz;
-    p += tx_load_uint_big_endian(&str_sz, p, sizeof(str_sz));
-    memcpy(dst, p, str_sz);
-    dst[str_sz] = '\0';
-    return str_sz + sizeof(uint16_t);
-}
-
 ssize_t tx_load_alias(tx_alias_t* dst, const unsigned char* src)
 {
     const unsigned char* p = src;
@@ -156,7 +137,7 @@ ssize_t tx_load_alias(tx_alias_t* dst, const unsigned char* src)
         return tx_parse_error_pos(p-1, src);
     }
     p += tx_load_chain_id(&dst->chain_id, p);
-    p += tx_load_string(dst->alias, p);
+    p += tx_load_string(&dst->alias, p);
     return p - src;
 }
 
@@ -165,7 +146,7 @@ size_t tx_store_alias(unsigned char* dst, const tx_alias_t* src)
     unsigned char* p = dst;
     *p++ = ALIAS_VERSION;
     p += tx_store_chain_id(p, src->chain_id);
-    p += tx_store_string(p, src->alias);
+    p += tx_store_string(p, &src->alias);
     return p - dst;
 }
 
@@ -173,9 +154,13 @@ size_t tx_alias_buffer_size(const tx_alias_t* alias)
 {
     size_t nb = 1;
     nb += sizeof(tx_chain_id_t);
-    nb += sizeof(tx_size_t);
-    nb += strlen(alias->alias);
+    nb += tx_string_buffer_size(&alias->alias);
     return nb;
+}
+
+void tx_destroy_alias(tx_alias_t* alias)
+{
+    tx_destroy_string(&alias->alias);
 }
 
 ssize_t tx_load_alias_with_len(tx_alias_t* dst, const unsigned char* src)
@@ -232,13 +217,13 @@ void tx_destroy_addr_or_alias(tx_addr_or_alias_t* v)
     }
 }
 
-void tx_init_data_string(tx_data_string_t* s, uint16_t len)
+void tx_init_string(tx_string_t* s, uint16_t len)
 {
     s->len = len;
-    s->data = (char*)tx_malloc(len);
+    s->data = (char*)tx_malloc(len+1);
 }
 
-void tx_destroy_data_string(tx_data_string_t* s)
+void tx_destroy_string(tx_string_t* s)
 {
     if (s->data)
     {
@@ -248,17 +233,18 @@ void tx_destroy_data_string(tx_data_string_t* s)
     s->len = 0;
 }
 
-ssize_t tx_load_data_string(tx_data_string_t* dst, const unsigned char* src)
+ssize_t tx_load_string(tx_string_t* dst, const unsigned char* src)
 {
     const unsigned char* p = src;
     uint16_t len;
     p += tx_load_len(&len, p);
-    tx_init_data_string(dst, len);
+    tx_init_string(dst, len);
     memcpy(dst->data, p, len);
+    dst->data[len] = '\0';
     return len + sizeof(len);
 }
 
-size_t tx_store_data_string(unsigned char* dst, const tx_data_string_t *src)
+size_t tx_store_string(unsigned char* dst, const tx_string_t *src)
 {
     unsigned char* p = dst;
     p += tx_store_len(p, src->len);
@@ -266,7 +252,7 @@ size_t tx_store_data_string(unsigned char* dst, const tx_data_string_t *src)
     return src->len + sizeof(src->len);
 }
 
-size_t tx_data_string_buffer_size(const tx_data_string_t *v)
+size_t tx_string_buffer_size(const tx_string_t *v)
 {
     return sizeof(v->len) + v->len;
 }
@@ -285,7 +271,7 @@ ssize_t tx_load_data(tx_data_t* dst, const unsigned char* src)
         break;
     case TX_DATA_TYPE_STRING:
     case TX_DATA_TYPE_BINARY:
-        p += tx_load_data_string(&dst->types.string, p);
+        p += tx_load_string(&dst->types.string, p);
         break;
     default:
         return tx_parse_error_pos(p, src);
@@ -307,7 +293,7 @@ size_t tx_store_data(unsigned char* dst, tx_data_t* src)
         break;
     case TX_DATA_TYPE_STRING:
     case TX_DATA_TYPE_BINARY:
-        p += tx_store_data_string(p, &src->types.string);
+        p += tx_store_string(p, &src->types.string);
         break;
     default:;
     }
@@ -327,7 +313,7 @@ size_t tx_data_buffer_size(const tx_data_t *v)
         break;
     case TX_DATA_TYPE_STRING:
     case TX_DATA_TYPE_BINARY:
-        nb += tx_data_string_buffer_size(&v->types.string);
+        nb += tx_string_buffer_size(&v->types.string);
         break;
     }
     return nb;
@@ -337,14 +323,14 @@ ssize_t tx_load_data_entry(tx_data_entry_t* dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
-    if ((nbytes = tx_load_data_string(&dst->key, p)) < 0)
+    if ((nbytes = tx_load_string(&dst->key, p)) < 0)
     {
         return tx_parse_error_pos(p, src);
     }
     p += nbytes;
     if ((nbytes = tx_load_data(&dst->value, p)) < 0)
     {
-        tx_destroy_data_string(&dst->key);
+        tx_destroy_string(&dst->key);
         return tx_parse_error_pos(p, src);
     }
     p += nbytes;
@@ -354,14 +340,14 @@ ssize_t tx_load_data_entry(tx_data_entry_t* dst, const unsigned char* src)
 size_t tx_store_data_entry(unsigned char* dst, tx_data_entry_t* src)
 {
     unsigned char* p = dst;
-    p += tx_store_data_string(p, &src->key);
+    p += tx_store_string(p, &src->key);
     p += tx_store_data(p, &src->value);
     return p - dst;
 }
 
 size_t tx_data_entry_buffer_size(const tx_data_entry_t* v)
 {
-    size_t nb = tx_data_string_buffer_size(&v->key);
+    size_t nb = tx_string_buffer_size(&v->key);
     nb += tx_data_buffer_size(&v->value);
     return nb;
 }
@@ -413,13 +399,13 @@ void tx_destroy_data(tx_data_t* s)
 {
     if (s->data_type == TX_DATA_TYPE_BINARY || s->data_type == TX_DATA_TYPE_STRING)
     {
-        tx_destroy_data_string(&s->types.string);
+        tx_destroy_string(&s->types.string);
     }
 }
 
 void tx_destroy_data_entry(tx_data_entry_t *s)
 {
-    tx_destroy_data_string(&s->key);
+    tx_destroy_string(&s->key);
     tx_destroy_data(&s->value);
 }
 
@@ -494,7 +480,7 @@ ssize_t tx_load_script(tx_script_t* dst, const unsigned char* src)
     }
     else
     {
-        p += tx_load_data_string(dst, p);
+        p += tx_load_string(dst, p);
     }
     return p - src;
 }
@@ -509,14 +495,14 @@ size_t tx_store_script(unsigned char* dst, const tx_script_t* src)
     else
     {
         p += tx_store_u8(p, 1);
-        p += tx_store_data_string(p, src);
+        p += tx_store_string(p, src);
     }
     return p - dst;
 }
 
 size_t tx_script_buffer_size(const tx_script_t* v)
 {
-    return v->len == 0 ? 1 : 1 + tx_data_string_buffer_size(v);
+    return v->len == 0 ? 1 : 1 + tx_string_buffer_size(v);
 }
 
 void tx_init_transfer_array(tx_transfer_array_t* arr, tx_size_t len)
