@@ -77,20 +77,34 @@ size_t tx_load_uint_big_endian(void* dst, const unsigned char* src, size_t sz)
 
 void tx_destroy_encoded_string(tx_encoded_string_t* s)
 {
-    if (s->data)
+    if (s->encoded_data)
     {
-        tx_free(s->data);
+        tx_free(s->encoded_data);
+    }
+    if (s->decoded_data)
+    {
+        tx_free(s->decoded_data);
     }
     s->encoded_len = 0;
     s->decoded_len = 0;
 }
 
-void tx_init_base58_string(tx_encoded_string_t* s, size_t decoded_len)
+void tx_init_base58_string(tx_encoded_string_t* s, const unsigned char *src, size_t decoded_len)
 {
     size_t encoded_len = decoded_len * 2;
-    s->data = (char*)tx_malloc(encoded_len + 1);
+    s->encoded_data = (char*)tx_malloc(encoded_len + 1);
+    s->decoded_data = (char*)tx_malloc(decoded_len);
+    memcpy(s->decoded_data, src, decoded_len);
     s->encoded_len = encoded_len;
     s->decoded_len = decoded_len;
+}
+
+void tx_encoded_string_set_null(tx_encoded_string_t* s)
+{
+    s->decoded_data = NULL;
+    s->encoded_data = NULL;
+    s->decoded_len = 0;
+    s->encoded_len = 0;
 }
 
 size_t tx_encoded_string_fixed_buffer_size(const tx_encoded_string_t *s)
@@ -114,9 +128,15 @@ ssize_t tx_load_base58_string(tx_encoded_string_t* dst, const unsigned char *src
 
 size_t tx_store_base58_string(unsigned char *dst, tx_encoded_string_t* src)
 {
-    unsigned char buf[src->encoded_len];
-    tx_size_t len = base58_decode(buf, src->data);
     unsigned char* p = dst;
+    if (src->decoded_data != NULL)
+    {
+        p += tx_store_len(p, (tx_size_t)src->decoded_len);
+        memcpy(p, src->decoded_data, src->decoded_len);
+        return sizeof(tx_size_t) + src->decoded_len;
+    }
+    unsigned char buf[src->encoded_len];
+    tx_size_t len = base58_decode(buf, src->encoded_data);
     p += tx_store_len(p, len);
     memcpy(p, buf, len);
     return sizeof(tx_size_t) + len;
@@ -124,35 +144,47 @@ size_t tx_store_base58_string(unsigned char *dst, tx_encoded_string_t* src)
 
 ssize_t tx_load_base58_string_fixed(tx_encoded_string_t* dst, const unsigned char *src, size_t sz)
 {
-    tx_init_base58_string(dst, sz);
-    dst->encoded_len = base58_encode(dst->data, src, sz) - 1;
+    tx_init_base58_string(dst, src, sz);
+    dst->encoded_len = base58_encode(dst->encoded_data, (unsigned char*)dst->decoded_data, sz) - 1;
     return sz;
 }
 
 size_t tx_store_base58_string_fixed(unsigned char *dst, const tx_encoded_string_t* src, size_t sz)
 {
-    base58_decode(dst, src->data);
+    if (src->decoded_data != NULL)
+    {
+        memcpy(dst, src->decoded_data, sz);
+        return sz;
+    }
+    base58_decode(dst, src->encoded_data);
     return sz;
 }
 
-void tx_init_base64_string(tx_encoded_string_t* s, size_t decoded_len)
+void tx_init_base64_string(tx_encoded_string_t* s,  const unsigned char *src, size_t decoded_len)
 {
     size_t encoded_len = ((4 * decoded_len / 3) + 3) & ~3;
-    s->data = (char*)tx_malloc(encoded_len + 1);
+    s->encoded_data = (char*)tx_malloc(encoded_len + 1);
+    s->decoded_data = (char*)tx_malloc(decoded_len);
+    memcpy(s->decoded_data, src, decoded_len);
     s->encoded_len = encoded_len;
     s->decoded_len = decoded_len;
 }
 
 ssize_t tx_load_base64_string_fixed(tx_encoded_string_t* dst, const unsigned char *src, size_t sz)
 {
-    tx_init_base64_string(dst, sz);
-    dst->encoded_len = base64_encode((unsigned char*)dst->data, src, sz);
+    tx_init_base64_string(dst, src, sz);
+    dst->encoded_len = base64_encode((unsigned char*)dst->encoded_data, (unsigned char*)dst->decoded_data, sz);
     return sz;
 }
 
 size_t tx_store_base64_string_fixed(unsigned char *dst, const tx_encoded_string_t *src, size_t sz)
 {
-    base64_decode(dst, (unsigned char*)src->data);
+    if (src->decoded_data != NULL)
+    {
+        memcpy(dst, src->decoded_data, sz);
+        return sz;
+    }
+    base64_decode(dst, (unsigned char*)src->encoded_data);
     return sz;
 }
 
@@ -167,9 +199,15 @@ ssize_t tx_load_base64_string(tx_encoded_string_t* dst, const unsigned char *src
 
 size_t tx_store_base64_string(unsigned char *dst, const tx_encoded_string_t* src)
 {
-    unsigned char buf[src->encoded_len];
-    tx_size_t len = base64_decode(buf, (unsigned char*)src->data);
     unsigned char* p = dst;
+    if (src->decoded_data != NULL)
+    {
+        p += tx_store_len(p, (tx_size_t)src->decoded_len);
+        memcpy(p, src->decoded_data, src->decoded_len);
+        return sizeof(tx_size_t) + src->decoded_len;
+    }
+    unsigned char buf[src->encoded_len];
+    tx_size_t len = base64_decode(buf, (unsigned char*)src->encoded_data);
     p += tx_store_len(p, len);
     memcpy(p, buf, len);
     return sizeof(tx_size_t) + len;
@@ -474,44 +512,44 @@ void tx_destroy_data_entry_array(tx_data_entry_array_t* arr)
     tx_free(arr->array);
 }
 
-ssize_t tx_load_optional_asset_id(tx_optional_asset_id_t* dst, const unsigned char* src)
+ssize_t tx_load_optional_base58_string_fixed(tx_encoded_string_t* dst, const unsigned char* src, size_t sz)
 {
     const unsigned char* p = src;
-    p += tx_load_u8(&dst->valid, p);
-    if (dst->valid)
+    uint8_t valid;
+    p += tx_load_u8(&valid, p);
+    if (valid)
     {
-        p += tx_load_asset_id(&dst->asset_id, p);
+        p += tx_load_base58_string_fixed(dst, p, sz);
+    }
+    else
+    {
+        tx_encoded_string_set_null(dst);
     }
     return p - src;
 }
 
-size_t tx_store_optional_asset_id(unsigned char* dst, const tx_optional_asset_id_t* src)
+size_t tx_store_optional_base58_string_fixed(unsigned char* dst, const tx_encoded_string_t* src, size_t sz)
 {
     unsigned char* p = dst;
-    if (src->valid)
+    if (src->encoded_len == 0)
     {
-        p += tx_store_u8(p, 1);
-        p += tx_store_asset_id(p, &src->asset_id);
+        assert(src->decoded_len == 0);
+        assert(src->encoded_data == NULL);
+        assert(src->decoded_data == NULL);
+        p += tx_store_u8(p, 0);
     }
     else
     {
-        p += tx_store_u8(p, 0);
+        assert(src->decoded_len == sz);
+        p += tx_store_u8(p, 1);
+        p += tx_store_base58_string_fixed(p, src, src->decoded_len);
     }
     return p - dst;
 }
 
-size_t tx_optional_asset_id_buffer_size(const tx_optional_asset_id_t* v)
+size_t tx_optional_encoded_string_buffer_size(const tx_encoded_string_t* v)
 {
-    return v->valid ? tx_asset_id_buffer_size(&v->asset_id) + 1 : 1;
-}
-
-void tx_destroy_optional_asset_id(tx_optional_asset_id_t *v)
-{
-    if (v->valid)
-    {
-        tx_destroy_asset_id(&v->asset_id);
-        v->valid = false;
-    }
+    return 1 + (v->encoded_len == 0 ? 0 : tx_encoded_string_buffer_size(v));
 }
 
 ssize_t tx_load_script(tx_script_t* dst, const unsigned char* src)
@@ -521,7 +559,7 @@ ssize_t tx_load_script(tx_script_t* dst, const unsigned char* src)
     p += tx_load_u8(&script_valid, p);
     if (!script_valid)
     {
-        dst->data = NULL;
+        dst->encoded_data = NULL;
         dst->encoded_len = 0;
         dst->decoded_len = 0;
     }
@@ -602,7 +640,7 @@ size_t tx_payment_buffer_size(const tx_payment_t* v)
 {
     size_t nb = sizeof(v->length);
     nb += sizeof(v->amount);
-    nb += tx_optional_asset_id_buffer_size(&v->asset_id);
+    nb += tx_optional_encoded_string_buffer_size(&v->asset_id);
     return nb;
 }
 

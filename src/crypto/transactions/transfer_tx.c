@@ -18,7 +18,7 @@ ssize_t waves_transfer_tx_from_bytes(transfer_tx_bytes_t *tx, const unsigned cha
     p += tx_load_timestamp(&tx->timestamp, p);
     p += tx_load_amount(&tx->amount, p);
     p += tx_load_fee(&tx->fee, p);
-    if ((nbytes = tx_load_addr_or_alias(&tx->recepient, p)) < 0)
+    if ((nbytes = tx_load_addr_or_alias(&tx->recipient, p)) < 0)
     {
         return tx_parse_error_pos(p, src);
     }
@@ -42,7 +42,7 @@ size_t waves_transfer_tx_to_bytes(unsigned char* dst, const transfer_tx_bytes_t*
     p += tx_store_timestamp(p, tx->timestamp);
     p += tx_store_amount(p, tx->amount);
     p += tx_store_fee(p, tx->fee);
-    p += tx_store_addr_or_alias(p, &tx->recepient);
+    p += tx_store_addr_or_alias(p, &tx->recipient);
     p += tx_store_attachment(p, &tx->attachment);
     return p - dst;
 }
@@ -52,7 +52,7 @@ void waves_destroy_transfer_tx(transfer_tx_bytes_t* tx)
     tx_destroy_public_key(&tx->sender_public_key);
     tx_destroy_optional_asset_id(&tx->asset_id);
     tx_destroy_optional_asset_id(&tx->fee_asset_id);
-    tx_destroy_addr_or_alias(&tx->recepient);
+    tx_destroy_addr_or_alias(&tx->recipient);
     tx_destroy_string(&tx->attachment);
 }
 
@@ -65,7 +65,7 @@ size_t waves_transfer_tx_buffer_size(const transfer_tx_bytes_t *tx)
     nb += sizeof(tx->timestamp);
     nb += sizeof(tx->amount);
     nb += sizeof(tx->fee);
-    nb += tx_addr_or_alias_buffer_size(&tx->recepient);
+    nb += tx_addr_or_alias_buffer_size(&tx->recipient);
     nb += tx_string_buffer_size(&tx->attachment);
     return nb;
 }

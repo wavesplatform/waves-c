@@ -11,7 +11,7 @@ typedef struct invoke_script_tx_bytes_s
     tx_func_call_t function_call;
     tx_payment_array_t payments;
     tx_fee_t fee;
-    tx_optional_asset_id_t fee_asset_id;
+    tx_asset_id_t fee_asset_id;
     tx_timestamp_t timestamp;
 } invoke_script_tx_bytes_t;
 

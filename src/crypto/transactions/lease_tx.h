@@ -7,7 +7,7 @@ typedef struct lease_tx_bytes_s
 {
     tx_lease_asset_id_t lease_asset_id;
     tx_public_key_t sender_public_key;
-    tx_addr_or_alias_t addr_or_alias;
+    tx_addr_or_alias_t recipient;
     uint64_t amount;
     uint64_t fee;
     uint64_t timestamp;

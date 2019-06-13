@@ -55,7 +55,7 @@ size_t waves_mass_transfer_tx_buffer_size(const mass_transfer_tx_bytes_t* tx)
 {
     size_t nb = 2;
     nb += tx_public_key_buffer_size(&tx->sender_public_key);
-    nb += tx_optional_asset_id_buffer_size(&tx->asset_id);
+    nb += tx_optional_encoded_string_buffer_size(&tx->asset_id);
     nb += tx_transfer_array_buffer_size(&tx->transfers);
     nb += sizeof(tx->timestamp);
     nb += sizeof(tx->fee);

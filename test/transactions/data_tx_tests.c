@@ -58,7 +58,7 @@ void test_data_tx_bytes()
        exit(-1);
    }
    const char* expected_pk = "Ezmfw3GgJerTZFgSdzEnXydu1LJ52LsAFZXUF5c63UrF";
-   const char* sender_pk = data_tx.data.data.sender_public_key.data;
+   const char* sender_pk = data_tx.data.data.sender_public_key.encoded_data;
 
    if (strcmp(sender_pk, expected_pk) != 0) {
        fprintf(stderr, "%s != %s\n", sender_pk, expected_pk);

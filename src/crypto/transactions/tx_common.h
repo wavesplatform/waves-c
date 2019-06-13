@@ -24,7 +24,8 @@ typedef uint64_t tx_amount_t;
 typedef bool tx_reissuable_t;
 
 typedef struct tx_encoded_string_s {
-    char* data;
+    char* encoded_data;
+    char* decoded_data;
     size_t encoded_len;
     size_t decoded_len;
 } tx_encoded_string_t;
@@ -36,16 +37,17 @@ typedef tx_encoded_string_t tx_lease_asset_id_t;
 typedef tx_encoded_string_t tx_address_t;
 
 void tx_destroy_encoded_string(tx_encoded_string_t* s);
+void tx_encoded_string_set_null(tx_encoded_string_t* s);
 size_t tx_encoded_string_fixed_buffer_size(const tx_encoded_string_t* s);
 size_t tx_encoded_string_buffer_size(const tx_encoded_string_t* s);
 
-void tx_init_base58_string(tx_encoded_string_t* s, size_t decoded_len);
+void tx_init_base58_string(tx_encoded_string_t* s, const unsigned char *src, size_t decoded_len);
 ssize_t tx_load_base58_string(tx_encoded_string_t* dst, const unsigned char *src);
 size_t tx_store_base58_string(unsigned char *dst, tx_encoded_string_t* src);
 ssize_t tx_load_base58_string_fixed(tx_encoded_string_t* dst, const unsigned char *src, size_t sz);
 size_t tx_store_base58_string_fixed(unsigned char *dst, const tx_encoded_string_t *src, size_t sz);
 
-void tx_init_base64_string(tx_encoded_string_t* s, size_t decoded_len);
+void tx_init_base64_string(tx_encoded_string_t* s,  const unsigned char *src, size_t decoded_len);
 ssize_t tx_load_base64_string(tx_encoded_string_t* dst, const unsigned char *src);
 size_t tx_store_base64_string(unsigned char *dst, const tx_encoded_string_t *src);
 ssize_t tx_load_base64_string_fixed(tx_encoded_string_t* dst, const unsigned char *src, size_t sz);
@@ -60,25 +62,29 @@ size_t tx_store_base64_string_fixed(unsigned char *dst, const tx_encoded_string_
 #define tx_destroy_public_key(s) tx_destroy_base58_string(s)
 #define tx_destroy_lease_id(s) tx_destroy_base58_string(s)
 #define tx_destroy_asset_id(s) tx_destroy_base58_string(s)
+#define tx_destroy_optional_asset_id(s) tx_destroy_base58_string(s)
 #define tx_destroy_lease_asset_id(s) tx_destroy_base58_string(s)
 #define tx_destroy_address(s) tx_destroy_base58_string(s)
 
 #define tx_public_key_buffer_size(s) tx_base58_buffer_size(s)
 #define tx_lease_id_buffer_size(s) tx_base58_buffer_size(s)
 #define tx_asset_id_buffer_size(s) tx_base58_buffer_size(s)
-#define tx_lease_asset_id_buffer_size(s) tx_base58_buffer_size(s)
+#define tx_optional_asset_id_buffer_size(s) tx_optional_encoded_string_buffer_size(s)
+#define tx_lease_asset_id_buffer_size(s) tx_optional_encoded_string_buffer_size(s)
 #define tx_address_buffer_size(s) tx_base58_buffer_size(s)
 
 #define tx_load_public_key(dst, src) tx_load_base58_string_fixed(dst, src, 32)
 #define tx_load_lease_id(dst, src) tx_load_base58_string_fixed(dst, src, 32)
 #define tx_load_asset_id(dst, src) tx_load_base58_string_fixed(dst, src, 32)
-#define tx_load_lease_asset_id(dst, src) tx_load_base58_string_fixed(dst, src, 32)
+#define tx_load_optional_asset_id(dst, src) tx_load_optional_base58_string_fixed(dst, src, 32)
+#define tx_load_lease_asset_id(dst, src) tx_load_optional_asset_id(dst, src)
 #define tx_load_address(dst, src) tx_load_base58_string_fixed(dst, src, 26)
 
 #define tx_store_public_key(dst, src) tx_store_base58_string_fixed(dst, src, 32)
 #define tx_store_lease_id(dst, src) tx_store_base58_string_fixed(dst, src, 32)
 #define tx_store_asset_id(dst, src) tx_store_base58_string_fixed(dst, src, 32)
-#define tx_store_lease_asset_id(dst, src) tx_store_base58_string_fixed(dst, src, 32)
+#define tx_store_optional_asset_id(dst, src) tx_store_optional_base58_string_fixed(dst, src, 32)
+#define tx_store_lease_asset_id(dst, src) tx_store_optional_asset_id(dst, src)
 #define tx_store_address(dst, src) tx_store_base58_string_fixed(dst, src, 26)
 
 typedef struct tx_string_s
@@ -92,12 +98,6 @@ void tx_destroy_string(tx_string_t* s);
 ssize_t tx_load_string(tx_string_t* dst, const unsigned char* src);
 size_t tx_store_string(unsigned char* dst, const tx_string_t *src);
 size_t tx_string_buffer_size(const tx_string_t *v);
-
-typedef struct tx_optional_asset_id_s
-{
-    uint8_t valid;
-    tx_asset_id_t asset_id;
-} tx_optional_asset_id_t;
 
 enum
 {
@@ -145,10 +145,9 @@ typedef struct tx_addr_or_alias_s
 size_t tx_store_uint_big_endian(unsigned char* dst, uint64_t val, size_t sz);
 size_t tx_load_uint_big_endian(void *dst, const unsigned char* src, size_t sz);
 
-ssize_t tx_load_optional_asset_id(tx_optional_asset_id_t* dst, const unsigned char* src);
-size_t tx_store_optional_asset_id(unsigned char* dst, const tx_optional_asset_id_t* src);
-size_t tx_optional_asset_id_buffer_size(const tx_optional_asset_id_t *v);
-void tx_destroy_optional_asset_id(tx_optional_asset_id_t *v);
+ssize_t tx_load_optional_base58_string_fixed(tx_encoded_string_t *dst, const unsigned char* src, size_t sz);
+size_t tx_store_optional_base58_string_fixed(unsigned char* dst, const tx_encoded_string_t *src, size_t sz);
+size_t tx_optional_encoded_string_buffer_size(const tx_encoded_string_t *v);
 
 ssize_t tx_load_alias(tx_alias_t* dst, const unsigned char* src);
 size_t tx_store_alias(unsigned char* dst, const tx_alias_t *src);
@@ -260,7 +259,7 @@ typedef struct tx_payment_s
 {
     tx_size_t length;
     tx_amount_t amount;
-    tx_optional_asset_id_t asset_id;
+    tx_asset_id_t asset_id;
 } tx_payment_t;
 
 typedef struct tx_payment_array_s
