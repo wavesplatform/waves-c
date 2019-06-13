@@ -126,7 +126,7 @@ ssize_t tx_load_base58_string(tx_encoded_string_t* dst, const unsigned char *src
     return p - src;
 }
 
-size_t tx_store_base58_string(unsigned char *dst, tx_encoded_string_t* src)
+size_t tx_store_base58_string(unsigned char *dst, const tx_encoded_string_t* src)
 {
     unsigned char* p = dst;
     if (src->decoded_data != NULL)
@@ -545,6 +545,11 @@ size_t tx_store_optional_base58_string_fixed(unsigned char* dst, const tx_encode
         p += tx_store_base58_string_fixed(p, src, src->decoded_len);
     }
     return p - dst;
+}
+
+size_t tx_optional_encoded_string_fixed_buffer_size(const tx_encoded_string_t* v)
+{
+    return 1 + (v->encoded_len == 0 ? 0 : tx_encoded_string_fixed_buffer_size(v));
 }
 
 size_t tx_optional_encoded_string_buffer_size(const tx_encoded_string_t* v)
