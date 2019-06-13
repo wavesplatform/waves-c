@@ -69,7 +69,7 @@ size_t waves_invoke_script_tx_buffer_size(const invoke_script_tx_bytes_t* tx)
     nb += tx_func_call_buffer_size(&tx->function_call);
     nb += tx_payment_array_buffer_size(&tx->payments);
     nb += sizeof(tx->fee);
-    nb += tx_optional_asset_id_buffer_size(&tx->fee_asset_id);
+    nb += tx_optional_encoded_string_buffer_size(&tx->fee_asset_id);
     nb += sizeof(tx->timestamp);
     return nb;
 }

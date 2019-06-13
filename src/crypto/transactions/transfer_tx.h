@@ -6,12 +6,12 @@
 typedef struct transfer_tx_bytes_s
 {
     tx_public_key_t sender_public_key;
-    tx_optional_asset_id_t asset_id;
-    tx_optional_asset_id_t fee_asset_id;
+    tx_asset_id_t asset_id;
+    tx_asset_id_t fee_asset_id;
     tx_timestamp_t timestamp;
     tx_amount_t amount;
     tx_fee_t fee;
-    tx_addr_or_alias_t recepient;
+    tx_addr_or_alias_t recipient;
     tx_string_t attachment;
 } transfer_tx_bytes_t;
 
