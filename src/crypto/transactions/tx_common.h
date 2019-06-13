@@ -272,7 +272,7 @@ typedef struct tx_payment_array_s
 
 typedef struct tx_transfer_s
 {
-    tx_addr_or_alias_t recepient;
+    tx_addr_or_alias_t recipient;
     tx_amount_t amount;
 } tx_transfer_t;
 
