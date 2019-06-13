@@ -353,8 +353,10 @@ ssize_t tx_load_data(tx_data_t* dst, const unsigned char* src)
     case TX_DATA_TYPE_BOOLEAN:
         p += tx_load_u8(&dst->types.boolean, p);
         break;
-    case TX_DATA_TYPE_STRING:
     case TX_DATA_TYPE_BINARY:
+        p += tx_load_base58_string(&dst->types.binary, p);
+        break;
+    case TX_DATA_TYPE_STRING:
         p += tx_load_string(&dst->types.string, p);
         break;
     default:
@@ -373,10 +375,12 @@ size_t tx_store_data(unsigned char* dst, tx_data_t* src)
         p += tx_store_u64(p, src->types.integer);
         break;
     case TX_DATA_TYPE_BOOLEAN:
-        *p++ = src->types.boolean == 0 ? 0 : 1;
+        p += tx_store_u8(p, src->types.boolean == 0 ? 0 : 1);
+        break;
+    case TX_DATA_TYPE_BINARY:
+        p += tx_store_base64_string(p, &src->types.binary);
         break;
     case TX_DATA_TYPE_STRING:
-    case TX_DATA_TYPE_BINARY:
         p += tx_store_string(p, &src->types.string);
         break;
     default:;
@@ -395,8 +399,10 @@ size_t tx_data_buffer_size(const tx_data_t *v)
     case TX_DATA_TYPE_BOOLEAN:
         nb += sizeof(v->types.boolean);
         break;
-    case TX_DATA_TYPE_STRING:
     case TX_DATA_TYPE_BINARY:
+        nb += tx_encoded_string_buffer_size(&v->types.binary);
+        break;
+    case TX_DATA_TYPE_STRING:
         nb += tx_string_buffer_size(&v->types.string);
         break;
     }
@@ -481,9 +487,13 @@ size_t tx_data_entry_array_buffer_size(const tx_data_entry_array_t* v)
 
 void tx_destroy_data(tx_data_t* s)
 {
-    if (s->data_type == TX_DATA_TYPE_BINARY || s->data_type == TX_DATA_TYPE_STRING)
+    if (s->data_type == TX_DATA_TYPE_STRING)
     {
         tx_destroy_string(&s->types.string);
+    }
+    else if (s->data_type == TX_DATA_TYPE_BINARY)
+    {
+        tx_destroy_base64_string(&s->types.binary);
     }
 }
 
