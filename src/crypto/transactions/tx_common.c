@@ -613,7 +613,7 @@ void tx_destroy_transfer_array(tx_transfer_array_t* arr)
 size_t tx_transfer_buffer_size(tx_transfer_t* v)
 {
     size_t nb = sizeof(v->amount);
-    return nb + tx_addr_or_alias_buffer_size(&v->recepient);
+    return nb + tx_addr_or_alias_buffer_size(&v->recipient);
 }
 
 size_t tx_transfer_array_buffer_size(const tx_transfer_array_t* arr)
@@ -663,7 +663,7 @@ ssize_t tx_load_transfer(tx_transfer_t* dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
-    if ((nbytes = tx_load_addr_or_alias(&dst->recepient, p)) < 0)
+    if ((nbytes = tx_load_addr_or_alias(&dst->recipient, p)) < 0)
     {
         return tx_parse_error_pos(p, src);
     }
@@ -675,7 +675,7 @@ ssize_t tx_load_transfer(tx_transfer_t* dst, const unsigned char* src)
 size_t tx_store_transfer(unsigned char* dst, tx_transfer_t* src)
 {
     unsigned char* p = dst;
-    p += tx_store_addr_or_alias(p, &src->recepient);
+    p += tx_store_addr_or_alias(p, &src->recipient);
     p += tx_store_amount(p, src->amount);
     return p - dst;
 }
