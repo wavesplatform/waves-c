@@ -216,7 +216,7 @@ typedef struct tx_data_s
     union {
         tx_data_integer_t integer;
         tx_data_boolean_t boolean;
-        tx_data_string_t binary;
+        tx_encoded_string_t binary;
         tx_data_string_t string;
     } types;
 } tx_data_t;
