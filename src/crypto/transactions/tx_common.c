@@ -651,11 +651,15 @@ void tx_destroy_payment_array(tx_payment_array_t* arr)
     }
 }
 
+size_t tx_payment_with_length_buffer_size(const tx_payment_t* v)
+{
+    return sizeof(tx_size_t) + tx_payment_buffer_size(v);
+}
+
 size_t tx_payment_buffer_size(const tx_payment_t* v)
 {
-    size_t nb = sizeof(v->length);
-    nb += sizeof(v->amount);
-    nb += tx_optional_encoded_string_buffer_size(&v->asset_id);
+    size_t nb = sizeof(v->amount);
+    nb += tx_optional_asset_id_buffer_size(&v->asset_id);
     return nb;
 }
 
@@ -664,7 +668,7 @@ size_t tx_payment_array_buffer_size(const tx_payment_array_t* arr)
     size_t nb = sizeof(arr->len);
     for (uint16_t i = 0; i < arr->len; i++)
     {
-        nb += tx_payment_buffer_size(&arr->array[i]);
+        nb += tx_payment_with_length_buffer_size(&arr->array[i]);
     }
     return nb;
 }
@@ -724,7 +728,8 @@ ssize_t tx_load_payment(tx_payment_t* dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
-    p += tx_load_len(&dst->length, p);
+    tx_size_t length;
+    p += tx_load_len(&length, p);
     const unsigned char* data_p = p;
     p += tx_load_amount(&dst->amount, p);
     if ((nbytes = tx_load_optional_asset_id(&dst->asset_id, p)) < 0)
@@ -732,7 +737,7 @@ ssize_t tx_load_payment(tx_payment_t* dst, const unsigned char* src)
         return tx_parse_error_pos(p, src);
     }
     p += nbytes;
-    if ((p - data_p) != dst->length)
+    if ((p - data_p) != length)
     {
         return tx_parse_error_pos(p, src);
     }
@@ -742,7 +747,7 @@ ssize_t tx_load_payment(tx_payment_t* dst, const unsigned char* src)
 size_t tx_store_payment(unsigned char* dst, tx_payment_t* src)
 {
     unsigned char* p = dst;
-    tx_size_t length = tx_payment_buffer_size(src) - sizeof(src->length);
+    tx_size_t length = tx_payment_buffer_size(src);
     p += tx_store_len(p, length);
     p += tx_store_amount(p, src->amount);
     p += tx_store_optional_asset_id(p, &src->asset_id);
@@ -797,7 +802,7 @@ size_t tx_store_reissuable(unsigned char* dst, tx_reissuable_t src)
 void tx_init_func_arg_string(tx_func_arg_string_t* s, uint32_t len)
 {
     s->len = len;
-    s->data = (char*)tx_malloc(len);
+    s->data = (char*)tx_malloc(len+1);
 }
 
 void tx_destroy_func_arg_string(tx_func_arg_string_t* s)
@@ -810,6 +815,56 @@ void tx_destroy_func_arg_string(tx_func_arg_string_t* s)
     s->len = 0;
 }
 
+void tx_destroy_func_arg_binary(tx_func_arg_binary_t* s)
+{
+    if (s->decoded_data != NULL)
+    {
+        tx_free(s->decoded_data);
+    }
+    if (s->encoded_data != NULL)
+    {
+        tx_free(s->encoded_data);
+    }
+    s->decoded_len = 0;
+    s->encoded_len = 0;
+}
+
+void tx_init_func_arg_binary(tx_func_arg_binary_t* s,  const unsigned char *src, uint32_t decoded_len)
+{
+    uint64_t encoded_len = ((4 * (uint64_t)decoded_len / 3) + 3) & ~3;
+    s->encoded_data = (char*)tx_malloc(encoded_len + 1);
+    s->decoded_data = (char*)tx_malloc(decoded_len);
+    memcpy(s->decoded_data, src, decoded_len);
+    s->encoded_len = encoded_len;
+    s->decoded_len = decoded_len;
+}
+
+ssize_t tx_load_func_arg_binary(tx_func_arg_binary_t* dst, const unsigned char* src)
+{
+    const unsigned char* p = src;
+    uint32_t decoded_len;
+    p += tx_load_u32(&decoded_len, p);
+    tx_init_func_arg_binary(dst, p, decoded_len);
+    dst->encoded_len = base64_encode((unsigned char*)dst->encoded_data, (unsigned char*)dst->decoded_data, decoded_len);
+    return sizeof(decoded_len) + dst->decoded_len;
+}
+
+size_t tx_store_func_arg_binary(unsigned char* dst, const tx_func_arg_binary_t *src)
+{
+    unsigned char* p = dst;
+    if (src->decoded_data != NULL)
+    {
+        p += tx_store_u32(p, src->decoded_len);
+        memcpy(p, src->decoded_data, src->decoded_len);
+        return sizeof(src->decoded_len) + src->decoded_len;
+    }
+    unsigned char buf[src->encoded_len];
+    uint32_t len = base64_decode(buf, (unsigned char*)src->encoded_data);
+    p += tx_store_u32(p, len);
+    memcpy(p, buf, len);
+    return sizeof(uint32_t) + len;
+}
+
 ssize_t tx_load_func_arg_string(tx_func_arg_string_t* dst, const unsigned char* src)
 {
     const unsigned char* p = src;
@@ -817,6 +872,7 @@ ssize_t tx_load_func_arg_string(tx_func_arg_string_t* dst, const unsigned char* 
     p += tx_load_u32(&len, p);
     tx_init_func_arg_string(dst, len);
     memcpy(dst->data, p, len);
+    dst->data[len] = '\0';
     return len + sizeof(len);
 }
 
@@ -833,8 +889,14 @@ size_t tx_func_arg_string_buffer_size(const tx_func_arg_string_t *v)
     return sizeof(v->len) + v->len;
 }
 
+size_t tx_func_arg_binary_buffer_size(const tx_func_arg_binary_t *v)
+{
+    return sizeof(v->decoded_len) + v->decoded_len;
+}
+
 ssize_t tx_load_func_arg(tx_func_arg_t* dst, const unsigned char* src)
 {
+    ssize_t nbytes = 0;
     const unsigned char* p = src;
     p += tx_load_u8(&dst->arg_type, p);
     switch (dst->arg_type)
@@ -849,8 +911,14 @@ ssize_t tx_load_func_arg(tx_func_arg_t* dst, const unsigned char* src)
         dst->types.boolean = true;
         break;
     case TX_FUNC_ARG_STR:
-    case TX_FUNC_ARG_BIN:
         p += tx_load_func_arg_string(&dst->types.string, p);
+        break;
+    case TX_FUNC_ARG_BIN:
+        if ((nbytes = tx_load_func_arg_binary(&dst->types.binary, p)) < 0)
+        {
+            return tx_parse_error_pos(p, src);
+        }
+        p += nbytes;
         break;
     default:
         return tx_parse_error_pos(p, src);
@@ -868,8 +936,10 @@ size_t tx_store_func_arg(unsigned char* dst, tx_func_arg_t* src)
         p += tx_store_u64(p, src->types.integer);
         break;
     case TX_FUNC_ARG_STR:
-    case TX_FUNC_ARG_BIN:
         p += tx_store_func_arg_string(p, &src->types.string);
+        break;
+    case TX_FUNC_ARG_BIN:
+        p += tx_store_func_arg_binary(p, &src->types.binary);
         break;
     default:;
     }
@@ -885,8 +955,10 @@ size_t tx_func_arg_buffer_size(tx_func_arg_t* v)
         nb += sizeof(v->types.integer);
         break;
     case TX_FUNC_ARG_STR:
-    case TX_FUNC_ARG_BIN:
         nb += tx_func_arg_string_buffer_size(&v->types.string);
+        break;
+    case TX_FUNC_ARG_BIN:
+        nb += tx_func_arg_binary_buffer_size(&v->types.binary);
         break;
     }
     return nb;
@@ -894,9 +966,13 @@ size_t tx_func_arg_buffer_size(tx_func_arg_t* v)
 
 void tx_destroy_func_arg(tx_func_arg_t* arg)
 {
-    if (arg->arg_type == TX_FUNC_ARG_STR || arg->arg_type == TX_FUNC_ARG_BIN)
+    if (arg->arg_type == TX_FUNC_ARG_STR)
     {
         tx_destroy_func_arg_string(&arg->types.string);
+    }
+    else if (arg->arg_type == TX_FUNC_ARG_BIN)
+    {
+        tx_destroy_func_arg_binary(&arg->types.binary);
     }
 }
 
@@ -966,6 +1042,11 @@ ssize_t tx_load_func_call(tx_func_call_t* dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
+    p += tx_load_u8(&dst->valid, p);
+    if (!dst->valid)
+    {
+        return p - src;
+    }
     if (*p++ != 0x9)
     {
         return tx_parse_error_pos(p-1, src);
@@ -974,33 +1055,39 @@ ssize_t tx_load_func_call(tx_func_call_t* dst, const unsigned char* src)
     {
         return tx_parse_error_pos(p-1, src);
     }
-    p += tx_load_func_arg_string(&dst->function_name, p);
+    p += tx_load_func_arg_string(&dst->function, p);
     if ((nbytes = tx_load_func_arg_array(&dst->args, p)) < 0)
     {
         return tx_parse_error_pos(p, src);
     }
+    p += nbytes;
     return p - src;
 }
 
 size_t tx_store_func_call(unsigned char* dst, const tx_func_call_t* src)
 {
     unsigned char* p = dst;
+    p += tx_store_u8(p, src->valid ? 1 : 0);
+    if (!src->valid)
+    {
+        return p - dst;
+    }
     *p++ = 0x9;
     *p++ = 0x1;
-    p += tx_store_func_arg_string(p, &src->function_name);
+    p += tx_store_func_arg_string(p, &src->function);
     p += tx_store_func_arg_array(p, &src->args);
     return p - dst;
 }
 
 size_t tx_func_call_buffer_size(const tx_func_call_t *v)
 {
-    size_t nb = 2;
-    nb += tx_func_arg_string_buffer_size(&v->function_name);
-    return nb += tx_func_arg_array_buffer_size(&v->args);
+    size_t nb = 3;
+    nb += tx_func_arg_string_buffer_size(&v->function);
+    return nb + tx_func_arg_array_buffer_size(&v->args);
 }
 
 void tx_destroy_func_call(tx_func_call_t* fcall)
 {
-    tx_destroy_func_arg_string(&fcall->function_name);
+    tx_destroy_func_arg_string(&fcall->function);
     tx_destroy_func_arg_array(&fcall->args);
 }
