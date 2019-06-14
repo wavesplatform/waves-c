@@ -259,7 +259,6 @@ size_t tx_script_buffer_size(const tx_script_t* v);
 
 typedef struct tx_payment_s
 {
-    tx_size_t length;
     tx_amount_t amount;
     tx_asset_id_t asset_id;
 } tx_payment_t;
@@ -288,6 +287,8 @@ size_t tx_transfer_array_buffer_size(const tx_transfer_array_t* arr);
 
 void tx_init_payment_array(tx_payment_array_t* arr, tx_size_t len);
 void tx_destroy_payment_array(tx_payment_array_t* arr);
+size_t tx_payment_with_length_buffer_size(const tx_payment_t* v);
+size_t tx_payment_buffer_size(const tx_payment_t* v);
 size_t tx_payment_array_buffer_size(const tx_payment_array_t* arr);
 
 ssize_t tx_load_transfer(tx_transfer_t* dst, const unsigned char* src);
@@ -321,13 +322,21 @@ typedef struct tx_func_arg_string_s
     uint32_t len;
 } tx_func_arg_string_t;
 
+typedef struct tx_func_arg_binary_s
+{
+    char* encoded_data;
+    char* decoded_data;
+    uint64_t encoded_len;
+    uint32_t decoded_len;
+} tx_func_arg_binary_t;
+
 typedef struct tx_func_arg_s
 {
     uint8_t arg_type;
     union {
         tx_func_arg_integer_t integer;
         tx_func_arg_boolean_t boolean;
-        tx_func_arg_string_t binary;
+        tx_func_arg_binary_t binary;
         tx_func_arg_string_t string;
     } types;
 } tx_func_arg_t;
@@ -347,7 +356,8 @@ void tx_destroy_func_arg(tx_func_arg_t* arg);
 
 typedef struct tx_func_call_s
 {
-    tx_func_arg_string_t function_name;
+    bool valid;
+    tx_func_arg_string_t function;
     tx_func_arg_array_t args;
 } tx_func_call_t;
 
