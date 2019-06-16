@@ -1,7 +1,7 @@
 #include "b64.h"
 #include <string.h>
 
-ssize_t base64_decode(unsigned char *dst, const unsigned char *src)
+ssize_t base64_decode(unsigned char *dst, const char *src)
 {
     static const unsigned char b64[256] = {
         255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
@@ -22,6 +22,7 @@ ssize_t base64_decode(unsigned char *dst, const unsigned char *src)
         255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
     };
 
+    unsigned char* usrc = (unsigned char*)src;
     unsigned char* p = dst;
     size_t b64sz = strlen((char*)src);
     size_t last_i = b64sz-1;
@@ -31,11 +32,11 @@ ssize_t base64_decode(unsigned char *dst, const unsigned char *src)
         size_t i1 = i + 1;
         size_t i2 = i + 2;
         size_t i3 = i + 3;
-        if (b64[src[i]] == 255 || b64[src[i1]] == 255)
+        if (b64[usrc[i]] == 255 || b64[usrc[i1]] == 255)
         {
             break;
         }
-        *p++ = (b64[src[i]] << 2) | (b64[src[i1]] >> 4);
+        *p++ = (b64[usrc[i]] << 2) | (b64[usrc[i1]] >> 4);
         if (i2 > last_i)
         {
             break;
@@ -53,11 +54,11 @@ ssize_t base64_decode(unsigned char *dst, const unsigned char *src)
         }
         else
         {
-            if (b64[src[i2]] == 255)
+            if (b64[usrc[i2]] == 255)
             {
                 break;
             }
-            *p++ = ((b64[src[i1]] << 4) & 0xf0) | (b64[src[i2]] >> 2);
+            *p++ = ((b64[usrc[i1]] << 4) & 0xf0) | (b64[usrc[i2]] >> 2);
             if (i2 == last_i)
             {
                 break;
@@ -71,11 +72,11 @@ ssize_t base64_decode(unsigned char *dst, const unsigned char *src)
             }
             else
             {
-                if (b64[src[i3]] == 255)
+                if (b64[usrc[i3]] == 255)
                 {
                     break;
                 }
-                *p++ = ((b64[src[i2]] << 6) & 0xc0) | b64[src[i3]];
+                *p++ = ((b64[usrc[i2]] << 6) & 0xc0) | b64[usrc[i3]];
             }
         }
     }
@@ -86,10 +87,10 @@ ssize_t base64_decode(unsigned char *dst, const unsigned char *src)
     return p - dst;
 }
 
-size_t base64_encode(unsigned char* dst, const unsigned char* src, size_t in_sz)
+size_t base64_encode(char *dst, const unsigned char* src, size_t in_sz)
 {
-    static const unsigned char b64str[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    unsigned char* p = dst;
+    static const char b64str[64] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    char* p = dst;
     for (size_t i = 0; i < in_sz; i += 3)
     {
         size_t i1 = i + 1;

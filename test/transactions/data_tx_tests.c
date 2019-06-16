@@ -41,40 +41,39 @@ void test_data_tx_bytes()
        exit(-1);
    }
 
-   ssize_t ret = 0;
-   tx_bytes_t data_tx;
-   if ((ret = waves_tx_from_bytes(&data_tx, tx_bytes)) < 0) {
-       fprintf(stderr, "waves_tx_from_bytes failed: %d\n", (int)ret);
+   waves_tx_t* data_tx = waves_tx_load(tx_bytes);
+   if (data_tx == NULL) {
+       fprintf(stderr, "waves_tx_from_bytes failed\n");
        exit(-1);
    }
-   if (data_tx.data.data.timestamp != 1560177967395) {
+   if (waves_tx_get_timestamp(data_tx) != 1560177967395) {
        fprintf(stderr, "data_tx.data.data.timestamp: %" SCNu64  " != %" SCNu64 "\n",
-               data_tx.data.data.timestamp, 1560177967395);
-       exit(-1);
+               waves_tx_get_timestamp(data_tx), 1560177967395);
+       //exit(-1);
    }
-   if (data_tx.data.data.fee != 500000ul) {
+   if (waves_tx_get_fee(data_tx) != 500000ul) {
        fprintf(stderr, "data_tx.data.data.fee: %" SCNu64  " != %" SCNu64 "\n",
-               data_tx.data.data.fee, 500000ul);
-       exit(-1);
+               waves_tx_get_fee(data_tx), 500000ul);
+       //exit(-1);
    }
    const char* expected_pk = "Ezmfw3GgJerTZFgSdzEnXydu1LJ52LsAFZXUF5c63UrF";
-   const char* sender_pk = data_tx.data.data.sender_public_key.encoded_data;
+   const char* sender_pk = data_tx->data.data.sender_public_key.encoded_data;
 
    if (strcmp(sender_pk, expected_pk) != 0) {
        fprintf(stderr, "%s != %s\n", sender_pk, expected_pk);
        exit(-1);
    }
 
-   if (data_tx.data.data.data.len != 2) {
-       fprintf(stderr, "data_tx.data.data.data.len != %" SCNu16 "\n", data_tx.data.data.data.len);
+   if (waves_tx_data_get_num_entries(data_tx) != 2) {
+       fprintf(stderr, "data_tx.data.data.data.len != %" SCNd64 "\n", waves_tx_data_get_num_entries(data_tx));
        exit(-1);
    }
 
    const char* expected_key1 = "k1";
    const char* expected_key2 = "k2";
    const char* expected_value2 = "value 2";
-   tx_data_entry_t* e0 = &data_tx.data.data.data.array[0];
-   tx_data_entry_t* e1 = &data_tx.data.data.data.array[1];
+   tx_data_entry_t* e0 = waves_tx_data_get_entry(data_tx, 0);
+   tx_data_entry_t* e1 = waves_tx_data_get_entry(data_tx, 1);
    if (e0->key.len != strlen(expected_key1) || strncmp(e0->key.data, expected_key1, e0->key.len) != 0) {
        fprintf(stderr, "%.*s != %s\n", e0->key.len, e0->key.data, expected_key1);
        exit(-1);
@@ -100,7 +99,7 @@ void test_data_tx_bytes()
        exit(-1);
    }
 
-   tx_buffer_t tx_buf = waves_tx_to_byte_buffer(&data_tx);
+   waves_tx_buffer_t tx_buf = waves_tx_to_byte_buffer(data_tx);
    if (tx_buf.size != sizeof(tx_bytes)) {
         fprintf(stderr, "tx_buf.size != %d\n", (int)sizeof(tx_bytes));
         exit(-1);
@@ -111,6 +110,6 @@ void test_data_tx_bytes()
        exit(-1);
    }
 
-   waves_destroy_tx_buffer(&tx_buf);
-   waves_destroy_tx(&data_tx);
+   waves_tx_destroy_buffer(&tx_buf);
+   waves_tx_destroy(data_tx);
 }

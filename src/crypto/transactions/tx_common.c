@@ -9,6 +9,7 @@
 #define ALIAS_VERSION 2
 
 tx_alloc_func_t g_tx_alloc_func = NULL;
+tx_realloc_func_t g_tx_realloc_func = NULL;
 tx_free_func_t g_tx_free_func = NULL;
 
 void* tx_malloc(size_t size)
@@ -28,6 +29,15 @@ void* tx_calloc(size_t num, size_t size)
     return p;
 }
 
+void* tx_realloc(void *ptr, size_t new_size)
+{
+    if (g_tx_realloc_func != NULL)
+    {
+        return g_tx_realloc_func(ptr, new_size);
+    }
+    return realloc(ptr, new_size);
+}
+
 void tx_free(void *ptr)
 {
     if (g_tx_free_func != NULL)
@@ -43,9 +53,90 @@ void tx_register_alloc_func(tx_alloc_func_t f)
     g_tx_alloc_func = f;
 }
 
+void tx_register_realloc_func(tx_realloc_func_t f)
+{
+    g_tx_realloc_func = f;
+}
+
 void tx_register_free_func(tx_free_func_t f)
 {
     g_tx_free_func = f;
+}
+
+void tx_array_init(tx_array_t* array, size_t elem_sz, tx_array_elem_destroy_func_t elem_destructor)
+{
+    array->array = NULL;
+    array->len = 0;
+    array->capacity = 0;
+    array->elem_sz = elem_sz;
+    array->elem_destructor = elem_destructor;
+}
+
+void tx_array_reserve(tx_array_t* array, tx_array_size_t num_elem)
+{
+    size_t data_sz = num_elem * array->elem_sz;
+    if (array->array == NULL)
+    {
+        array->array = tx_malloc(data_sz);
+        array->len = 0;
+        array->capacity = num_elem;
+    }
+    else if (array->capacity != num_elem)
+    {
+        array->array = tx_realloc(array->array, data_sz);
+        array->capacity = num_elem;
+    }
+}
+
+void tx_array_resize(tx_array_t* array, tx_array_size_t num_elem)
+{
+    if (num_elem > array->capacity)
+    {
+        tx_array_reserve(array, num_elem);
+    }
+    array->len = num_elem;
+}
+
+void tx_array_push_back(tx_array_t* array, char* data)
+{
+    char* p = tx_array_new_elem(array);
+    memcpy(p, data, array->elem_sz);
+}
+
+char* tx_array_new_elem(tx_array_t* array)
+{
+    if (array->capacity <= array->len)
+    {
+        tx_array_reserve(array, array->capacity ? array->capacity * 2 : 1);
+    }
+    return (char*)(array->array) + (array->len++ * array->elem_sz);
+}
+
+void tx_array_destroy_len(tx_array_t* array, tx_array_size_t len)
+{
+    array->len = len;
+    tx_array_destroy(array);
+}
+
+void tx_array_destroy(tx_array_t* array)
+{
+    if (array->array == NULL)
+    {
+        assert(array->capacity == 0);
+        assert(array->len == 0);
+        return;
+    }
+    if (array->elem_destructor)
+    {
+        char* p = array->array;
+        for (size_t i = 0; i < array->len; i++)
+        {
+            array->elem_destructor(p);
+            p += array->elem_sz;
+        }
+    }
+    tx_free(array->array);
+    memset(array, 0, sizeof(tx_array_t));
 }
 
 size_t tx_store_uint_big_endian(unsigned char *dst, uint64_t val, size_t sz)
@@ -75,15 +166,56 @@ size_t tx_load_uint_big_endian(void* dst, const unsigned char* src, size_t sz)
     return sz;
 }
 
+static inline void tx_set_decoded_data(tx_encoded_string_t* dst, const char* src, size_t sz)
+{
+    dst->decoded_data = tx_malloc(sz);
+    memcpy(dst->decoded_data, src, sz);
+    dst->decoded_len = sz;
+}
+
+static inline void tx_set_encoded_data(tx_encoded_string_t* dst, const char* src)
+{
+    size_t str_sz = strlen(src);
+    dst->encoded_data = tx_malloc(str_sz + 1);
+    memcpy(dst->encoded_data, src, str_sz);
+    dst->encoded_data[str_sz] = '\0';
+    dst->encoded_len = str_sz;
+}
+
+ssize_t tx_set_encoded_string(tx_encoded_string_t* dst, const char* src, tx_decode_func_t dec_f, ssize_t expected_sz)
+{
+    tx_destroy_encoded_string(dst);
+    tx_set_encoded_data(dst, src);
+    if (dec_f)
+    {
+        unsigned char buf[dst->encoded_len];
+        ssize_t decoded = dec_f(buf, dst->encoded_data);
+        if (decoded < 0)
+        {
+            tx_destroy_encoded_string(dst);
+            return decoded;
+        }
+        if (expected_sz > 0 && decoded != expected_sz)
+        {
+            return -expected_sz;
+        }
+        tx_set_decoded_data(dst, (char*)buf, decoded);
+        return decoded;
+    }
+    return 0;
+}
+
 void tx_destroy_encoded_string(tx_encoded_string_t* s)
 {
     if (s->encoded_data)
     {
         tx_free(s->encoded_data);
+        s->encoded_data = NULL;
     }
     if (s->decoded_data)
     {
         tx_free(s->decoded_data);
+        s->decoded_data = NULL;
     }
     s->encoded_len = 0;
     s->decoded_len = 0;
@@ -173,7 +305,7 @@ void tx_init_base64_string(tx_encoded_string_t* s,  const unsigned char *src, si
 ssize_t tx_load_base64_string_fixed(tx_encoded_string_t* dst, const unsigned char *src, size_t sz)
 {
     tx_init_base64_string(dst, src, sz);
-    dst->encoded_len = base64_encode((unsigned char*)dst->encoded_data, (unsigned char*)dst->decoded_data, sz);
+    dst->encoded_len = base64_encode(dst->encoded_data, (unsigned char*)dst->decoded_data, sz);
     return sz;
 }
 
@@ -184,7 +316,7 @@ size_t tx_store_base64_string_fixed(unsigned char *dst, const tx_encoded_string_
         memcpy(dst, src->decoded_data, sz);
         return sz;
     }
-    base64_decode(dst, (unsigned char*)src->encoded_data);
+    base64_decode(dst, src->encoded_data);
     return sz;
 }
 
@@ -207,7 +339,7 @@ size_t tx_store_base64_string(unsigned char *dst, const tx_encoded_string_t* src
         return sizeof(tx_size_t) + src->decoded_len;
     }
     unsigned char buf[src->encoded_len];
-    tx_size_t len = base64_decode(buf, (unsigned char*)src->encoded_data);
+    tx_size_t len = base64_decode(buf, src->encoded_data);
     p += tx_store_len(p, len);
     memcpy(p, buf, len);
     return sizeof(tx_size_t) + len;
@@ -297,8 +429,27 @@ void tx_destroy_addr_or_alias(tx_addr_or_alias_t* v)
 {
     if (v->is_alias)
     {
+        tx_destroy_alias(&v->data.alias);
+    }
+    else
+    {
         tx_destroy_address(&v->data.address);
     }
+}
+
+ssize_t tx_set_sender_public_key(tx_public_key_t* dst, const char* src)
+{
+    return tx_set_encoded_string(dst, src, base58_decode, 32);
+}
+
+ssize_t tx_set_asset_id(tx_asset_id_t* dst, const char* src)
+{
+    return tx_set_encoded_string(dst, src, base58_decode, 32);
+}
+
+ssize_t tx_set_lease_id(tx_lease_id_t* dst, const char* src)
+{
+    return tx_set_encoded_string(dst, src, base58_decode, 32);
 }
 
 void tx_init_string(tx_string_t* s, uint16_t len)
@@ -339,6 +490,40 @@ size_t tx_store_string(unsigned char* dst, const tx_string_t *src)
 size_t tx_string_buffer_size(const tx_string_t *v)
 {
     return sizeof(v->len) + v->len;
+}
+
+void waves_tx_set_string(tx_string_t* dst, const char* src)
+{
+    size_t str_sz = strlen(src);
+    if (dst->data != NULL)
+    {
+        dst->data = (char*)tx_realloc(dst->data, str_sz+1);
+    }
+    else
+    {
+        dst->data = (char*)tx_malloc(str_sz+1);
+    }
+    memcpy(dst->data, src, str_sz);
+    dst->data[str_sz] = '\0';
+    dst->len = str_sz;
+}
+
+void waves_tx_data_set_integer(tx_data_t* data, tx_data_integer_t value)
+{
+    data->data_type = TX_DATA_TYPE_INTEGER;
+    data->types.integer = value;
+}
+
+void waves_tx_data_set_boolean(tx_data_t* data, tx_data_boolean_t value)
+{
+    data->data_type = TX_DATA_TYPE_BOOLEAN;
+    data->types.boolean = value;
+}
+
+void waves_tx_data_set_string(tx_data_t* data, const char* value)
+{
+    data->data_type = TX_DATA_TYPE_STRING;
+    waves_tx_set_string(&data->types.string, value);
 }
 
 ssize_t tx_load_data(tx_data_t* dst, const unsigned char* src)
@@ -442,21 +627,26 @@ size_t tx_data_entry_buffer_size(const tx_data_entry_t* v)
     return nb;
 }
 
-ssize_t tx_load_data_entry_array(tx_data_entry_array_t* dst, const unsigned char* src)
+void tx_destroy_data_entry(char *s)
+{
+    tx_data_entry_t* e = (tx_data_entry_t*)s;
+    tx_destroy_string(&e->key);
+    tx_destroy_data(&e->value);
+}
+
+ssize_t tx_load_data_entry_array(tx_array_t *dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
     uint16_t len = 0;
     p += tx_load_len(&len, p);
-    tx_init_data_entry_array(dst, len);
+    tx_array_resize(dst, len);
+    tx_data_entry_t* entries = (tx_data_entry_t*)dst->array;
     for (tx_size_t i = 0; i < dst->len; i++)
     {
-        if ((nbytes = tx_load_data_entry(&dst->array[i], p)) < 0)
+        if ((nbytes = tx_load_data_entry(&entries[i], p)) < 0)
         {
-            for (tx_size_t j = i; j > 0; j--)
-            {
-                tx_destroy_data_entry(&dst->array[j-1]);
-            }
+            tx_array_destroy_len(dst, i);
             return tx_parse_error_pos(p, src);
         }
         p += nbytes;
@@ -464,23 +654,25 @@ ssize_t tx_load_data_entry_array(tx_data_entry_array_t* dst, const unsigned char
     return p - src;
 }
 
-size_t tx_store_data_entry_array(unsigned char* dst, const tx_data_entry_array_t* src)
+size_t tx_store_data_entry_array(unsigned char* dst, const tx_array_t *src)
 {
     unsigned char* p = dst;
-    p += tx_store_len(p, src->len);
+    p += tx_store_len(p, (uint16_t)src->len);
+    tx_data_entry_t* entries = (tx_data_entry_t*)src->array;
     for (tx_size_t i = 0; i < src->len; i++)
     {
-        p += tx_store_data_entry(p, &src->array[i]);
+        p += tx_store_data_entry(p, &entries[i]);
     }
     return p - dst;
 }
 
-size_t tx_data_entry_array_buffer_size(const tx_data_entry_array_t* v)
+size_t tx_data_entry_array_buffer_size(const tx_array_t *v)
 {
-    size_t nb = sizeof(v->len);
-    for (uint16_t i = 0; i < v->len; i++)
+    size_t nb = sizeof(tx_size_t);
+    tx_data_entry_t* entries = (tx_data_entry_t*)v->array;
+    for (tx_size_t i = 0; i < v->len; i++)
     {
-        nb += tx_data_entry_buffer_size(&v->array[i]);
+        nb += tx_data_entry_buffer_size(&entries[i]);
     }
     return nb;
 }
@@ -495,31 +687,6 @@ void tx_destroy_data(tx_data_t* s)
     {
         tx_destroy_base64_string(&s->types.binary);
     }
-}
-
-void tx_destroy_data_entry(tx_data_entry_t *s)
-{
-    tx_destroy_string(&s->key);
-    tx_destroy_data(&s->value);
-}
-
-void tx_init_data_entry_array(tx_data_entry_array_t* arr, tx_size_t len)
-{
-    arr->len = len;
-    arr->array = (tx_data_entry_t*)tx_calloc(len, sizeof(tx_data_entry_t));
-}
-
-void tx_destroy_data_entry_array(tx_data_entry_array_t* arr)
-{
-    if (arr->array == NULL)
-    {
-        return;
-    }
-    for (uint16_t i = 0; i < arr->len; i++)
-    {
-        tx_destroy_data_entry(&arr->array[i]);
-    }
-    tx_free(arr->array);
 }
 
 ssize_t tx_load_optional_base58_string_fixed(tx_encoded_string_t* dst, const unsigned char* src, size_t sz)
@@ -605,57 +772,6 @@ size_t tx_script_buffer_size(const tx_script_t* v)
     return v->encoded_len == 0 ? 1 : 1 + tx_encoded_string_buffer_size(v);
 }
 
-void tx_init_transfer_array(tx_transfer_array_t* arr, tx_size_t len)
-{
-    arr->len = len;
-    arr->array = (tx_transfer_t*)tx_calloc(len, sizeof(tx_transfer_t));
-}
-
-void tx_destroy_transfer_array(tx_transfer_array_t* arr)
-{
-    if (arr->array != NULL)
-    {
-        tx_free(arr->array);
-        return;
-    }
-}
-
-size_t tx_transfer_buffer_size(tx_transfer_t* v)
-{
-    size_t nb = sizeof(v->amount);
-    return nb + tx_addr_or_alias_buffer_size(&v->recipient);
-}
-
-size_t tx_transfer_array_buffer_size(const tx_transfer_array_t* arr)
-{
-    size_t nb = sizeof(arr->len);
-    for (uint16_t i = 0; i < arr->len; i++)
-    {
-        nb += tx_transfer_buffer_size(&arr->array[i]);
-    }
-    return nb;
-}
-
-void tx_init_payment_array(tx_payment_array_t* arr, tx_size_t len)
-{
-    arr->len = len;
-    arr->array = (tx_payment_t*)tx_calloc(len, sizeof(tx_payment_t));
-}
-
-void tx_destroy_payment_array(tx_payment_array_t* arr)
-{
-    if (arr->array != NULL)
-    {
-        tx_free(arr->array);
-        return;
-    }
-}
-
-size_t tx_payment_with_length_buffer_size(const tx_payment_t* v)
-{
-    return sizeof(tx_size_t) + tx_payment_buffer_size(v);
-}
-
 size_t tx_payment_buffer_size(const tx_payment_t* v)
 {
     size_t nb = sizeof(v->amount);
@@ -663,12 +779,18 @@ size_t tx_payment_buffer_size(const tx_payment_t* v)
     return nb;
 }
 
-size_t tx_payment_array_buffer_size(const tx_payment_array_t* arr)
+size_t tx_payment_with_length_buffer_size(const tx_payment_t* v)
 {
-    size_t nb = sizeof(arr->len);
+    return sizeof(tx_size_t) + tx_payment_buffer_size(v);
+}
+
+size_t tx_payment_array_buffer_size(const tx_array_t *arr)
+{
+    size_t nb = sizeof(tx_size_t);
+    tx_payment_t* entries = (tx_payment_t*)arr->array;
     for (uint16_t i = 0; i < arr->len; i++)
     {
-        nb += tx_payment_with_length_buffer_size(&arr->array[i]);
+        nb += tx_payment_with_length_buffer_size(&entries[i]);
     }
     return nb;
 }
@@ -694,18 +816,31 @@ size_t tx_store_transfer(unsigned char* dst, tx_transfer_t* src)
     return p - dst;
 }
 
-ssize_t tx_load_transfer_array(tx_transfer_array_t* dst, const unsigned char* src)
+size_t tx_transfer_buffer_size(tx_transfer_t* v)
+{
+    size_t nb = sizeof(v->amount);
+    return nb + tx_addr_or_alias_buffer_size(&v->recipient);
+}
+
+void tx_destroy_transfer(char* p)
+{
+    tx_transfer_t* e = (tx_transfer_t*)p;
+    tx_destroy_addr_or_alias(&e->recipient);
+}
+
+ssize_t tx_load_transfer_array(tx_array_t* dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
     uint16_t len = 0;
     p += tx_load_len(&len, p);
-    tx_init_transfer_array(dst, len);
+    tx_array_resize(dst, len);
+    tx_transfer_t* entries = (tx_transfer_t*)dst->array;
     for (tx_size_t i = 0; i < dst->len; i++)
     {
-        if ((nbytes = tx_load_transfer(&dst->array[i], p)) < 0)
+        if ((nbytes = tx_load_transfer(&entries[i], p)) < 0)
         {
-            tx_destroy_transfer_array(dst);
+            tx_array_destroy_len(dst, i);
             return tx_parse_error_pos(p, src);
         }
         p += nbytes;
@@ -713,15 +848,27 @@ ssize_t tx_load_transfer_array(tx_transfer_array_t* dst, const unsigned char* sr
     return p - src;
 }
 
-size_t tx_store_transfer_array(unsigned char* dst, const tx_transfer_array_t *src)
+size_t tx_store_transfer_array(unsigned char* dst, const tx_array_t *src)
 {
     unsigned char* p = dst;
     p += tx_store_len(p, src->len);
+    tx_transfer_t* entries = (tx_transfer_t*)src->array;
     for (tx_size_t i = 0; i < src->len; i++)
     {
-        p += tx_store_transfer(p, &src->array[i]);
+        p += tx_store_transfer(p, &entries[i]);
     }
     return p - dst;
+}
+
+size_t tx_transfer_array_buffer_size(const tx_array_t* array)
+{
+    size_t nb = sizeof(tx_size_t);
+    tx_transfer_t* entries = (tx_transfer_t*)array->array;
+    for (uint16_t i = 0; i < array->len; i++)
+    {
+        nb += tx_transfer_buffer_size(&entries[i]);
+    }
+    return nb;
 }
 
 ssize_t tx_load_payment(tx_payment_t* dst, const unsigned char* src)
@@ -754,18 +901,25 @@ size_t tx_store_payment(unsigned char* dst, tx_payment_t* src)
     return p - dst;
 }
 
-ssize_t tx_load_payment_array(tx_payment_array_t* dst, const unsigned char* src)
+void tx_destroy_payment(char* p)
+{
+    tx_payment_t* e = (tx_payment_t*)p;
+    tx_destroy_optional_asset_id(&e->asset_id);
+}
+
+ssize_t tx_load_payment_array(tx_array_t* dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
     uint16_t len = 0;
     p += tx_load_len(&len, p);
-    tx_init_payment_array(dst, len);
+    tx_array_resize(dst, len);
+    tx_payment_t* entries = (tx_payment_t*)dst->array;
     for (tx_size_t i = 0; i < dst->len; i++)
     {
-        if ((nbytes = tx_load_payment(&dst->array[i], p)) < 0)
+        if ((nbytes = tx_load_payment(&entries[i], p)) < 0)
         {
-            tx_destroy_payment_array(dst);
+            tx_array_destroy_len(dst, i);
             return tx_parse_error_pos(p, src);
         }
         p += nbytes;
@@ -773,16 +927,16 @@ ssize_t tx_load_payment_array(tx_payment_array_t* dst, const unsigned char* src)
     return p - src;
 }
 
-size_t tx_store_payment_array(unsigned char* dst, const tx_payment_array_t *src)
+size_t tx_store_payment_array(unsigned char* dst, const tx_array_t *src)
 {
     unsigned char* p = dst;
-    p += tx_store_len(p, src->len);
+    p += tx_store_len(p, (uint16_t)src->len);
+    tx_payment_t* entries = (tx_payment_t*)src->array;
     for (tx_size_t i = 0; i < src->len; i++)
     {
-        p += tx_store_payment(p, &src->array[i]);
+        p += tx_store_payment(p, &entries[i]);
     }
     return p - dst;
-
 }
 
 ssize_t tx_load_reissuable(tx_reissuable_t* dst, const unsigned char* src)
@@ -845,7 +999,7 @@ ssize_t tx_load_func_arg_binary(tx_func_arg_binary_t* dst, const unsigned char* 
     uint32_t decoded_len;
     p += tx_load_u32(&decoded_len, p);
     tx_init_func_arg_binary(dst, p, decoded_len);
-    dst->encoded_len = base64_encode((unsigned char*)dst->encoded_data, (unsigned char*)dst->decoded_data, decoded_len);
+    dst->encoded_len = base64_encode(dst->encoded_data, (unsigned char*)dst->decoded_data, decoded_len);
     return sizeof(decoded_len) + dst->decoded_len;
 }
 
@@ -859,7 +1013,7 @@ size_t tx_store_func_arg_binary(unsigned char* dst, const tx_func_arg_binary_t *
         return sizeof(src->decoded_len) + src->decoded_len;
     }
     unsigned char buf[src->encoded_len];
-    uint32_t len = base64_decode(buf, (unsigned char*)src->encoded_data);
+    uint32_t len = base64_decode(buf, src->encoded_data);
     p += tx_store_u32(p, len);
     memcpy(p, buf, len);
     return sizeof(uint32_t) + len;
@@ -964,8 +1118,9 @@ size_t tx_func_arg_buffer_size(tx_func_arg_t* v)
     return nb;
 }
 
-void tx_destroy_func_arg(tx_func_arg_t* arg)
+void tx_destroy_func_arg(char* p)
 {
+    tx_func_arg_t* arg = (tx_func_arg_t*)p;
     if (arg->arg_type == TX_FUNC_ARG_STR)
     {
         tx_destroy_func_arg_string(&arg->types.string);
@@ -976,40 +1131,19 @@ void tx_destroy_func_arg(tx_func_arg_t* arg)
     }
 }
 
-void tx_init_func_arg_array(tx_func_arg_array_t* arr, uint32_t len)
-{
-    arr->len = len;
-    arr->array = (tx_func_arg_t*)tx_calloc(len, sizeof(tx_func_arg_t));
-}
-
-void tx_destroy_func_arg_array(tx_func_arg_array_t* arr)
-{
-    if (arr->array == NULL)
-    {
-        return;
-    }
-    for (uint32_t i = 0; i < arr->len; i++)
-    {
-        tx_destroy_func_arg(&arr->array[i]);
-    }
-    tx_free(arr->array);
-}
-
-ssize_t tx_load_func_arg_array(tx_func_arg_array_t* dst, const unsigned char* src)
+ssize_t tx_load_func_arg_array(tx_array_t* dst, const unsigned char* src)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
     uint32_t len = 0;
     p += tx_load_u32(&len, p);
-    tx_init_func_arg_array(dst, len);
+    tx_array_resize(dst, len);
+    tx_func_arg_t* entries = (tx_func_arg_t*)dst->array;
     for (uint32_t i = 0; i < dst->len; i++)
     {
-        if ((nbytes = tx_load_func_arg(&dst->array[i], p)) < 0)
+        if ((nbytes = tx_load_func_arg(&entries[i], p)) < 0)
         {
-            for (uint32_t j = i; j > 0; j--)
-            {
-                tx_destroy_func_arg(&dst->array[j-1]);
-            }
+            tx_array_destroy_len(dst, i);
             return tx_parse_error_pos(p, src);
         }
         p += nbytes;
@@ -1017,23 +1151,25 @@ ssize_t tx_load_func_arg_array(tx_func_arg_array_t* dst, const unsigned char* sr
     return p - src;
 }
 
-size_t tx_store_func_arg_array(unsigned char* dst, const tx_func_arg_array_t* src)
+size_t tx_store_func_arg_array(unsigned char* dst, const tx_array_t* src)
 {
     unsigned char* p = dst;
-    p += tx_store_u32(p, src->len);
+    p += tx_store_u32(p, (uint32_t)src->len);
+    tx_func_arg_t* entries = (tx_func_arg_t*)src->array;
     for (uint32_t i = 0; i < src->len; i++)
     {
-        p += tx_store_func_arg(p, &src->array[i]);
+        p += tx_store_func_arg(p, &entries[i]);
     }
     return p - dst;
 }
 
-size_t tx_func_arg_array_buffer_size(const tx_func_arg_array_t* v)
+size_t tx_func_arg_array_buffer_size(const tx_array_t* v)
 {
-    size_t nb = sizeof(v->len);
+    size_t nb = sizeof(uint32_t);
+    tx_func_arg_t* entries = (tx_func_arg_t*)v->array;
     for (uint32_t i = 0; i < v->len; i++)
     {
-        nb += tx_func_arg_buffer_size(&v->array[i]);
+        nb += tx_func_arg_buffer_size(&entries[i]);
     }
     return nb;
 }
@@ -1089,5 +1225,5 @@ size_t tx_func_call_buffer_size(const tx_func_call_t *v)
 void tx_destroy_func_call(tx_func_call_t* fcall)
 {
     tx_destroy_func_arg_string(&fcall->function);
-    tx_destroy_func_arg_array(&fcall->args);
+    tx_array_destroy(&fcall->args);
 }

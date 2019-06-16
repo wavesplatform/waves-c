@@ -47,7 +47,7 @@ void waves_destroy_mass_transfer_tx(mass_transfer_tx_bytes_t* tx)
 {
     tx_destroy_public_key(&tx->sender_public_key);
     tx_destroy_optional_asset_id(&tx->asset_id);
-    tx_destroy_transfer_array(&tx->transfers);
+    tx_array_destroy(&tx->transfers);
     tx_destroy_attachment(&tx->attachment);
 }
 

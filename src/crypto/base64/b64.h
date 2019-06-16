@@ -9,8 +9,8 @@
 extern "C" {
 #endif
 
-extern ssize_t base64_decode(unsigned char *dst, const unsigned char *src);
-extern size_t base64_encode(unsigned char* dst, const unsigned char* src, size_t in_sz);
+extern ssize_t base64_decode(unsigned char *dst, const char *src);
+extern size_t base64_encode(char* dst, const unsigned char* src, size_t in_sz);
 
 #ifdef __cplusplus
 }
