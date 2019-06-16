@@ -7,7 +7,7 @@ typedef struct mass_transfer_tx_bytes_s
 {
     tx_public_key_t sender_public_key;
     tx_asset_id_t asset_id;
-    tx_transfer_array_t transfers;
+    tx_array_t transfers;
     tx_timestamp_t timestamp;
     tx_fee_t fee;
     tx_attachment_t attachment;

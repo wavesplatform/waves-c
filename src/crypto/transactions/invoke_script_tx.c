@@ -55,7 +55,7 @@ void waves_destroy_invoke_script_tx(invoke_script_tx_bytes_t* tx)
 {
     tx_destroy_public_key(&tx->sender_public_key);
     tx_destroy_addr_or_alias(&tx->d_app);
-    tx_destroy_payment_array(&tx->payments);
+    tx_array_destroy(&tx->payments);
     tx_destroy_func_call(&tx->call);
     tx_destroy_optional_asset_id(&tx->fee_asset_id);
 }

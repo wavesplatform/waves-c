@@ -8,9 +8,9 @@ typedef struct lease_tx_bytes_s
     tx_lease_asset_id_t lease_asset_id;
     tx_public_key_t sender_public_key;
     tx_addr_or_alias_t recipient;
-    uint64_t amount;
-    uint64_t fee;
-    uint64_t timestamp;
+    tx_amount_t amount;
+    tx_fee_t fee;
+    tx_timestamp_t timestamp;
 } lease_tx_bytes_t;
 
 ssize_t waves_lease_tx_from_bytes(lease_tx_bytes_t* tx, const unsigned char *src);

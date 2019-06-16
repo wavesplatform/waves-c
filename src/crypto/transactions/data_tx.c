@@ -38,7 +38,7 @@ size_t waves_data_tx_to_bytes(unsigned char *dst, const data_tx_bytes_t* tx)
 void waves_destroy_data_tx(data_tx_bytes_t* tx)
 {
     tx_destroy_public_key(&tx->sender_public_key);
-    tx_destroy_data_entry_array(&tx->data);
+    tx_array_destroy(&tx->data);
 }
 
 size_t waves_data_tx_buffer_size(const data_tx_bytes_t* tx)
