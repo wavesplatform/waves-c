@@ -1,5 +1,40 @@
 #include "tx.h"
+#include "blake2b/sse/blake2.h"
+#include "base58/b58.h"
 #include <string.h>
+
+tx_string_t* waves_tx_id(waves_tx_t* tx)
+{
+    size_t nb = waves_tx_buffer_size(tx);
+    unsigned char buf[nb];
+    nb = waves_tx_to_bytes(buf, tx);
+    //
+    uint8_t hash[32];
+    blake2b_state hs[1];
+    blake2b_init(hs, sizeof(hash));
+    blake2b_update(hs, buf, nb);
+    blake2b_final(hs, hash, sizeof(hash));
+
+    char id_buf [sizeof(hash)*2];
+    ssize_t id_sz = base58_encode(id_buf, hash, sizeof(hash));
+    tx_string_t* id = tx_malloc(sizeof(tx_string_t));
+    id->data = (char*)tx_malloc(id_sz+1);
+    id->len = id_sz;
+    memcpy(id->data, id_buf, id_sz);
+    id->data[id_sz] = '\0';
+    return id;
+}
+
+void waves_tx_destroy_string(tx_string_t* id)
+{
+    if (id == NULL)
+    {
+        return;
+    }
+    tx_destroy_string(id);
+    tx_free(id);
+}
+
 
 int waves_tx_init(waves_tx_t* tx, uint8_t tx_type)
 {
