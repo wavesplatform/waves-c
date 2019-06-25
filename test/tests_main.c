@@ -28,5 +28,6 @@ void utils_tests() {
 int main(int argc, char **argv) {
     crypto_tests();
     test_data_tx_bytes();
+    test_data_tx_building();
     utils_tests();
 }
