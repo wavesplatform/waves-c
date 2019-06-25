@@ -44,7 +44,10 @@ int waves_tx_init(waves_tx_t* tx, uint8_t tx_type)
     case TRANSACTION_TYPE_TRANSFER:
     case TRANSACTION_TYPE_REISSUE:
     case TRANSACTION_TYPE_BURN:
-    // case TRANSACTION_TYPE_EXCHANGE
+    case TRANSACTION_TYPE_EXCHANGE:
+        tx_array_init(&tx->data.exchange.order1.proofs.proofs, sizeof(tx_encoded_string_t), tx_destroy_proof);
+        tx_array_init(&tx->data.exchange.order2.proofs.proofs, sizeof(tx_encoded_string_t), tx_destroy_proof);
+        break;
     case TRANSACTION_TYPE_LEASE:
     case TRANSACTION_TYPE_CANCEL_LEASE:
     case TRANSACTION_TYPE_ALIAS:
@@ -127,7 +130,9 @@ ssize_t waves_tx_from_bytes(waves_tx_t* tx, const unsigned char *src)
     case TRANSACTION_TYPE_BURN:
         nbytes = waves_burn_tx_from_bytes(&tx->data.burn, src);
         break;
-    // case TRANSACTION_TYPE_EXCHANGE
+    case TRANSACTION_TYPE_EXCHANGE:
+        nbytes = waves_exchange_tx_from_bytes(&tx->data.exchange, src);
+        break;
     case TRANSACTION_TYPE_LEASE:
         nbytes = waves_lease_tx_from_bytes(&tx->data.lease, src);
         break;
@@ -173,7 +178,8 @@ size_t waves_tx_to_bytes(unsigned char *dst, const waves_tx_t* tx)
         return waves_reissue_tx_to_bytes(dst, &tx->data.reissue);
     case TRANSACTION_TYPE_BURN:
         return waves_burn_tx_to_bytes(dst, &tx->data.burn);
-    // case TRANSACTION_TYPE_EXCHANGE
+    case TRANSACTION_TYPE_EXCHANGE:
+        return waves_exchange_tx_to_bytes(dst, &tx->data.exchange);
     case TRANSACTION_TYPE_LEASE:
         return waves_lease_tx_to_bytes(dst, &tx->data.lease);
     case TRANSACTION_TYPE_CANCEL_LEASE:
@@ -219,7 +225,8 @@ size_t waves_tx_buffer_size(const waves_tx_t* tx)
         return waves_reissue_tx_buffer_size(&tx->data.reissue);
     case TRANSACTION_TYPE_BURN:
         return waves_burn_tx_buffer_size(&tx->data.burn);
-    // case TRANSACTION_TYPE_EXCHANGE
+    case TRANSACTION_TYPE_EXCHANGE:
+        return waves_exchange_tx_buffer_size(&tx->data.exchange);
     case TRANSACTION_TYPE_LEASE:
         return waves_lease_tx_buffer_size(&tx->data.lease);
     case TRANSACTION_TYPE_CANCEL_LEASE:
@@ -259,6 +266,9 @@ void waves_tx_destroy(waves_tx_t* tx)
             break;
         case TRANSACTION_TYPE_MASS_TRANSFER:
             waves_destroy_mass_transfer_tx(&tx->data.mass_transfer);
+            break;
+        case TRANSACTION_TYPE_EXCHANGE:
+            waves_destroy_exchange_tx(&tx->data.exchange);
             break;
         case TRANSACTION_TYPE_DATA:
             waves_destroy_data_tx(&tx->data.data);
@@ -307,7 +317,8 @@ tx_timestamp_t waves_tx_get_timestamp(waves_tx_t* tx)
         return tx->data.reissue.timestamp;
     case TRANSACTION_TYPE_BURN:
         return tx->data.burn.timestamp;
-    // case TRANSACTION_TYPE_EXCHANGE
+    case TRANSACTION_TYPE_EXCHANGE:
+        return tx->data.exchange.timestamp;
     case TRANSACTION_TYPE_LEASE:
         return tx->data.lease.timestamp;
     case TRANSACTION_TYPE_CANCEL_LEASE:
@@ -343,7 +354,8 @@ tx_fee_t waves_tx_get_fee(waves_tx_t* tx)
         return tx->data.reissue.fee;
     case TRANSACTION_TYPE_BURN:
         return tx->data.burn.fee;
-    // case TRANSACTION_TYPE_EXCHANGE
+    case TRANSACTION_TYPE_EXCHANGE:
+        return tx->data.exchange.fee;
     case TRANSACTION_TYPE_LEASE:
         return tx->data.lease.fee;
     case TRANSACTION_TYPE_CANCEL_LEASE:
@@ -379,7 +391,7 @@ ssize_t waves_tx_set_sender_public_key(waves_tx_t* tx, const char* src)
         return tx_set_sender_public_key(&tx->data.reissue.sender_public_key, src);
     case TRANSACTION_TYPE_BURN:
         return tx_set_sender_public_key(&tx->data.burn.sender_public_key, src);
-    // case TRANSACTION_TYPE_EXCHANGE
+    //case TRANSACTION_TYPE_EXCHANGE:
     case TRANSACTION_TYPE_LEASE:
         return tx_set_sender_public_key(&tx->data.lease.sender_public_key, src);
     case TRANSACTION_TYPE_CANCEL_LEASE:
@@ -471,7 +483,9 @@ ssize_t waves_tx_set_timestamp(waves_tx_t* tx, tx_timestamp_t timestamp)
     case TRANSACTION_TYPE_BURN:
         tx->data.burn.timestamp = timestamp;
         break;
-    // case TRANSACTION_TYPE_EXCHANGE
+    case TRANSACTION_TYPE_EXCHANGE:
+        tx->data.exchange.timestamp = timestamp;
+        break;
     case TRANSACTION_TYPE_LEASE:
         tx->data.lease.timestamp = timestamp;
         break;
@@ -556,7 +570,9 @@ ssize_t waves_tx_set_fee(waves_tx_t* tx, tx_fee_t fee)
     case TRANSACTION_TYPE_BURN:
         tx->data.burn.fee = fee;
         break;
-    // case TRANSACTION_TYPE_EXCHANGE
+    case TRANSACTION_TYPE_EXCHANGE:
+        tx->data.exchange.fee = fee;
+        break;
     case TRANSACTION_TYPE_LEASE:
         tx->data.lease.fee = fee;
         break;

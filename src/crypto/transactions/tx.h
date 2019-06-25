@@ -4,6 +4,7 @@
 #include "alias_tx.h"
 #include "burn_tx.h"
 #include "data_tx.h"
+#include "exchange_tx.h"
 #include "lease_cancel_tx.h"
 #include "lease_tx.h"
 #include "issue_tx.h"
@@ -30,6 +31,7 @@ typedef struct tx_bytes_s
         alias_tx_bytes_t alias;
         burn_tx_bytes_t burn;
         data_tx_bytes_t data;
+        exchange_tx_bytes_t exchange;
         lease_cancel_tx_bytes_t lease_cancel;
         lease_tx_bytes_t lease;
         issue_tx_bytes_t issue;
