@@ -1,14 +1,17 @@
 # Created by .ignore support plugin (hsz.mobi)
 ### CMake template
-CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Testing
-Makefile
-cmake_install.cmake
-install_manifest.txt
-compile_commands.json
-CTestTestfile.cmake
+/CMakeCache.txt
+/CMakeFiles
+/CMakeScripts
+/Testing
+/Makefile
+/cmake_install.cmake
+/install_manifest.txt
+/compile_commands.json
+/CTestTestfile.cmake
+/build
+
+/tags
 ### C template
 # Prerequisites
 *.d
