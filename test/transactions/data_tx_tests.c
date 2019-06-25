@@ -43,7 +43,7 @@ void test_data_tx_bytes()
 
    waves_tx_t* data_tx = waves_tx_load(tx_bytes);
    if (data_tx == NULL) {
-       fprintf(stderr, "waves_tx_from_bytes failed\n");
+       fprintf(stderr, "waves_tx_load failed\n");
        exit(-1);
    }
    if (waves_tx_get_timestamp(data_tx) != 1560177967395) {
@@ -112,4 +112,38 @@ void test_data_tx_bytes()
 
    waves_tx_destroy_buffer(&tx_buf);
    waves_tx_destroy(data_tx);
+}
+
+
+void test_data_tx_building()
+{
+    const char* tx_hex = "0c01cff48bcc69c8d78e60a009c1ece9ee48045c765b42def115e6eb516a39f30b74000200026b3100000000000000000100026b3203000776616c756520320000016b41da8123000000000007a120";
+    const size_t expected_tx_size = strlen(tx_hex) / 2;
+    size_t tx_size = 0;
+    waves_tx_buffer_t buf = {0};
+    waves_tx_t *tx = NULL;
+
+    tx = waves_tx_new(TRANSACTION_TYPE_DATA);
+    if (!tx) {
+        fprintf(stderr, "waves_tx_new(%d) failed\n", TRANSACTION_TYPE_DATA);
+        exit(-1);
+    }
+
+    waves_tx_set_sender_public_key(tx, "Ezmfw3GgJerTZFgSdzEnXydu1LJ52LsAFZXUF5c63UrF");
+    waves_tx_set_fee(tx, 500000);
+    waves_tx_set_timestamp(tx, 1560177967395);
+    waves_tx_data_add_entry_integer(tx, "k1", 1);
+    waves_tx_data_add_entry_string(tx, "k2", "value 2");
+
+    buf = waves_tx_to_byte_buffer(tx);
+    tx_size = buf.size;
+
+    waves_tx_destroy_buffer(&buf);
+    waves_tx_destroy(tx);
+
+    if (tx_size != expected_tx_size) {
+        fprintf(stderr, "tx_size (%ld) != expected_tx_size(%ld)\n",
+                tx_size, expected_tx_size);
+        exit(-1);
+    }
 }

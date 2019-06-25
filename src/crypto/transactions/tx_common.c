@@ -94,6 +94,11 @@ void tx_array_resize(tx_array_t* array, tx_array_size_t num_elem)
     {
         tx_array_reserve(array, num_elem);
     }
+    if (num_elem > array->len)
+    {
+        char* p = (char*)(array->array) + (array->len * array->elem_sz);
+        memset(p, 0, (num_elem - array->len)*array->elem_sz);
+    }
     array->len = num_elem;
 }
 
@@ -109,7 +114,9 @@ char* tx_array_new_elem(tx_array_t* array)
     {
         tx_array_reserve(array, array->capacity ? array->capacity * 2 : 1);
     }
-    return (char*)(array->array) + (array->len++ * array->elem_sz);
+    char* p = (char*)(array->array) + (array->len++ * array->elem_sz);
+    memset(p, 0, array->elem_sz);
+    return p;
 }
 
 void tx_array_destroy_len(tx_array_t* array, tx_array_size_t len)
