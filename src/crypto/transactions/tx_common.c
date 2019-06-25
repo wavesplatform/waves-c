@@ -94,6 +94,11 @@ void tx_array_resize(tx_array_t* array, tx_array_size_t num_elem)
     {
         tx_array_reserve(array, num_elem);
     }
+    if (num_elem > array->len)
+    {
+        char* p = (char*)(array->array) + (array->len * array->elem_sz);
+        memset(p, 0, (num_elem - array->len)*array->elem_sz);
+    }
     array->len = num_elem;
 }
 
@@ -109,7 +114,9 @@ char* tx_array_new_elem(tx_array_t* array)
     {
         tx_array_reserve(array, array->capacity ? array->capacity * 2 : 1);
     }
-    return (char*)(array->array) + (array->len++ * array->elem_sz);
+    char* p = (char*)(array->array) + (array->len++ * array->elem_sz);
+    memset(p, 0, array->elem_sz);
+    return p;
 }
 
 void tx_array_destroy_len(tx_array_t* array, tx_array_size_t len)
@@ -826,6 +833,55 @@ void tx_destroy_transfer(char* p)
 {
     tx_transfer_t* e = (tx_transfer_t*)p;
     tx_destroy_addr_or_alias(&e->recipient);
+}
+
+ssize_t tx_load_proofs_array(tx_array_t *dst, const unsigned char* src)
+{
+    ssize_t nbytes = 0;
+    const unsigned char* p = src;
+    uint16_t len = 0;
+    p += tx_load_len(&len, p);
+    tx_array_resize(dst, len);
+    tx_encoded_string_t* entries = (tx_encoded_string_t*)dst->array;
+    for (tx_size_t i = 0; i < dst->len; i++)
+    {
+        if ((nbytes = tx_load_base58_string(&entries[i], p)) < 0)
+        {
+            tx_array_destroy_len(dst, i);
+            return tx_parse_error_pos(p, src);
+        }
+        p += nbytes;
+    }
+    return p - src;
+}
+
+size_t tx_store_proofs_array(unsigned char* dst, const tx_array_t *src)
+{
+    unsigned char* p = dst;
+    p += tx_store_len(p, src->len);
+    tx_encoded_string_t* entries = (tx_encoded_string_t*)src->array;
+    for (tx_size_t i = 0; i < src->len; i++)
+    {
+        p += tx_store_base58_string(p, &entries[i]);
+    }
+    return p - dst;
+}
+
+size_t tx_proofs_array_buffer_size(const tx_array_t *array)
+{
+    size_t nb = sizeof(tx_size_t);
+    tx_encoded_string_t* entries = (tx_encoded_string_t*)array->array;
+    for (tx_size_t i = 0; i < array->len; i++)
+    {
+        nb += tx_base58_buffer_size(&entries[i]);
+    }
+    return nb;
+}
+
+void tx_destroy_proof(char *p)
+{
+    tx_encoded_string_t* s = (tx_encoded_string_t*)p;
+    tx_destroy_encoded_string(s);
 }
 
 ssize_t tx_load_transfer_array(tx_array_t* dst, const unsigned char* src)

@@ -45,6 +45,7 @@ typedef tx_encoded_string_t tx_asset_id_t;
 typedef tx_encoded_string_t tx_lease_id_t;
 typedef tx_encoded_string_t tx_lease_asset_id_t;
 typedef tx_encoded_string_t tx_address_t;
+typedef tx_encoded_string_t tx_signature_t;
 
 void tx_destroy_encoded_string(tx_encoded_string_t* s);
 void tx_encoded_string_set_null(tx_encoded_string_t* s);
@@ -76,6 +77,7 @@ size_t tx_store_base64_string_fixed(unsigned char *dst, const tx_encoded_string_
 #define tx_destroy_lease_asset_id(s) tx_destroy_base58_string(s)
 #define tx_destroy_address(s) tx_destroy_base58_string(s)
 #define tx_destroy_attachment(s) tx_destroy_base58_string(s)
+#define tx_destroy_signature(s) tx_destroy_base58_string(s)
 
 #define tx_public_key_buffer_size(s) tx_base58_buffer_size(s)
 #define tx_lease_id_buffer_size(s) tx_base58_buffer_size(s)
@@ -84,6 +86,7 @@ size_t tx_store_base64_string_fixed(unsigned char *dst, const tx_encoded_string_
 #define tx_lease_asset_id_buffer_size(s) tx_optional_encoded_string_buffer_size(s)
 #define tx_address_buffer_size(s) tx_base58_buffer_size(s)
 #define tx_attachment_buffer_size(s) tx_encoded_string_buffer_size(s)
+#define tx_signature_buffer_size(s) tx_encoded_string_buffer_size(s)
 
 #define tx_load_public_key(dst, src) tx_load_base58_string_fixed(dst, src, 32)
 #define tx_load_lease_id(dst, src) tx_load_base58_string_fixed(dst, src, 32)
@@ -92,6 +95,7 @@ size_t tx_store_base64_string_fixed(unsigned char *dst, const tx_encoded_string_
 #define tx_load_lease_asset_id(dst, src) tx_load_optional_asset_id(dst, src)
 #define tx_load_address(dst, src) tx_load_base58_string_fixed(dst, src, 26)
 #define tx_load_attachment(dst, src) tx_load_base58_string(dst, src)
+#define tx_load_signature(dst, src) tx_load_base58_string_fixed(dst, src, 64)
 
 #define tx_store_public_key(dst, src) tx_store_base58_string_fixed(dst, src, 32)
 #define tx_store_lease_id(dst, src) tx_store_base58_string_fixed(dst, src, 32)
@@ -100,6 +104,7 @@ size_t tx_store_base64_string_fixed(unsigned char *dst, const tx_encoded_string_
 #define tx_store_lease_asset_id(dst, src) tx_store_optional_asset_id(dst, src)
 #define tx_store_address(dst, src) tx_store_base58_string_fixed(dst, src, 26)
 #define tx_store_attachment(dst, src) tx_store_base58_string(dst, src)
+#define tx_store_signature(dst, src) tx_store_base58_string_fixed(dst, src, 64)
 
 ssize_t tx_set_sender_public_key(tx_public_key_t* dst, const char* src);
 ssize_t tx_set_asset_id(tx_asset_id_t* dst, const char* src);
@@ -301,6 +306,12 @@ typedef struct tx_transfer_s
     tx_addr_or_alias_t recipient;
     tx_amount_t amount;
 } tx_transfer_t;
+
+ssize_t tx_load_proofs_array(tx_array_t *dst, const unsigned char* src);
+size_t tx_store_proofs_array(unsigned char* dst, const tx_array_t *src);
+size_t tx_proofs_array_buffer_size(const tx_array_t *array);
+void tx_destroy_proof(char *p);
+
 
 ssize_t tx_load_transfer_array(tx_array_t *dst, const unsigned char* src);
 size_t tx_store_transfer_array(unsigned char* dst, const tx_array_t *src);
