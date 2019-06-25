@@ -45,8 +45,8 @@ int waves_tx_init(waves_tx_t* tx, uint8_t tx_type)
     case TRANSACTION_TYPE_REISSUE:
     case TRANSACTION_TYPE_BURN:
     case TRANSACTION_TYPE_EXCHANGE:
-        tx_array_init(&tx->data.exchange.order1.proofs.proofs, sizeof(tx_encoded_string_t), tx_destroy_proof);
-        tx_array_init(&tx->data.exchange.order2.proofs.proofs, sizeof(tx_encoded_string_t), tx_destroy_proof);
+        tx_array_init(&tx->data.exchange.order1.proofs, sizeof(tx_encoded_string_t), tx_destroy_proof);
+        tx_array_init(&tx->data.exchange.order2.proofs, sizeof(tx_encoded_string_t), tx_destroy_proof);
         break;
     case TRANSACTION_TYPE_LEASE:
     case TRANSACTION_TYPE_CANCEL_LEASE:

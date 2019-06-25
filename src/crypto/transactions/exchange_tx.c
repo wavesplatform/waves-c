@@ -23,7 +23,7 @@ ssize_t tx_load_order(tx_order_t *dst, const unsigned char* src)
     p += tx_load_fee(&dst->matcher_fee, p);
     if (dst->version == 1)
     {
-       if ((nbytes = tx_load_signature(&dst->proofs.signature, p)))
+       if ((nbytes = tx_load_signature(&dst->signature, p)))
        {
            return tx_parse_error_pos(p, src);
        }
@@ -35,7 +35,7 @@ ssize_t tx_load_order(tx_order_t *dst, const unsigned char* src)
         {
             return tx_parse_error_pos(p-1, src);
         }
-        if ((nbytes = tx_load_proofs_array(&dst->proofs.proofs, p)))
+        if ((nbytes = tx_load_proofs_array(&dst->proofs, p)))
         {
             return tx_parse_error_pos(p, src);
         }
@@ -66,12 +66,12 @@ size_t tx_store_order(unsigned char* dst, const tx_order_t *src)
     p += tx_store_fee(p, src->matcher_fee);
     if (src->version == 1)
     {
-       p += tx_store_signature(p, &src->proofs.signature);
+       p += tx_store_signature(p, &src->signature);
     }
     else if (src->version == 2)
     {
         p += tx_store_u8(p, 0x1);
-        p += tx_store_proofs_array(p, &src->proofs.proofs);
+        p += tx_store_proofs_array(p, &src->proofs);
     }
     return p - dst;
 }
@@ -96,12 +96,12 @@ uint32_t tx_order_buffer_size(const tx_order_t* v)
     nb += sizeof(v->matcher_fee);
     if (v->version == 1)
     {
-       nb += tx_signature_buffer_size(&v->proofs.signature);
+       nb += tx_signature_buffer_size(&v->signature);
     }
     else if (v->version == 2)
     {
         nb += 1;
-        nb += tx_proofs_array_buffer_size(&v->proofs.proofs);
+        nb += tx_proofs_array_buffer_size(&v->proofs);
     }
     return nb;
 }
@@ -114,11 +114,11 @@ void tx_destroy_order(tx_order_t* v)
     tx_destroy_optional_asset_id(&v->asset_pair.price_asset);
     if (v->version == 1)
     {
-        tx_destroy_signature(&v->proofs.signature);
+        tx_destroy_signature(&v->signature);
     }
     else if (v->version == 2)
     {
-        tx_array_destroy(&v->proofs.proofs);
+        tx_array_destroy(&v->proofs);
     }
 }
 
