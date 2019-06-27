@@ -19,17 +19,17 @@ ssize_t waves_exchange_tx_from_bytes(exchange_tx_bytes_t* tx, const unsigned cha
     {
         return tx_parse_error_pos(p, src);
     }
-    if ((nbytes = tx_load_order(&tx->order1, p)))
+    if ((nbytes = tx_load_order(&tx->order1, p)) < 0)
     {
         return tx_parse_error_pos(p, src);
     }
     p += nbytes;
-    if ((nbytes = tx_load_order(&tx->order2, p)))
+    if ((nbytes = tx_load_order(&tx->order2, p)) < 0)
     {
         return tx_parse_error_pos(p, src);
     }
     p += nbytes;
-    p += tx_load_u32(&tx->price, p);
+    p += tx_load_u64(&tx->price, p);
     p += tx_load_amount(&tx->amount, p);
     p += tx_load_fee(&tx->buy_matcher_fee, p);
     p += tx_load_fee(&tx->sell_matcher_fee, p);
@@ -49,7 +49,7 @@ size_t waves_exchange_tx_to_bytes(unsigned char *dst, const exchange_tx_bytes_t*
     *p++ = tx->version;
     p += tx_store_order(p, &tx->order1);
     p += tx_store_order(p, &tx->order2);
-    p += tx_store_u32(p, tx->price);
+    p += tx_store_u64(p, tx->price);
     p += tx_store_amount(p, tx->amount);
     p += tx_store_fee(p, tx->buy_matcher_fee);
     p += tx_store_fee(p, tx->sell_matcher_fee);

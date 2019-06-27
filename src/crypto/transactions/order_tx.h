@@ -25,6 +25,9 @@ typedef struct tx_order_s
     tx_signature_t signature;
 } tx_order_t;
 
+size_t waves_order_to_bytes(unsigned char* dst, const tx_order_t *src);
+size_t waves_order_bytes_size(const tx_order_t *v);
+
 ssize_t tx_load_order(tx_order_t *dst, const unsigned char* src);
 size_t tx_store_order(unsigned char* dst, const tx_order_t *src);
 size_t tx_order_buffer_size_with_len(const tx_order_t* v);

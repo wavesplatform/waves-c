@@ -44,6 +44,7 @@ int waves_tx_init(waves_tx_t* tx, uint8_t tx_type)
     case TRANSACTION_TYPE_TRANSFER:
     case TRANSACTION_TYPE_REISSUE:
     case TRANSACTION_TYPE_BURN:
+        break;
     case TRANSACTION_TYPE_EXCHANGE:
         tx_array_init(&tx->data.exchange.order1.proofs, sizeof(tx_encoded_string_t), tx_destroy_proof);
         tx_array_init(&tx->data.exchange.order2.proofs, sizeof(tx_encoded_string_t), tx_destroy_proof);
@@ -90,6 +91,14 @@ waves_tx_t* waves_tx_load(const unsigned char *src)
     waves_tx_t* tx;
     ssize_t nbytes;
     uint8_t type = *src;
+    if (type == 0x0)
+    {
+        type = src[1];
+        if (type != TRANSACTION_TYPE_EXCHANGE)
+        {
+            return NULL;
+        }
+    }
     if ((tx = waves_tx_new(type)) == NULL)
     {
         return NULL;
@@ -116,6 +125,14 @@ ssize_t waves_tx_from_bytes(waves_tx_t* tx, const unsigned char *src)
 {
     ssize_t nbytes;
     uint8_t type = *src;
+    if (type == 0x0)
+    {
+        type = src[1];
+        if (type != TRANSACTION_TYPE_EXCHANGE)
+        {
+            return -1;
+        }
+    }
     switch (type)
     {
     case TRANSACTION_TYPE_ISSUE:
