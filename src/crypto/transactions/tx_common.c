@@ -873,7 +873,7 @@ size_t tx_proofs_array_buffer_size(const tx_array_t *array)
     tx_encoded_string_t* entries = (tx_encoded_string_t*)array->array;
     for (tx_size_t i = 0; i < array->len; i++)
     {
-        nb += tx_base58_buffer_size(&entries[i]);
+        nb += tx_encoded_string_buffer_size(&entries[i]);
     }
     return nb;
 }

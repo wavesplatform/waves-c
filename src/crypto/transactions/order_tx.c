@@ -23,7 +23,7 @@ ssize_t tx_load_order(tx_order_t *dst, const unsigned char* src)
     p += tx_load_fee(&dst->matcher_fee, p);
     if (dst->version == 1)
     {
-       if ((nbytes = tx_load_signature(&dst->signature, p)))
+       if ((nbytes = tx_load_signature(&dst->signature, p)) < 0)
        {
            return tx_parse_error_pos(p, src);
        }
@@ -35,13 +35,49 @@ ssize_t tx_load_order(tx_order_t *dst, const unsigned char* src)
         {
             return tx_parse_error_pos(p-1, src);
         }
-        if ((nbytes = tx_load_proofs_array(&dst->proofs, p)))
+        if ((nbytes = tx_load_proofs_array(&dst->proofs, p)) < 0)
         {
             return tx_parse_error_pos(p, src);
         }
         p += nbytes;
     }
     return p - src;
+}
+
+size_t waves_order_to_bytes(unsigned char* dst, const tx_order_t *src)
+{
+    unsigned char* p = dst;
+    if (src->version == 2)
+    {
+        p += tx_store_u8(p, src->version);
+    }
+    p += tx_store_public_key(p, &src->sender_public_key);
+    p += tx_store_public_key(p, &src->matcher_public_key);
+    p += tx_store_optional_asset_id(p, &src->asset_pair.amount_asset);
+    p += tx_store_optional_asset_id(p, &src->asset_pair.price_asset);
+    p += tx_store_u8(p, src->order_type);
+    p += tx_store_u64(p, src->price);
+    p += tx_store_amount(p, src->amount);
+    p += tx_store_timestamp(p, src->timestamp);
+    p += tx_store_timestamp(p, src->expiration);
+    p += tx_store_fee(p, src->matcher_fee);
+    return p - dst;
+}
+
+size_t waves_order_bytes_size(const tx_order_t *v)
+{
+    size_t nb = v->version == 2 ? 1 : 0;
+    nb += tx_public_key_buffer_size(&v->sender_public_key);
+    nb += tx_public_key_buffer_size(&v->matcher_public_key);
+    nb += tx_optional_asset_id_buffer_size(&v->asset_pair.amount_asset);
+    nb += tx_optional_asset_id_buffer_size(&v->asset_pair.price_asset);
+    nb += sizeof(v->order_type);
+    nb += sizeof(v->price);
+    nb += sizeof(v->amount);
+    nb += sizeof(v->timestamp);
+    nb += sizeof(v->expiration);
+    nb += sizeof(v->matcher_fee);
+    return nb;
 }
 
 size_t tx_store_order(unsigned char* dst, const tx_order_t *src)
