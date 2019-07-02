@@ -47,6 +47,12 @@ typedef tx_encoded_string_t tx_lease_asset_id_t;
 typedef tx_encoded_string_t tx_address_t;
 typedef tx_encoded_string_t tx_signature_t;
 
+void tx_set_encoded_string_bytes(tx_encoded_string_t* dst, const char* src, size_t sz);
+#define waves_tx_set_public_key_bytes(dst, src) tx_set_encoded_string_bytes(dst, src, 32)
+#define waves_tx_set_asset_id_bytes(dst, src) tx_set_encoded_string_bytes(dst, src, 32)
+#define waves_tx_set_lease_id_bytes(dst, src) tx_set_encoded_string_bytes(dst, src, 32)
+#define waves_tx_set_address_bytes(dst, src) tx_set_encoded_string_bytes(dst, src, 26)
+
 void tx_destroy_encoded_string(tx_encoded_string_t* s);
 void tx_encoded_string_set_null(tx_encoded_string_t* s);
 size_t tx_encoded_string_fixed_buffer_size(const tx_encoded_string_t* s);
