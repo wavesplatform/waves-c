@@ -3,6 +3,14 @@
 #include "base58/b58.h"
 #include <string.h>
 
+void waves_tx_hash_bytes(uint8_t* hash, const uint8_t* bytes, size_t nb)
+{
+    blake2b_state hs[1];
+    blake2b_init(hs, 32);
+    blake2b_update(hs, bytes, nb);
+    blake2b_final(hs, hash, 32);
+}
+
 tx_string_t* waves_tx_id(waves_tx_t* tx)
 {
     size_t nb = waves_tx_buffer_size(tx);
@@ -10,11 +18,7 @@ tx_string_t* waves_tx_id(waves_tx_t* tx)
     nb = waves_tx_to_bytes(buf, tx);
     //
     uint8_t hash[32];
-    blake2b_state hs[1];
-    blake2b_init(hs, sizeof(hash));
-    blake2b_update(hs, buf, nb);
-    blake2b_final(hs, hash, sizeof(hash));
-
+    waves_tx_hash_bytes(hash, buf, nb);
     char id_buf [sizeof(hash)*2];
     ssize_t id_sz = base58_encode(id_buf, hash, sizeof(hash));
     tx_string_t* id = tx_malloc(sizeof(tx_string_t));

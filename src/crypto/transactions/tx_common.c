@@ -180,6 +180,11 @@ static inline void tx_set_decoded_data(tx_encoded_string_t* dst, const char* src
     dst->decoded_len = sz;
 }
 
+void tx_set_encoded_string_bytes(tx_encoded_string_t *dst, const char* src, size_t sz)
+{
+    tx_set_decoded_data(dst, src, sz);
+}
+
 static inline void tx_set_encoded_data(tx_encoded_string_t* dst, const char* src)
 {
     size_t str_sz = strlen(src);
