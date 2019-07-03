@@ -20,6 +20,7 @@ void tx_register_alloc_func(tx_alloc_func_t f);
 void tx_register_realloc_func(tx_realloc_func_t f);
 void tx_register_free_func(tx_free_func_t f);
 
+typedef uint8_t tx_version_t;
 typedef uint8_t tx_chain_id_t;
 typedef uint8_t tx_decimals_t;
 typedef uint64_t tx_fee_t;
@@ -235,6 +236,7 @@ void tx_destroy_addr_or_alias(tx_addr_or_alias_t* v);
 #define tx_load_u32(dst, src) tx_load_uint_big_endian(dst, src, sizeof(uint32_t))
 #define tx_load_u64(dst, src) tx_load_uint_big_endian(dst, src, sizeof(uint64_t))
 
+#define tx_load_version(dst, src) tx_load_uint_big_endian(dst, src, sizeof(tx_version_t))
 #define tx_load_chain_id(dst, src) tx_load_uint_big_endian(dst, src, sizeof(tx_chain_id_t))
 #define tx_load_decimals(dst, src) tx_load_uint_big_endian(dst, src, sizeof(tx_decimals_t))
 #define tx_load_quantity(dst, src) tx_load_uint_big_endian(dst, src, sizeof(tx_quantity_t))

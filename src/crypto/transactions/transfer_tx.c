@@ -8,9 +8,10 @@ ssize_t waves_transfer_tx_from_bytes(transfer_tx_bytes_t *tx, const unsigned cha
     {
         return tx_parse_error_pos(p-1, src);
     }
-    if (*p++ != TX_VERSION_2)
+    p += tx_load_version(&tx->version, p);
+    if (tx->version != TX_VERSION_1 && tx->version != TX_VERSION_2)
     {
-        return tx_parse_error_pos(p-1, src);
+        return tx_parse_error_pos(p, src);
     }
     p += tx_load_public_key(&tx->sender_public_key, p);
     p += tx_load_optional_asset_id(&tx->asset_id, p);
@@ -35,7 +36,7 @@ size_t waves_transfer_tx_to_bytes(unsigned char* dst, const transfer_tx_bytes_t*
 {
     unsigned char* p = dst;
     *p++ = TRANSACTION_TYPE_TRANSFER;
-    *p++ = TX_VERSION_2;
+    *p++ = tx->version;
     p += tx_store_public_key(p, &tx->sender_public_key);
     p += tx_store_optional_asset_id(p, &tx->asset_id);
     p += tx_store_optional_asset_id(p, &tx->fee_asset_id);
