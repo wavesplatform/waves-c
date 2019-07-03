@@ -1,6 +1,10 @@
 #ifndef __WAVES_ALL_TRANSACTION_H_6112__
 #define __WAVES_ALL_TRANSACTION_H_6112__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "alias_tx.h"
 #include "burn_tx.h"
 #include "data_tx.h"
@@ -77,5 +81,9 @@ tx_data_entry_t* waves_tx_data_add_entry_string(waves_tx_t* tx, const char* key,
 void waves_tx_hash_bytes(uint8_t* hash, const uint8_t *bytes, size_t nb);
 tx_string_t* waves_tx_id(waves_tx_t* tx);
 void waves_tx_destroy_string(tx_string_t* id);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __WAVES_ALL_TRANSACTION_H_6112__ */
