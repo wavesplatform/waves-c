@@ -722,9 +722,7 @@ size_t tx_store_optional_base58_string_fixed(unsigned char* dst, const tx_encode
     unsigned char* p = dst;
     if (src->encoded_len == 0)
     {
-        assert(src->decoded_len == 0);
         assert(src->encoded_data == NULL);
-        assert(src->decoded_data == NULL);
         p += tx_store_u8(p, 0);
     }
     else
