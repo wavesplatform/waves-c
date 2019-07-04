@@ -3,22 +3,7 @@
 ssize_t waves_exchange_tx_from_bytes(exchange_tx_bytes_t* tx, const unsigned char *src)
 {
     ssize_t nbytes;
-    uint8_t expected_version = TX_VERSION_1;
     const unsigned char* p = src;
-    if (*p == 0x0)
-    {
-        expected_version = TX_VERSION_2;
-        p++;
-    }
-    if (*p++ != TRANSACTION_TYPE_EXCHANGE)
-    {
-        return tx_parse_error_pos(p-1, src);
-    }
-    p += tx_load_u8(&tx->version, p);
-    if (tx->version!= expected_version)
-    {
-        return tx_parse_error_pos(p, src);
-    }
     if ((nbytes = tx_load_order(&tx->order1, p)) < 0)
     {
         return tx_parse_error_pos(p, src);
@@ -41,12 +26,6 @@ ssize_t waves_exchange_tx_from_bytes(exchange_tx_bytes_t* tx, const unsigned cha
 size_t waves_exchange_tx_to_bytes(unsigned char *dst, const exchange_tx_bytes_t* tx)
 {
     unsigned char* p = dst;
-    if (tx->version == 2)
-    {
-        *p++ = 0x0;
-    }
-    *p++ = TRANSACTION_TYPE_EXCHANGE;
-    *p++ = tx->version;
     p += tx_store_order(p, &tx->order1);
     p += tx_store_order(p, &tx->order2);
     p += tx_store_u64(p, tx->price);
@@ -66,7 +45,7 @@ void waves_destroy_exchange_tx(exchange_tx_bytes_t* tx)
 
 size_t waves_exchange_tx_buffer_size(const exchange_tx_bytes_t* tx)
 {
-    size_t nb = tx->version == 2 ? 3 : 2;
+    size_t nb = 0;
     nb += tx_order_buffer_size_with_len(&tx->order1);
     nb += tx_order_buffer_size_with_len(&tx->order2);
     nb += sizeof(tx->price);

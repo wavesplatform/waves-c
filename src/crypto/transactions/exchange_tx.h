@@ -6,7 +6,6 @@
 
 typedef struct exchange_tx_bytes_s
 {
-    uint8_t version;
     tx_order_t order1;
     tx_order_t order2;
     tx_amount_t price;

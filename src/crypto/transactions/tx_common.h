@@ -154,7 +154,7 @@ void tx_array_destroy(tx_array_t* array);
 
 enum
 {
-    TX_VERSION_0 = 0,
+    TX_MULTIVERSION = 0,
     TX_VERSION_1 = 1,
     TX_VERSION_2 = 2
 };

@@ -4,14 +4,6 @@ ssize_t waves_invoke_script_tx_from_bytes(invoke_script_tx_bytes_t* tx, const un
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
-    if (*p++ != TRANSACTION_TYPE_INVOKE_SCRIPT)
-    {
-        return tx_parse_error_pos(p-1, src);
-    }
-    if (*p++ != TX_VERSION_1)
-    {
-        return tx_parse_error_pos(p-1, src);
-    }
     p += tx_load_chain_id(&tx->chain_id, p);
     p += tx_load_public_key(&tx->sender_public_key, p);
     if ((nbytes = tx_load_addr_or_alias(&tx->d_app, p)) < 0)
@@ -38,8 +30,6 @@ ssize_t waves_invoke_script_tx_from_bytes(invoke_script_tx_bytes_t* tx, const un
 size_t waves_invoke_script_tx_to_bytes(unsigned char *dst, const invoke_script_tx_bytes_t* tx)
 {
     unsigned char* p = dst;
-    *p++ = TRANSACTION_TYPE_INVOKE_SCRIPT;
-    *p++ = TX_VERSION_1;
     p += tx_store_chain_id(p, tx->chain_id);
     p += tx_store_public_key(p, &tx->sender_public_key);
     p += tx_store_addr_or_alias(p, &tx->d_app);
@@ -62,7 +52,7 @@ void waves_destroy_invoke_script_tx(invoke_script_tx_bytes_t* tx)
 
 size_t waves_invoke_script_tx_buffer_size(const invoke_script_tx_bytes_t* tx)
 {
-    size_t nb = 2;
+    size_t nb = 0;
     nb += sizeof(tx->chain_id);
     nb += tx_public_key_buffer_size(&tx->sender_public_key);
     nb += tx_addr_or_alias_buffer_size(&tx->d_app);
