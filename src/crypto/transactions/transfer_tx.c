@@ -1,18 +1,10 @@
 #include "transfer_tx.h"
+#include <stdio.h>
 
 ssize_t waves_transfer_tx_from_bytes(transfer_tx_bytes_t *tx, const unsigned char *src)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
-    if (*p++ != TRANSACTION_TYPE_TRANSFER)
-    {
-        return tx_parse_error_pos(p-1, src);
-    }
-    p += tx_load_version(&tx->version, p);
-    if (tx->version != TX_VERSION_1 && tx->version != TX_VERSION_2)
-    {
-        return tx_parse_error_pos(p, src);
-    }
     p += tx_load_public_key(&tx->sender_public_key, p);
     p += tx_load_optional_asset_id(&tx->asset_id, p);
     p += tx_load_optional_asset_id(&tx->fee_asset_id, p);
@@ -35,8 +27,6 @@ ssize_t waves_transfer_tx_from_bytes(transfer_tx_bytes_t *tx, const unsigned cha
 size_t waves_transfer_tx_to_bytes(unsigned char* dst, const transfer_tx_bytes_t* tx)
 {
     unsigned char* p = dst;
-    *p++ = TRANSACTION_TYPE_TRANSFER;
-    *p++ = tx->version;
     p += tx_store_public_key(p, &tx->sender_public_key);
     p += tx_store_optional_asset_id(p, &tx->asset_id);
     p += tx_store_optional_asset_id(p, &tx->fee_asset_id);
@@ -59,7 +49,7 @@ void waves_destroy_transfer_tx(transfer_tx_bytes_t* tx)
 
 size_t waves_transfer_tx_buffer_size(const transfer_tx_bytes_t *tx)
 {
-    size_t nb = 2;
+    size_t nb = 0;
     nb += tx_public_key_buffer_size(&tx->sender_public_key);
     nb += tx_optional_asset_id_buffer_size(&tx->asset_id);
     nb += tx_optional_asset_id_buffer_size(&tx->fee_asset_id);

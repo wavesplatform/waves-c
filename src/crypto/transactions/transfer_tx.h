@@ -5,7 +5,6 @@
 
 typedef struct transfer_tx_bytes_s
 {
-    tx_version_t version;
     tx_public_key_t sender_public_key;
     tx_asset_id_t asset_id;
     tx_asset_id_t fee_asset_id;
