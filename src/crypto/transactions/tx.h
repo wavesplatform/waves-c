@@ -77,7 +77,7 @@ tx_data_entry_t* waves_tx_data_get_entry(waves_tx_t* tx, size_t i);
 tx_data_entry_t* waves_tx_data_add_entry_integer(waves_tx_t* tx, const char* key, tx_data_integer_t value);
 tx_data_entry_t* waves_tx_data_add_entry_boolean(waves_tx_t* tx, const char* key, tx_data_boolean_t value);
 tx_data_entry_t* waves_tx_data_add_entry_string(waves_tx_t* tx, const char* key, const char* value);
-//tx_data_entry_t* waves_tx_data_add_entry_binary(waves_tx_t* tx, const char* key, const char* value);
+tx_data_entry_t* waves_tx_data_add_entry_binary(waves_tx_t* tx, const char* key, const char* value, size_t len);
 
 void waves_tx_hash_bytes(uint8_t* hash, const uint8_t *bytes, size_t nb);
 ssize_t waves_tx_get_id(uint8_t* dst, const uint8_t* bytes, size_t nb);

@@ -280,6 +280,7 @@ typedef struct tx_data_entry_s
 void waves_tx_data_set_integer(tx_data_t* data, tx_data_integer_t value);
 void waves_tx_data_set_boolean(tx_data_t* data, tx_data_boolean_t value);
 void waves_tx_data_set_string(tx_data_t* data, const char* value);
+void waves_tx_data_set_binary(tx_data_t* data, const char* value, size_t len);
 
 ssize_t tx_load_data(tx_data_t* dst, const unsigned char* src);
 size_t tx_store_data(unsigned char* dst, tx_data_t* src);
