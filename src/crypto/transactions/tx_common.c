@@ -538,6 +538,12 @@ void waves_tx_data_set_string(tx_data_t* data, const char* value)
     waves_tx_set_string(&data->types.string, value);
 }
 
+void waves_tx_data_set_binary(tx_data_t* data, const char* value, size_t len)
+{
+    data->data_type = TX_DATA_TYPE_BINARY;
+    tx_set_encoded_string_bytes(&data->types.binary, value, len);
+}
+
 ssize_t tx_load_data(tx_data_t* dst, const unsigned char* src)
 {
     const unsigned char* p = src;

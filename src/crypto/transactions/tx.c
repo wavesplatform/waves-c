@@ -812,3 +812,14 @@ tx_data_entry_t* waves_tx_data_add_entry_string(waves_tx_t* tx, const char* key,
     waves_tx_data_set_string(&e->value, value);
     return e;
 }
+
+tx_data_entry_t* waves_tx_data_add_entry_binary(waves_tx_t* tx, const char* key, const char* value, size_t len)
+{
+    tx_data_entry_t* e;
+    if ((e = waves_tx_data_add_entry(tx, key)) == NULL)
+    {
+        return NULL;
+    }
+    waves_tx_data_set_binary(&e->value, value, len);
+    return e;
+}
