@@ -211,7 +211,7 @@ ssize_t waves_tx_from_bytes(waves_tx_t* tx, const unsigned char *src)
         nbytes = waves_reissue_tx_from_bytes(&tx->data.reissue, p);
         break;
     case TRANSACTION_TYPE_BURN:
-        nbytes = waves_burn_tx_from_bytes(&tx->data.burn, p);
+        nbytes = waves_burn_tx_from_bytes(&tx->data.burn, p, tx->version);
         break;
     case TRANSACTION_TYPE_EXCHANGE:
         nbytes = waves_exchange_tx_from_bytes(&tx->data.exchange, p);
@@ -283,7 +283,7 @@ size_t waves_tx_to_bytes(unsigned char *dst, const waves_tx_t* tx)
         p += waves_reissue_tx_to_bytes(p, &tx->data.reissue);
         break;
     case TRANSACTION_TYPE_BURN:
-        p += waves_burn_tx_to_bytes(p, &tx->data.burn);
+        p += waves_burn_tx_to_bytes(p, &tx->data.burn, tx->version);
         break;
     case TRANSACTION_TYPE_EXCHANGE:
         p += waves_exchange_tx_to_bytes(p, &tx->data.exchange);
@@ -347,7 +347,7 @@ size_t waves_tx_buffer_size(const waves_tx_t* tx)
     case TRANSACTION_TYPE_REISSUE:
         return nb + waves_reissue_tx_buffer_size(&tx->data.reissue);
     case TRANSACTION_TYPE_BURN:
-        return nb + waves_burn_tx_buffer_size(&tx->data.burn);
+        return nb + waves_burn_tx_buffer_size(&tx->data.burn, tx->version);
     case TRANSACTION_TYPE_EXCHANGE:
         return nb + waves_exchange_tx_buffer_size(&tx->data.exchange);
     case TRANSACTION_TYPE_LEASE:
