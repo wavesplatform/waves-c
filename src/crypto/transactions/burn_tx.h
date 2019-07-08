@@ -13,9 +13,9 @@ typedef struct burn_tx_bytes_s
     tx_timestamp_t timestamp;
 } burn_tx_bytes_t;
 
-ssize_t waves_burn_tx_from_bytes(burn_tx_bytes_t* tx, const unsigned char *src);
-size_t waves_burn_tx_to_bytes(unsigned char *dst, const burn_tx_bytes_t* tx);
-size_t waves_burn_tx_buffer_size(const burn_tx_bytes_t* tx);
+ssize_t waves_burn_tx_from_bytes(burn_tx_bytes_t* tx, const unsigned char *src, uint8_t version);
+size_t waves_burn_tx_to_bytes(unsigned char *dst, const burn_tx_bytes_t* tx, uint8_t version);
+size_t waves_burn_tx_buffer_size(const burn_tx_bytes_t* tx, uint8_t version);
 void waves_destroy_burn_tx(burn_tx_bytes_t* tx);
 
 #endif /* __WAVES_BURN_TRANSACTION_H_26080__ */
