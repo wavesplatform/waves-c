@@ -1,9 +1,12 @@
 #include "reissue_tx.h"
 
-ssize_t waves_reissue_tx_from_bytes(reissue_tx_bytes_t *tx, const unsigned char *src)
+ssize_t waves_reissue_tx_from_bytes(reissue_tx_bytes_t *tx, const unsigned char *src, tx_version_t version)
 {
     const unsigned char* p = src;
-    p += tx_load_chain_id(&tx->chain_id, p);
+    if (version > TX_VERSION_1)
+    {
+        p += tx_load_chain_id(&tx->chain_id, p);
+    }
     p += tx_load_public_key(&tx->sender_public_key, p);
     p += tx_load_asset_id(&tx->asset_id, p);
     p += tx_load_quantity(&tx->quantity, p);
@@ -13,10 +16,13 @@ ssize_t waves_reissue_tx_from_bytes(reissue_tx_bytes_t *tx, const unsigned char 
     return p - src;
 }
 
-size_t waves_reissue_tx_to_bytes(unsigned char* dst, const reissue_tx_bytes_t* tx)
+size_t waves_reissue_tx_to_bytes(unsigned char* dst, const reissue_tx_bytes_t* tx, tx_version_t version)
 {
     unsigned char* p = dst;
-    p += tx_store_chain_id(p, tx->chain_id);
+    if (version > TX_VERSION_1)
+    {
+        p += tx_store_chain_id(p, tx->chain_id);
+    }
     p += tx_store_public_key(p, &tx->sender_public_key);
     p += tx_store_asset_id(p, &tx->asset_id);
     p += tx_store_quantity(p, tx->quantity);
@@ -26,10 +32,13 @@ size_t waves_reissue_tx_to_bytes(unsigned char* dst, const reissue_tx_bytes_t* t
     return p - dst;
 }
 
-size_t waves_reissue_tx_buffer_size(const reissue_tx_bytes_t* tx)
+size_t waves_reissue_tx_buffer_size(const reissue_tx_bytes_t* tx, tx_version_t version)
 {
     size_t nb = 0;
-    nb += sizeof(tx->chain_id);
+    if (version > TX_VERSION_1)
+    {
+        nb += sizeof(tx->chain_id);
+    }
     nb += tx_public_key_buffer_size(&tx->sender_public_key);
     nb += tx_asset_id_buffer_size(&tx->asset_id);
     nb += sizeof(tx->quantity);

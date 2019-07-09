@@ -17,9 +17,9 @@ typedef struct issue_tx_bytes_s
     tx_script_t script;
 } issue_tx_bytes_t;
 
-ssize_t waves_issue_tx_from_bytes(issue_tx_bytes_t *tx, const unsigned char *src);
-size_t waves_issue_tx_to_bytes(unsigned char* bytes, const issue_tx_bytes_t* tx);
+ssize_t waves_issue_tx_from_bytes(issue_tx_bytes_t *tx, const unsigned char *src, tx_version_t version);
+size_t waves_issue_tx_to_bytes(unsigned char* bytes, const issue_tx_bytes_t* tx, tx_version_t version);
 void waves_destroy_issue_tx(issue_tx_bytes_t *tx);
-size_t waves_issue_tx_buffer_size(const issue_tx_bytes_t *tx);
+size_t waves_issue_tx_buffer_size(const issue_tx_bytes_t *tx, tx_version_t version);
 
 #endif /* __WAVES_ISSUE_TRANSACTION_H_27938__ */

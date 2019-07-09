@@ -202,13 +202,13 @@ ssize_t waves_tx_from_bytes(waves_tx_t* tx, const unsigned char *src)
     switch (tx->type)
     {
     case TRANSACTION_TYPE_ISSUE:
-        nbytes = waves_issue_tx_from_bytes(&tx->data.issue, p);
+        nbytes = waves_issue_tx_from_bytes(&tx->data.issue, p, tx->version);
         break;
     case TRANSACTION_TYPE_TRANSFER:
         nbytes = waves_transfer_tx_from_bytes(&tx->data.transfer, p);
         break;
     case TRANSACTION_TYPE_REISSUE:
-        nbytes = waves_reissue_tx_from_bytes(&tx->data.reissue, p);
+        nbytes = waves_reissue_tx_from_bytes(&tx->data.reissue, p, tx->version);
         break;
     case TRANSACTION_TYPE_BURN:
         nbytes = waves_burn_tx_from_bytes(&tx->data.burn, p, tx->version);
@@ -274,13 +274,13 @@ size_t waves_tx_to_bytes(unsigned char *dst, const waves_tx_t* tx)
     switch (tx->type)
     {
     case TRANSACTION_TYPE_ISSUE:
-        p += waves_issue_tx_to_bytes(p, &tx->data.issue);
+        p += waves_issue_tx_to_bytes(p, &tx->data.issue, tx->version);
         break;
     case TRANSACTION_TYPE_TRANSFER:
         p += waves_transfer_tx_to_bytes(p, &tx->data.transfer);
         break;
     case TRANSACTION_TYPE_REISSUE:
-        p += waves_reissue_tx_to_bytes(p, &tx->data.reissue);
+        p += waves_reissue_tx_to_bytes(p, &tx->data.reissue, tx->version);
         break;
     case TRANSACTION_TYPE_BURN:
         p += waves_burn_tx_to_bytes(p, &tx->data.burn, tx->version);
@@ -341,11 +341,11 @@ size_t waves_tx_buffer_size(const waves_tx_t* tx)
     switch (tx->type)
     {
     case TRANSACTION_TYPE_ISSUE:
-        return nb + waves_issue_tx_buffer_size(&tx->data.issue);
+        return nb + waves_issue_tx_buffer_size(&tx->data.issue, tx->version);
     case TRANSACTION_TYPE_TRANSFER:
         return nb + waves_transfer_tx_buffer_size(&tx->data.transfer);
     case TRANSACTION_TYPE_REISSUE:
-        return nb + waves_reissue_tx_buffer_size(&tx->data.reissue);
+        return nb + waves_reissue_tx_buffer_size(&tx->data.reissue, tx->version);
     case TRANSACTION_TYPE_BURN:
         return nb + waves_burn_tx_buffer_size(&tx->data.burn, tx->version);
     case TRANSACTION_TYPE_EXCHANGE:
