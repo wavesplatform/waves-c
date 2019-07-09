@@ -737,6 +737,9 @@ size_t tx_store_optional_base58_string_fixed(unsigned char* dst, const tx_encode
         p += tx_store_u8(p, 1);
         p += tx_store_base58_string_fixed(p, src, src->decoded_len);
     }
+#ifdef NDEBUG
+    (void)sz;
+#endif
     return p - dst;
 }
 
