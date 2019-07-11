@@ -32,6 +32,15 @@ typedef bool tx_reissuable_t;
 typedef ssize_t (*tx_decode_func_t)(unsigned char*, const char*);
 typedef size_t (*tx_encode_func_t)(char*, const unsigned char*, size_t);
 
+enum
+{
+    TX_ENC_BASE58 = 0,
+    TX_ENC_BASE64 = 1,
+    TX_ENC_NUM_TYPES = 2
+};
+
+typedef uint8_t tx_enc_t;
+
 typedef struct tx_encoded_string_s {
     char* encoded_data;
     char* decoded_data;
@@ -39,7 +48,8 @@ typedef struct tx_encoded_string_s {
     size_t decoded_len;
 } tx_encoded_string_t;
 
-ssize_t tx_set_encoded_string(tx_encoded_string_t* dst, const char* src, tx_decode_func_t dec_f, ssize_t expected_sz);
+bool tx_encoded_string_is_empty(const tx_encoded_string_t* v);
+ssize_t tx_set_encoded_string(tx_encoded_string_t* dst, const char* src, tx_enc_t enc_type, ssize_t expected_sz);
 
 typedef tx_encoded_string_t tx_public_key_t;
 typedef tx_encoded_string_t tx_asset_id_t;
@@ -56,8 +66,8 @@ void tx_set_encoded_string_bytes(tx_encoded_string_t* dst, const char* src, size
 
 void tx_destroy_encoded_string(tx_encoded_string_t* s);
 void tx_encoded_string_set_null(tx_encoded_string_t* s);
-size_t tx_encoded_string_fixed_buffer_size(const tx_encoded_string_t* s);
-size_t tx_encoded_string_buffer_size(const tx_encoded_string_t* s);
+size_t tx_encoded_string_fixed_buffer_size(const tx_encoded_string_t *s, tx_enc_t enc_type);
+size_t tx_encoded_string_buffer_size(const tx_encoded_string_t *s, tx_enc_t enc_type);
 
 void tx_init_base58_string(tx_encoded_string_t* s, const unsigned char *src, size_t decoded_len);
 ssize_t tx_load_base58_string(tx_encoded_string_t* dst, const unsigned char *src);
@@ -74,8 +84,8 @@ size_t tx_store_base64_string_fixed(unsigned char *dst, const tx_encoded_string_
 #define tx_destroy_base58_string(s) tx_destroy_encoded_string(s)
 #define tx_destroy_base64_string(s) tx_destroy_encoded_string(s)
 
-#define tx_base58_buffer_size(s) tx_encoded_string_fixed_buffer_size(s)
-#define tx_base64_buffer_size(s) tx_encoded_string_buffer_size(s)
+#define tx_base58_buffer_size(s) tx_encoded_string_fixed_buffer_size((s), TX_ENC_BASE58)
+#define tx_base64_buffer_size(s) tx_decoded_string_buffer_size((s), TX_ENC_BASE64)
 
 #define tx_destroy_public_key(s) tx_destroy_base58_string(s)
 #define tx_destroy_lease_id(s) tx_destroy_base58_string(s)
@@ -89,11 +99,11 @@ size_t tx_store_base64_string_fixed(unsigned char *dst, const tx_encoded_string_
 #define tx_public_key_buffer_size(s) tx_base58_buffer_size(s)
 #define tx_lease_id_buffer_size(s) tx_base58_buffer_size(s)
 #define tx_asset_id_buffer_size(s) tx_base58_buffer_size(s)
-#define tx_optional_asset_id_buffer_size(s) tx_optional_encoded_string_fixed_buffer_size(s)
-#define tx_lease_asset_id_buffer_size(s) tx_optional_encoded_string_buffer_size(s)
+#define tx_optional_asset_id_buffer_size(s) tx_optional_decoded_string_fixed_buffer_size((s), TX_ENC_BASE58)
+#define tx_lease_asset_id_buffer_size(s) tx_optional_decoded_string_buffer_size((s), TX_ENC_BASE58)
 #define tx_address_buffer_size(s) tx_base58_buffer_size(s)
-#define tx_attachment_buffer_size(s) tx_encoded_string_buffer_size(s)
-#define tx_signature_buffer_size(s) tx_encoded_string_buffer_size(s)
+#define tx_attachment_buffer_size(s) tx_encoded_string_buffer_size((s), TX_ENC_BASE58)
+#define tx_signature_buffer_size(s) tx_encoded_string_buffer_size((s), TX_ENC_BASE58)
 
 #define tx_load_public_key(dst, src) tx_load_base58_string_fixed(dst, src, 32)
 #define tx_load_lease_id(dst, src) tx_load_base58_string_fixed(dst, src, 32)
@@ -201,8 +211,8 @@ size_t tx_load_uint_big_endian(void *dst, const unsigned char* src, size_t sz);
 ssize_t tx_load_optional_base58_string_fixed(tx_encoded_string_t *dst, const unsigned char* src, size_t sz);
 size_t tx_store_optional_base58_string_fixed(unsigned char* dst, const tx_encoded_string_t *src, size_t sz);
 
-size_t tx_optional_encoded_string_fixed_buffer_size(const tx_encoded_string_t* v);
-size_t tx_optional_encoded_string_buffer_size(const tx_encoded_string_t *v);
+size_t tx_optional_decoded_string_fixed_buffer_size(const tx_encoded_string_t *v, tx_enc_t enc_type);
+size_t tx_optional_decoded_string_buffer_size(const tx_encoded_string_t *v, tx_enc_t enc_type);
 
 ssize_t tx_load_alias(tx_alias_t* dst, const unsigned char* src);
 size_t tx_store_alias(unsigned char* dst, const tx_alias_t *src);
