@@ -94,7 +94,7 @@ static inline void tx_set_encoded_data(tx_encoded_string_t* dst, const char* src
 
 static void tx_decode_if_has_encoded_only(const tx_encoded_string_t* v, tx_enc_t enc_type)
 {
-    if (v->decoded_len == 0 && v->encoded_len != 0)
+    if (v->decoded_data == NULL && v->encoded_data != NULL)
     {
         tx_decode_func_t dec_f = tx_get_decode_func(enc_type);
         unsigned char buf[v->encoded_len];
@@ -231,23 +231,20 @@ ssize_t tx_set_encoded_string(tx_encoded_string_t* dst, const char* src, tx_enc_
     tx_destroy_encoded_string(dst);
     tx_set_encoded_data(dst, src);
     tx_decode_func_t dec_f = tx_get_decode_func(enc_type);
-    if (dec_f)
+    assert(dec_f != NULL);
+    unsigned char buf[dst->encoded_len];
+    ssize_t decoded = dec_f(buf, dst->encoded_data);
+    if (decoded < 0)
     {
-        unsigned char buf[dst->encoded_len];
-        ssize_t decoded = dec_f(buf, dst->encoded_data);
-        if (decoded < 0)
-        {
-            tx_destroy_encoded_string(dst);
-            return decoded;
-        }
-        if (expected_sz > 0 && decoded != expected_sz)
-        {
-            return -expected_sz;
-        }
-        tx_set_decoded_data(dst, (char*)buf, decoded);
+        tx_destroy_encoded_string(dst);
         return decoded;
     }
-    return 0;
+    if (expected_sz > 0 && decoded != expected_sz)
+    {
+        return -expected_sz;
+    }
+    tx_set_decoded_data(dst, (char*)buf, decoded);
+    return decoded;
 }
 
 void tx_destroy_encoded_string(tx_encoded_string_t* s)
@@ -309,13 +306,13 @@ size_t tx_store_base58_string(unsigned char *dst, const tx_encoded_string_t* src
 {
     unsigned char* p = dst;
     tx_decode_if_has_encoded_only(src, TX_ENC_BASE58);
-    if (src->decoded_data != NULL)
+    assert(src->decoded_data != NULL || src->decoded_len == 0);
+    p += tx_store_len(p, (tx_size_t)src->decoded_len);
+    if (src->decoded_len > 0)
     {
-        p += tx_store_len(p, (tx_size_t)src->decoded_len);
         memcpy(p, src->decoded_data, src->decoded_len);
-        return sizeof(tx_size_t) + src->decoded_len;
     }
-    return 0;
+    return sizeof(tx_size_t) + src->decoded_len;
 }
 
 ssize_t tx_load_base58_string_fixed(tx_encoded_string_t* dst, const unsigned char *src, size_t sz)
@@ -328,12 +325,9 @@ ssize_t tx_load_base58_string_fixed(tx_encoded_string_t* dst, const unsigned cha
 size_t tx_store_base58_string_fixed(unsigned char *dst, const tx_encoded_string_t* src, size_t sz)
 {
     tx_decode_if_has_encoded_only(src, TX_ENC_BASE58);
-    if (src->decoded_data != NULL)
-    {
-        memcpy(dst, src->decoded_data, sz);
-        return sz;
-    }
-    return 0;
+    assert(src->decoded_data != NULL && src->decoded_len == sz);
+    memcpy(dst, src->decoded_data, sz);
+    return sz;
 }
 
 void tx_init_base64_string(tx_encoded_string_t* s,  const unsigned char *src, size_t decoded_len)
@@ -820,7 +814,7 @@ size_t tx_store_script(unsigned char* dst, const tx_script_t* src)
 size_t tx_script_buffer_size(const tx_script_t* v)
 {
     tx_decode_if_has_encoded_only(v, TX_ENC_BASE64);
-    return 1 + v->decoded_len;
+    return 1 + sizeof(tx_size_t) + v->decoded_len;
 }
 
 size_t tx_payment_buffer_size(const tx_payment_t* v)

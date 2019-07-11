@@ -60,7 +60,6 @@ tx_string_t* waves_tx_id(waves_tx_t* tx)
     size_t nb = waves_tx_buffer_size(tx);
     unsigned char buf[nb];
     nb = waves_tx_to_bytes(buf, tx);
-    //
     uint8_t hash[32];
     if (waves_tx_get_id(hash, buf, nb) < 0)
     {
