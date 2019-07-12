@@ -1,11 +1,14 @@
 #include "lease_tx.h"
 #include <string.h>
 
-ssize_t waves_lease_tx_from_bytes(lease_tx_bytes_t* tx, const unsigned char *src)
+ssize_t waves_lease_tx_from_bytes(lease_tx_bytes_t* tx, const unsigned char *src, tx_version_t version)
 {
     ssize_t nbytes = 0;
     const unsigned char* p = src;
-    p += tx_load_lease_asset_id(&tx->lease_asset_id, p);
+    if (version > TX_VERSION_1)
+    {
+        p += tx_load_lease_asset_id(&tx->lease_asset_id, p);
+    }
     p += tx_load_public_key(&tx->sender_public_key, p);
     if ((nbytes = tx_load_addr_or_alias(&tx->recipient, p)) < 0)
     {
@@ -18,10 +21,13 @@ ssize_t waves_lease_tx_from_bytes(lease_tx_bytes_t* tx, const unsigned char *src
     return p - src;
 }
 
-size_t waves_lease_tx_to_bytes(unsigned char *dst, const lease_tx_bytes_t* tx)
+size_t waves_lease_tx_to_bytes(unsigned char *dst, const lease_tx_bytes_t* tx, tx_version_t version)
 {
     unsigned char* p = dst;
-    p += tx_store_lease_asset_id(p, &tx->lease_asset_id);
+    if (version > TX_VERSION_1)
+    {
+        p += tx_store_lease_asset_id(p, &tx->lease_asset_id);
+    }
     p += tx_store_public_key(p, &tx->sender_public_key);
     p += tx_store_addr_or_alias(p, &tx->recipient);
     p += tx_store_amount(p, tx->amount);
@@ -30,10 +36,13 @@ size_t waves_lease_tx_to_bytes(unsigned char *dst, const lease_tx_bytes_t* tx)
     return p - dst;
 }
 
-size_t waves_lease_tx_buffer_size(const lease_tx_bytes_t *tx)
+size_t waves_lease_tx_buffer_size(const lease_tx_bytes_t *tx, tx_version_t version)
 {
     size_t nb = 0;
-    nb += tx_lease_asset_id_buffer_size(&tx->lease_asset_id);
+    if (version > TX_VERSION_1)
+    {
+        nb += tx_lease_asset_id_buffer_size(&tx->lease_asset_id);
+    }
     nb += tx_public_key_buffer_size(&tx->sender_public_key);
     nb += tx_addr_or_alias_buffer_size(&tx->recipient);
     nb += sizeof(tx->amount);

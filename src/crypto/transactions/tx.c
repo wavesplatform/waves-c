@@ -216,7 +216,7 @@ ssize_t waves_tx_from_bytes(waves_tx_t* tx, const unsigned char *src)
         nbytes = waves_exchange_tx_from_bytes(&tx->data.exchange, p);
         break;
     case TRANSACTION_TYPE_LEASE:
-        nbytes = waves_lease_tx_from_bytes(&tx->data.lease, p);
+        nbytes = waves_lease_tx_from_bytes(&tx->data.lease, p, tx->version);
         break;
     case TRANSACTION_TYPE_CANCEL_LEASE:
         nbytes = waves_lease_cancel_tx_from_bytes(&tx->data.lease_cancel, p);
@@ -288,7 +288,7 @@ size_t waves_tx_to_bytes(unsigned char *dst, const waves_tx_t* tx)
         p += waves_exchange_tx_to_bytes(p, &tx->data.exchange);
         break;
     case TRANSACTION_TYPE_LEASE:
-        p += waves_lease_tx_to_bytes(p, &tx->data.lease);
+        p += waves_lease_tx_to_bytes(p, &tx->data.lease, tx->version);
         break;
     case TRANSACTION_TYPE_CANCEL_LEASE:
         p += waves_lease_cancel_tx_to_bytes(p, &tx->data.lease_cancel);
@@ -350,7 +350,7 @@ size_t waves_tx_buffer_size(const waves_tx_t* tx)
     case TRANSACTION_TYPE_EXCHANGE:
         return nb + waves_exchange_tx_buffer_size(&tx->data.exchange);
     case TRANSACTION_TYPE_LEASE:
-        return nb + waves_lease_tx_buffer_size(&tx->data.lease);
+        return nb + waves_lease_tx_buffer_size(&tx->data.lease, tx->version);
     case TRANSACTION_TYPE_CANCEL_LEASE:
         return nb + waves_lease_cancel_tx_buffer_size(&tx->data.lease_cancel);
     case TRANSACTION_TYPE_ALIAS:
