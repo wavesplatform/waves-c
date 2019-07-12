@@ -814,7 +814,8 @@ size_t tx_store_script(unsigned char* dst, const tx_script_t* src)
 size_t tx_script_buffer_size(const tx_script_t* v)
 {
     tx_decode_if_has_encoded_only(v, TX_ENC_BASE64);
-    return 1 + sizeof(tx_size_t) + v->decoded_len;
+    size_t script_sz = sizeof(tx_size_t) + v->decoded_len;
+    return v->decoded_len == 0 ? 1 : 1 + script_sz;
 }
 
 size_t tx_payment_buffer_size(const tx_payment_t* v)
