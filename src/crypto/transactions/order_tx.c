@@ -116,7 +116,7 @@ size_t tx_order_buffer_size_with_len(const tx_order_t* v)
 
 uint32_t tx_order_buffer_size(const tx_order_t* v)
 {
-    size_t nb = 0;
+    size_t nb = v->version == TX_VERSION_1 ? 0 : 1;
     nb += tx_public_key_buffer_size(&v->sender_public_key);
     nb += tx_public_key_buffer_size(&v->matcher_public_key);
     nb += tx_optional_asset_id_buffer_size(&v->asset_pair.amount_asset);
