@@ -119,12 +119,8 @@ uint32_t tx_order_buffer_size(const tx_order_t* v)
     size_t nb = 0;
     nb += tx_public_key_buffer_size(&v->sender_public_key);
     nb += tx_public_key_buffer_size(&v->matcher_public_key);
-    if (!tx_encoded_string_is_empty(&v->asset_pair.amount_asset)) {
-        nb += tx_optional_asset_id_buffer_size(&v->asset_pair.amount_asset);
-    }
-    if (!tx_encoded_string_is_empty(&v->asset_pair.price_asset)) {
-        nb += tx_optional_asset_id_buffer_size(&v->asset_pair.price_asset);
-    }
+    nb += tx_optional_asset_id_buffer_size(&v->asset_pair.amount_asset);
+    nb += tx_optional_asset_id_buffer_size(&v->asset_pair.price_asset);
     nb += sizeof(v->order_type);
     nb += sizeof(v->price);
     nb += sizeof(v->amount);
