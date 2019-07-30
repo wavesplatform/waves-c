@@ -47,10 +47,7 @@ ssize_t tx_load_order(tx_order_t *dst, const unsigned char* src)
 size_t waves_order_to_bytes(unsigned char* dst, const tx_order_t *src)
 {
     unsigned char* p = dst;
-    if (src->version == 2)
-    {
-        p += tx_store_u8(p, src->version);
-    }
+    p += tx_store_u8(p, src->version);
     p += tx_store_public_key(p, &src->sender_public_key);
     p += tx_store_public_key(p, &src->matcher_public_key);
     p += tx_store_optional_asset_id(p, &src->asset_pair.amount_asset);
@@ -83,13 +80,13 @@ size_t waves_order_bytes_size(const tx_order_t *v)
 size_t tx_store_order(unsigned char* dst, const tx_order_t *src)
 {
     unsigned char* p = dst;
-    uint32_t len = tx_order_buffer_size(src);
-    if (src->version == 1)
+
+    if (src->version > TX_VERSION_1)
     {
-        len--;
+        uint32_t len = tx_order_buffer_size(src);
+        p += tx_store_u32(p, len);
+        p += tx_store_u8(p, src->version);
     }
-    p += tx_store_u32(p, len);
-    p += tx_store_u8(p, src->version);
     p += tx_store_public_key(p, &src->sender_public_key);
     p += tx_store_public_key(p, &src->matcher_public_key);
     p += tx_store_optional_asset_id(p, &src->asset_pair.amount_asset);
@@ -119,11 +116,15 @@ size_t tx_order_buffer_size_with_len(const tx_order_t* v)
 
 uint32_t tx_order_buffer_size(const tx_order_t* v)
 {
-    size_t nb = 1;
+    size_t nb = 0;
     nb += tx_public_key_buffer_size(&v->sender_public_key);
     nb += tx_public_key_buffer_size(&v->matcher_public_key);
-    nb += tx_optional_asset_id_buffer_size(&v->asset_pair.amount_asset);
-    nb += tx_optional_asset_id_buffer_size(&v->asset_pair.price_asset);
+    if (!tx_encoded_string_is_empty(&v->asset_pair.amount_asset)) {
+        nb += tx_optional_asset_id_buffer_size(&v->asset_pair.amount_asset);
+    }
+    if (!tx_encoded_string_is_empty(&v->asset_pair.price_asset)) {
+        nb += tx_optional_asset_id_buffer_size(&v->asset_pair.price_asset);
+    }
     nb += sizeof(v->order_type);
     nb += sizeof(v->price);
     nb += sizeof(v->amount);

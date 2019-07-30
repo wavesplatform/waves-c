@@ -17,7 +17,7 @@ typedef struct exchange_tx_bytes_s
 } exchange_tx_bytes_t;
 
 ssize_t waves_exchange_tx_from_bytes(exchange_tx_bytes_t* tx, const unsigned char *src);
-size_t waves_exchange_tx_to_bytes(unsigned char *dst, const exchange_tx_bytes_t* tx);
+size_t waves_exchange_tx_to_bytes(unsigned char *dst, const exchange_tx_bytes_t* tx, uint8_t version);
 void waves_destroy_exchange_tx(exchange_tx_bytes_t* tx);
 size_t waves_exchange_tx_buffer_size(const exchange_tx_bytes_t* tx);
 
