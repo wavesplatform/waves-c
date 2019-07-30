@@ -23,9 +23,17 @@ ssize_t waves_exchange_tx_from_bytes(exchange_tx_bytes_t* tx, const unsigned cha
     return p - src;
 }
 
-size_t waves_exchange_tx_to_bytes(unsigned char *dst, const exchange_tx_bytes_t* tx)
+size_t waves_exchange_tx_to_bytes(unsigned char *dst, const exchange_tx_bytes_t* tx, uint8_t version)
 {
     unsigned char* p = dst;
+
+    if (version == TX_VERSION_1) {
+        const uint32_t order1_len = tx_order_buffer_size(&tx->order1);
+        const uint32_t order2_len = tx_order_buffer_size(&tx->order2);
+        p += tx_store_u32(p, order1_len);
+        p += tx_store_u32(p, order2_len);
+    }
+
     p += tx_store_order(p, &tx->order1);
     p += tx_store_order(p, &tx->order2);
     p += tx_store_u64(p, tx->price);

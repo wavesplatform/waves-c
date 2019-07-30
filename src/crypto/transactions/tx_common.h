@@ -103,7 +103,7 @@ size_t tx_store_base64_string_fixed(unsigned char *dst, const tx_encoded_string_
 #define tx_lease_asset_id_buffer_size(s) tx_optional_decoded_string_buffer_size((s), TX_ENC_BASE58)
 #define tx_address_buffer_size(s) tx_base58_buffer_size(s)
 #define tx_attachment_buffer_size(s) tx_encoded_string_buffer_size((s), TX_ENC_BASE58)
-#define tx_signature_buffer_size(s) tx_encoded_string_buffer_size((s), TX_ENC_BASE58)
+#define tx_signature_buffer_size(s) tx_optional_decoded_string_fixed_buffer_size((s), TX_ENC_BASE58)
 
 #define tx_load_public_key(dst, src) tx_load_base58_string_fixed(dst, src, 32)
 #define tx_load_lease_id(dst, src) tx_load_base58_string_fixed(dst, src, 32)

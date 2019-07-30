@@ -285,7 +285,7 @@ size_t waves_tx_to_bytes(unsigned char *dst, const waves_tx_t* tx)
         p += waves_burn_tx_to_bytes(p, &tx->data.burn, tx->version);
         break;
     case TRANSACTION_TYPE_EXCHANGE:
-        p += waves_exchange_tx_to_bytes(p, &tx->data.exchange);
+        p += waves_exchange_tx_to_bytes(p, &tx->data.exchange, tx->version);
         break;
     case TRANSACTION_TYPE_LEASE:
         p += waves_lease_tx_to_bytes(p, &tx->data.lease, tx->version);
