@@ -119,6 +119,7 @@ void test_data_tx_building()
 {
     const char* tx_hex = "0c01cff48bcc69c8d78e60a009c1ece9ee48045c765b42def115e6eb516a39f30b74000200026b3100000000000000000100026b3203000776616c756520320000016b41da8123000000000007a120";
     const size_t expected_tx_size = strlen(tx_hex) / 2;
+
     size_t tx_size = 0;
     waves_tx_buffer_t buf = {0};
     waves_tx_t *tx = NULL;
@@ -129,6 +130,7 @@ void test_data_tx_building()
         exit(-1);
     }
 
+    tx->version = TX_VERSION_1;
     waves_tx_set_sender_public_key(tx, "Ezmfw3GgJerTZFgSdzEnXydu1LJ52LsAFZXUF5c63UrF");
     waves_tx_set_fee(tx, 500000);
     waves_tx_set_timestamp(tx, 1560177967395);
