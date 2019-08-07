@@ -16,7 +16,7 @@ make
 On Mac OS X you should [install openssl using brew](http://brewformulas.org/Openssl) and then pass the openssl path as cmake parameter:
 
 ```
-brew install openssl
+brew install openssl@1.1
 cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl .
 make
 ```
