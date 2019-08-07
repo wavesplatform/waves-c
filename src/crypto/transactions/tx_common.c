@@ -1312,6 +1312,10 @@ size_t tx_store_func_call(unsigned char* dst, const tx_func_call_t* src)
 
 size_t tx_func_call_buffer_size(const tx_func_call_t *v)
 {
+    if (!v->valid)
+    {
+        return 1;
+    }
     size_t nb = 3;
     nb += tx_func_arg_string_buffer_size(&v->function);
     return nb + tx_func_arg_array_buffer_size(&v->args);
