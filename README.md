@@ -17,7 +17,7 @@ On Mac OS X you should [install openssl using brew](http://brewformulas.org/Open
 
 ```
 brew install openssl@1.1
-cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl .
+cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 .
 make
 ```
 
