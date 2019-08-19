@@ -34,14 +34,20 @@ static const int8_t b58digits_map[] = {
 	47,48,49,50,51,52,53,54, 55,56,57,-1,-1,-1,-1,-1,
 };
 
+
 ssize_t base58_decode(unsigned char *out, const char *in)
 {
-    const unsigned char *b58u = (void*)in;
     size_t b58sz = strlen(in);
-	uint32_t c;
-	size_t i, j;
+    return base58_decode_len(out, in, b58sz);
+}
 
-	unsigned zerocount = 0;
+ssize_t base58_decode_len(unsigned char *out, const char *in, size_t b58sz)
+{
+    const unsigned char *b58u = (void*)in;
+    uint32_t c;
+    size_t i, j;
+
+    unsigned zerocount = 0;
     for (i = 0; i < b58sz && b58u[i] == '1'; ++i)
     {
         ++zerocount;
@@ -50,39 +56,40 @@ ssize_t base58_decode(unsigned char *out, const char *in)
 
     size_t outisz = (b58sz - zerocount) * 733 / 1000 + 1;
     uint8_t outi[outisz];
-	memset(outi, 0, outisz * sizeof(*outi));
-	
-	for ( ; i < b58sz; ++i)
-	{
+    memset(outi, 0, outisz * sizeof(*outi));
+
+    for ( ; i < b58sz; ++i)
+    {
         if (b58u[i] & 0x80)
-			// High-bit set on invalid digit
+            // High-bit set on invalid digit
             return -b58sz + i;
-		if (b58digits_map[b58u[i]] == -1)
-			// Invalid base58 digit
+        if (b58digits_map[b58u[i]] == -1)
+            // Invalid base58 digit
             return -b58sz + i;
-		c = (unsigned)b58digits_map[b58u[i]];
-		for (j = outisz; j--; )
-		{
+        c = (unsigned)b58digits_map[b58u[i]];
+        for (j = outisz; j--; )
+        {
             c += (unsigned char)outi[j] * 58;
             outi[j] = c & 0xFF;
             c >>= 8;
-		}
+        }
         //if (c)
-			// Output number too big (carry to the next int32)
+        // Output number too big (carry to the next int32)
         //    return -b58sz + i;
-	}
+    }
 
     for (j = 0; j < outisz; ++j)
-	{
+    {
         if (outi[j])
             break;
-	}
+    }
     size_t bin_sz = outisz - j;
     for (; j < outisz; ++j)
     {
-         *(out++) = outi[j];
+        *(out++) = outi[j];
     }
     return bin_sz + zerocount;
+
 }
 
 static const char b58digits_ordered[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -92,14 +99,14 @@ size_t base58_encode(char* out, const unsigned char* in, size_t in_sz)
 	int carry;
 	size_t i, j, high, zcount = 0;
 	size_t size;
-	
+
     while (zcount < in_sz && !in[zcount])
 		++zcount;
-	
+
     size = (in_sz - zcount) * 138 / 100 + 1;
 	uint8_t buf[size];
 	memset(buf, 0, size);
-	
+
     for (i = zcount, high = size - 1; i < in_sz; ++i, high = j)
 	{
         for (carry = in[i], j = size - 1; (j > high) || carry; --j)
@@ -110,7 +117,7 @@ size_t base58_encode(char* out, const unsigned char* in, size_t in_sz)
             if (!j) break;
 		}
 	}
-	
+
 	for (j = 0; j < size && !buf[j]; ++j);
 
 	if (zcount)
@@ -118,7 +125,7 @@ size_t base58_encode(char* out, const unsigned char* in, size_t in_sz)
 	for (i = zcount; j < size; ++i, ++j)
         out[i] = b58digits_ordered[buf[j]];
     out[i] = '\0';
-	
+
     return i + 1;
 }
 
