@@ -11,6 +11,8 @@
 /CTestTestfile.cmake
 /build
 
+/.ccls-cache/
+
 /TAGS
 /tags
 ### C template
