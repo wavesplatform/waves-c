@@ -1,10 +1,13 @@
-#include "crypto_tests.h"
-#include "crypto.h"
-#include "b58.h"
-#include "libcurve25519-donna/additions/keygen.h"
 #include <printf.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "crypto.h"
+#include "b58.h"
+#include "libcurve25519-donna/additions/keygen.h"
+#include "utils.h"
+
+#include "crypto_tests.h"
 
 void waves_secure_hash_test() {
     uint8_t input[] = "A nice, long test to make the day great! :-)";
@@ -230,6 +233,34 @@ void waves_message_verify_negative_test() {
 
     if(waves_verify_message(pubkey, message, sizeof(message), signature)) {
         printf("waves_message_verify_negative test failed\n");
+        exit(-1);
+    }
+}
+
+void waves_crypto_sha256_test()
+{
+    unsigned char data[] = "Test message";
+    unsigned char res[32] = {0};
+    const unsigned char* expected_res_hex = "c0719e9a8d5d838d861dc6f675c899d2b309a3a65bb9fe6b11e5afcbf9a2c0b1";
+    unsigned char expected_res[32] = {0};
+    int rc = 0;
+
+    printf("%s\n", __func__);
+
+    rc = hex2bin((char*)expected_res, (const char *)expected_res_hex);
+    if (rc != 0) {
+        fprintf(stderr, "hex2bin failed in %s with return code: %d\n", __func__, rc);
+        exit(-1);
+    }
+
+    unsigned char* ret = sha256(data, sizeof(data) - 1, res);
+    if (ret == NULL) {
+        fprintf(stderr, "%s: sha256() returned NULL for input: %s\n", __func__, data);
+        exit(-1);
+    }
+
+    if (memcmp(expected_res, res, sizeof(res) * sizeof(res[0]))) {
+        fprintf(stderr, "%s: sha256() produced invalid checksum for string %s\n", __func__, data);
         exit(-1);
     }
 }
