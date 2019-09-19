@@ -27,6 +27,11 @@ bool waves_sign_message_custom_random(const curve25519_secret_key private_key /*
 bool waves_verify_message(const curve25519_public_key public_key, const unsigned char *message,
                           const size_t message_size, const curve25519_signature signature);
 
+/* Generates SHA256 checksum from `src` and stores the result to `dst`.
+ * `dst` must point to a buffer of sufficient size (at least, 32 bytes).
+ * On success, returns non-zero pointer to `dst`; otherwise, NULL. */
+unsigned char *waves_sha256(const unsigned char *src, unsigned int src_len, unsigned char* dst);
+
 #ifdef __cplusplus
 }
 #endif

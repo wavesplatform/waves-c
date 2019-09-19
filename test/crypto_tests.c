@@ -253,7 +253,7 @@ void waves_crypto_sha256_test()
         exit(-1);
     }
 
-    unsigned char* ret = sha256(data, sizeof(data) - 1, res);
+    unsigned char* ret = waves_sha256(data, sizeof(data) - 1, res);
     if (ret == NULL) {
         fprintf(stderr, "%s: sha256() returned NULL for input: %s\n", __func__, data);
         exit(-1);
