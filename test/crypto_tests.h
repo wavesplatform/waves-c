@@ -11,5 +11,6 @@ void waves_message_sign_test();
 void waves_message_sign_without_random_test();
 void waves_message_verify_test();
 void waves_message_verify_negative_test();
+void waves_crypto_sha256_test();
 
 #endif

@@ -13,6 +13,7 @@ void crypto_tests() {
     waves_message_sign_test();
     waves_message_verify_test();
     waves_message_verify_negative_test();
+    waves_crypto_sha256_test();
 }
 
 void utils_tests() {
