@@ -1,10 +1,13 @@
+#include <assert.h>
+#include <openssl/rand.h>
+#include <keygen.h>
+
 #include "crypto.h"
 #include "blake2b/sse/blake2.h"
 #include "sha256.h"
 #include "sha3.h"
+#include "sha256.h"
 #include "libcurve25519-donna/additions/curve_sigs.h"
-#include <openssl/rand.h>
-#include <keygen.h>
 
 void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[32])
 {
@@ -89,3 +92,18 @@ void waves_b58_seed_to_address(const unsigned char *key, const unsigned char net
     b58enc((char *) output, &length, address, 26);
 }
 #endif
+
+unsigned char *waves_sha256(const unsigned char *src, unsigned int src_len, unsigned char* dst)
+{
+    SHA256_CTX ctx;
+
+    assert(src);
+    assert(src_len);
+    assert(dst);
+
+    sha256_init(&ctx);
+    sha256_update(&ctx, src, src_len);
+    sha256_final(&ctx, dst);
+
+    return dst;
+}

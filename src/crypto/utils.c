@@ -1,9 +1,7 @@
-#include <assert.h>
 #include <stdint.h>
 #include <memory.h>
 #include <stdbool.h>
 #include <printf.h>
-#include "sha256.h"
 #include "utils.h"
 
 static unsigned char to_nibble (char c)
@@ -90,19 +88,4 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
 
     out[j] = '\0';
     return  true;
-}
-
-unsigned char *sha256(const unsigned char *src, unsigned int src_len, unsigned char* dst)
-{
-    SHA256_CTX ctx;
-
-    assert(src);
-    assert(src_len);
-    assert(dst);
-
-    sha256_init(&ctx);
-    sha256_update(&ctx, src, src_len);
-    sha256_final(&ctx, dst);
-
-    return dst;
 }
