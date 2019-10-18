@@ -22,12 +22,12 @@ matrix:
     - os: osx
       osx_image: xcode8
       env:
-        - MATRIX_EVAL="brew update && brew install openssl@1.1 ccache && brew remove openssl && export PATH=\"/usr/local/opt/ccache/libexec:$PATH\""
+        - MATRIX_EVAL="brew update && brew install openssl@1.1 ccache && export PATH=\"/usr/local/opt/ccache/libexec:$PATH\""
       cache:
         ccache: true
         directories:
           - $HOME/Library/Caches/Homebrew
-      script: cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl . && make
+      script: cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 . && make
 
 
 before_install:
