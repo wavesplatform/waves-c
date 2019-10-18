@@ -10,7 +10,7 @@ add_library(waves_c STATIC ${CS} crypto/utils.h crypto/utils.c crypto/utils.h)
 add_library(waves_c_shared SHARED ${CS} crypto/utils.h crypto/utils.c crypto/utils.h)
 set_target_properties(waves_c_shared PROPERTIES OUTPUT_NAME waves_c)
 
-target_link_libraries(waves_c ${OPENSSL_LIBRARIES} m crypto)
+target_link_libraries(waves_c ${OPENSSL_LIBRARIES} m)
 add_definitions(-Wall -O3 -Werror -Wextra -Wno-format)
 
 install(FILES crypto/base58/b58.h crypto/base64/b64.h DESTINATION include/waves)
