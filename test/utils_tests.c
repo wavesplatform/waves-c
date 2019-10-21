@@ -1,5 +1,9 @@
 #include "utils_tests.h"
 #include "utils.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 
 void print_amount_test_1() {
     unsigned char expected[] = "0.00000001";

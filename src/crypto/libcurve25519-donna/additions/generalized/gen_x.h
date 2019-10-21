@@ -1,6 +1,10 @@
 #ifndef __GEN_X_H
 #define __GEN_X_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int generalized_xeddsa_25519_sign(unsigned char* signature_out, /* 64 bytes */
                               const unsigned char* x25519_privkey_scalar, /* 32 bytes */
                               const unsigned char* msg, const unsigned long msg_len,
@@ -33,5 +37,10 @@ int generalized_xveddsa_25519_verify(
                   const unsigned long msg_len,
                   const unsigned char* customization_label,
                   const unsigned long customization_label_len);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

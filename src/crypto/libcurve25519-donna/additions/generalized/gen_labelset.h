@@ -1,6 +1,10 @@
 #ifndef __GEN_LABELSET_H__
 #define __GEN_LABELSET_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const unsigned char B_bytes[];
 
 unsigned char* buffer_add(unsigned char* bufptr, const unsigned char* bufend,
@@ -19,5 +23,9 @@ int labelset_add(unsigned char* labelset, unsigned long* labelset_len, const uns
 int labelset_validate(const unsigned char* labelset, const unsigned long labelset_len);
 
 int labelset_is_empty(const unsigned char* labelset, const unsigned long labelset_len);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

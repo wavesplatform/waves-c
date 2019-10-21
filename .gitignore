@@ -1,14 +1,20 @@
 # Created by .ignore support plugin (hsz.mobi)
 ### CMake template
-CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Testing
-Makefile
-cmake_install.cmake
-install_manifest.txt
-compile_commands.json
-CTestTestfile.cmake
+/CMakeCache.txt
+/CMakeFiles
+/CMakeScripts
+/Testing
+/Makefile
+/cmake_install.cmake
+/install_manifest.txt
+/compile_commands.json
+/CTestTestfile.cmake
+/build
+
+/.ccls-cache/
+
+/TAGS
+/tags
 ### C template
 # Prerequisites
 *.d
@@ -63,3 +69,13 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Linux backup files
+*~
+
+# CPack temporary files and directories
+CPackConfig.cmake
+CPackSourceConfig.cmake
+_CPack_Packages/
+*.deb
+
+bin/

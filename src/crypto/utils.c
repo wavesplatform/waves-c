@@ -4,6 +4,45 @@
 #include <printf.h>
 #include "utils.h"
 
+static unsigned char to_nibble (char c)
+{
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return 10 + c - 'a';
+    return 0xFF;
+}
+
+int hex2bin (char* dst, const char* src)
+{
+    size_t inlen = strlen (src);
+    size_t outlen = inlen / 2;
+
+    if (inlen & 1)
+    {
+        return -2;
+    }
+
+    unsigned char high;
+    size_t i = outlen-1;
+    while (inlen)
+    {
+        dst[i] = to_nibble (src[--inlen]);
+        if (dst[i] > 16)
+            break;
+        if (!inlen)
+            break;
+        high = to_nibble (src[--inlen]);
+        if (high > 16)
+            break;
+        dst[i--] += 16 * high;
+    }
+    if (inlen > 0)
+    {
+        return -1;
+    }
+    return 0;
+}
+
+
 void copy_in_reverse_order(unsigned char *to, const unsigned char *from, const unsigned int len) {
     for (uint16_t i = 0; i < len; i++) {
         to[i] = from[(len - 1) - i];

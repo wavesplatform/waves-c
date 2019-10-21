@@ -17,7 +17,7 @@ matrix:
       cache:
         apt: true
         ccache: true
-      script: cmake . && make
+      script: cmake . && make && make test
 
     - os: osx
       osx_image: xcode8
@@ -27,7 +27,7 @@ matrix:
         ccache: true
         directories:
           - $HOME/Library/Caches/Homebrew
-      script: cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 . && make
+      script: cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 . && make && make test
 
 
 before_install:

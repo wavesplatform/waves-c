@@ -35,9 +35,9 @@
 #include<sys/statvfs.h>
 
 #include"crypto/blake2b/sse/blake2.h"
-#include"crypto/base58/libbase58.h"
+#include"crypto/base58/b58.h"
 #include"crypto/sha256.h"
-#include"crypto/waves_crypto.h"
+#include"crypto/crypto.h"
 
 
 const int ITERATIONS_PER_LOOP = 513;
@@ -170,6 +170,8 @@ int generate_addresses(bool testnet, int iterations, vanity_settings *settings, 
     blake2b_final(S, entropy, 64);
 
     uint32_t *ent = (uint32_t*)entropy;
+    unsigned char address_bin[26];
+
     for(int i = 0; i < iterations ; i++) {
         ent[0]++;
         if(i % 58 == 0)
@@ -181,7 +183,12 @@ int generate_addresses(bool testnet, int iterations, vanity_settings *settings, 
 
         if (testnet) network_id = 'T';
 
-        waves_seed_to_address(seed, network_id, address);
+        uint8_t priv_key[32];
+        uint8_t pub_key[32];
+        waves_gen_private_key(priv_key, seed);
+        waves_gen_public_key(pub_key, priv_key);
+        waves_public_key_to_address(pub_key, network_id, address_bin);
+        base58_encode((char*)address, address_bin, sizeof(address_bin));
 
 //        for(int u = 0 ; u < strlen(address) ; u++)
 //           heat_map[u][base58char_to_i(address[u])]++;
