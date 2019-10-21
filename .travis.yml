@@ -27,7 +27,7 @@ matrix:
         ccache: true
         directories:
           - $HOME/Library/Caches/Homebrew
-      script: cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 . && make
+      script: cmake -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl@1.1 . && make VERBOSE=2
 
 
 before_install:
