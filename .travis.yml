@@ -20,9 +20,9 @@ matrix:
       script: cmake . && make
 
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode9.2
       env:
-        - MATRIX_EVAL="brew update && brew install openssl@1.1 ccache && export PATH=\"/usr/local/opt/ccache/libexec:$PATH\""
+        - MATRIX_EVAL="brew update && brew install openssl@1.1 ccache && export PATH=\"$(brew --prefix openssl)/bin:/usr/local/opt/ccache/libexec:$PATH\""
       cache:
         ccache: true
         directories:
