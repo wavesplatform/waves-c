@@ -1,5 +1,12 @@
-project( waves-c-project )
-cmake_minimum_required( VERSION 2.8 )
+cmake_minimum_required(VERSION 3.9)
+project(waves-c
+    VERSION 0.2.2
+    DESCRIPTION "C library for working with Waves"
+    LANGUAGES C)
+set(PROJECT_VERSION_NUMBER 0x000202)
+set(PROJECT_VERSION_STRING "${PROJECT_VERSION}")
+
+option(CPACK_GENERATOR "CPack generator" "RPM DEB TGZ ZIP")
 
 MACRO(HEADER_DIRECTORIES return_list)
     FILE(GLOB_RECURSE new_list *.h)
@@ -37,23 +44,22 @@ SET (CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 SET(CMAKE_FIND_LIBRARY_PREFIXES "lib")
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a")
 
-# Search OpenSSL
 find_package(OpenSSL REQUIRED)
-if( OpenSSL_FOUND )
+if(OpenSSL_FOUND)
     list(APPEND LIB_LIST ${OPENSSL_LIBRARIES})
     include_directories(${OPENSSL_INCLUDE_DIR})
     message(STATUS "Using OpenSSL ${OPENSSL_VERSION}")
-else()
+else(OpenSSL_FOUND)
     message(SEND_ERROR "Failed to find OpenSSL")
     return()
-endif()
+endif(OpenSSL_FOUND)
 
 enable_testing()
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DWAVES_DEBUG")
-if( NOT CMAKE_BUILD_TYPE )
-    set( CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE )
-endif()
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
 message("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
 
-add_subdirectory( src build/src )
-add_subdirectory( test build/test )
+add_subdirectory(src build/src)
+add_subdirectory(test build/test)
