@@ -9,18 +9,18 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
+            - llvm-toolchain-xenial-8
           packages:
-            - clang-3.6
+            - clang-3.9
       env:
-        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+        - MATRIX_EVAL="CC=clang-3.9 && CXX=clang++-3.9"
       cache:
         apt: true
         ccache: true
       script: cmake . && make && make test
 
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode9.2
       env:
         - MATRIX_EVAL="brew update && brew install openssl@1.1 ccache && export PATH=\"/usr/local/opt/ccache/libexec:$PATH\""
       cache:
