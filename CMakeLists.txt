@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.9)
 project(waves-c
-    VERSION 0.2.2
+    VERSION 0.2.3
     DESCRIPTION "C library for working with Waves"
     LANGUAGES C)
-set(PROJECT_VERSION_NUMBER 0x000202)
+set(PROJECT_VERSION_NUMBER 0x000203)
 set(PROJECT_VERSION_STRING "${PROJECT_VERSION}")
 
 option(CPACK_GENERATOR "CPack generator" "RPM DEB TGZ ZIP")
